@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+TEMPLATE_DIRS = ('/home/am/projects/orginfo/mysite/mysite/templates',)
 
 
 # Quick-start development settings - unsuitable for production
