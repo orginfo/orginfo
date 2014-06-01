@@ -85,6 +85,7 @@ STATIC_URL = '/static/'
 
 TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'orginfo/templates'),)
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
+LOGIN_REDIRECT_URL = '/'
 
 from django.conf import global_settings
 TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + (

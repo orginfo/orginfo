@@ -7,7 +7,7 @@ from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import TechnicalPassport
 from django.db.models import Q
 from django.shortcuts import render
-
+from django.contrib.auth.decorators import login_required
 
 def get_water_norm(subject_rf, water_description, period, water_service):
     # Получение периода действия норматива по расчетному периоду. Расчетный период устанавливается равным календарному месяцу. Поэтому, считаем, что за один месяц может быть только один норматив.
@@ -223,6 +223,7 @@ def test_owner():
                         for real_estate in RealEstate.objects.filter(address__street__locality=locality):
                             owner = get_owner(real_estate, period)
 
+@login_required(login_url="/login/")
 def index(request):
     #test_db()
     #test_heating_norm()
@@ -240,6 +241,7 @@ def index(request):
     
     return HttpResponse("Робот отработал успешно.")
 
+@login_required(login_url="/login/")
 def report(request):
     "the last payment in the organization"
 #    user_org = get_object_or_404(UserOrganization, user=request.user.id)
