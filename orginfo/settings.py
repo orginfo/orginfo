@@ -81,3 +81,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
+
+TEMPLATE_DIRS = ('/home/am/projects/orginfo/accounting/templates',)
+LOGIN_REDIRECT_URL = '/'
