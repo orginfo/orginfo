@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from accounting.forms import OrganizationForm
 from django.contrib.auth.models import User
-from accounting.models import Organization, UserOrganization
+from accounting.models import Organization, UserOrganization, Client
 
 @login_required(login_url="/login/")
 def index(request):
@@ -56,3 +56,9 @@ def organization_details(request):
     return render(request, 'accounting/organization.html', {
         'form': form,
     })
+
+@login_required(login_url="/login/")
+def clients(request):
+    user_org = get_object_or_404(UserOrganization, user=request.user.id)
+    clients = Client.objects.filter(organization=user_org.organization_id)
+    return render(request, 'accounting/clients.html', {'clients': clients})
