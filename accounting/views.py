@@ -58,8 +58,10 @@ class TakePayment(CreateView):
         if not self.client:
             raise Http404
         return super(TakePayment, self).dispatch(*args, **kwargs)
-    def get_initial(self):
-        return {'client': 2}
     def form_valid(self, form):
          form.instance.client = self.client
          return super(TakePayment, self).form_valid(form)
+    def get_context_data(self, **kwargs):
+        context = super(TakePayment, self).get_context_data(**kwargs)
+        context['client'] = self.client
+        return context
