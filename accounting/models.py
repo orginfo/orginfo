@@ -13,3 +13,9 @@ class UserOrganization(models.Model):
 class Client(models.Model):
     lfm = models.CharField(max_length=200)
     organization = models.ForeignKey(Organization)
+    def __str__(self):
+        return self.lfm + "(" + self.organization.__str__() + ")"
+
+class Payment(models.Model):
+    amount = models.DecimalField(max_digits=8, decimal_places=2)
+    client = models.ForeignKey(Client)

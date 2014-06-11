@@ -85,3 +85,4 @@ STATIC_URL = '/static/'
 
 TEMPLATE_DIRS = ('/home/am/projects/orginfo/accounting/templates',)
 LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/login/'
