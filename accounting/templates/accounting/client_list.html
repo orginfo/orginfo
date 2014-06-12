@@ -1,0 +1,8 @@
+{% block content %}
+    <h2>clients</h2>
+    <ul>
+        {% for client in object_list %}
+            <li>{{ client.lfm }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

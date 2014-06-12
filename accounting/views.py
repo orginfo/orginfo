@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 from accounting.forms import OrganizationForm
 from accounting.models import Organization, UserOrganization, Client, Payment
 from django.views.generic.edit import CreateView
+from django.views.generic import ListView
 
 
 @login_required(login_url="/login/")
@@ -65,3 +66,21 @@ class TakePayment(CreateView):
         context = super(TakePayment, self).get_context_data(**kwargs)
         context['client'] = self.client
         return context
+
+class FindClients(ListView):
+    def dispatch(self, *args, **kwargs):
+        self.user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
+        #clients = user_org.organization.client_set.all()
+        return super(FindClients, self).dispatch(*args, **kwargs)
+    def get_queryset(self):
+        #self.publisher = get_object_or_404(Publisher, name=self.args[0])
+        #return Book.objects.filter(publisher=self.publisher)
+        try:
+            name = self.request.GET['name']
+        except:
+            name = ''
+        if (name != ''):
+            object_list = self.user_org.organization.client_set.filter(lfm__icontains = name)
+        else:
+            object_list = self.user_org.organization.client_set.all()
+        return object_list

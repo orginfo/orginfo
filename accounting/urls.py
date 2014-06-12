@@ -8,5 +8,6 @@ urlpatterns = patterns('',
     url(r'^organization_details/$', views.organization_details, name='organization_details'),
     url(r'^clients/$', views.clients, name='clients'),
     url(r'^clients/(?P<client_id>\d+)/payments/take/$', login_required(views.TakePayment.as_view(success_url="/")), name='take_payment'),
+    url(r'^myclients/$', login_required(views.FindClients.as_view()), name='myclients'),
     url(r'^$', views.index, name='index'),
 )
