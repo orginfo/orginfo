@@ -1,9 +1,16 @@
+<form action="{% url 'accounting:clients' %}" method="get">
+{{ form.as_p }}
+<input type="submit" value="Find" />
+</form>
+{% block content %}
 {% if clients %}
+    <h2>clients</h2>
     <ul>
     {% for client in clients %}
-        <li>{{ client.lfm }}</li>
+        <li><a href="{% url 'accounting:take_payment' client.id %}">{{ client.lfm }}</a></li>
     {% endfor %}
     </ul>
 {% else %}
     <p>No clients are available.</p>
 {% endif %}
+{% endblock %}
