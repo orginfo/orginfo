@@ -41,12 +41,6 @@ def organization_details(request):
         'form': form,
     })
 
-@login_required(login_url="/login/")
-def clients(request):
-    user_org = get_object_or_404(UserOrganization, user=request.user.id)
-    clients = Client.objects.filter(organization=user_org.organization_id)
-    return render(request, 'accounting/clients.html', {'clients': clients})
-
 class TakePayment(CreateView):
     model = Payment
     template_name = 'accounting/take_payment.html'
@@ -68,7 +62,7 @@ class TakePayment(CreateView):
         context['client'] = self.client
         return context
 
-class FindClients(ListView):
+class Clients(ListView):
     class LastNameSearchForm(forms.Form):
         #name = forms.CharField(required=False)
         name = forms.CharField(max_length=3, required=False)
@@ -76,9 +70,9 @@ class FindClients(ListView):
     def dispatch(self, *args, **kwargs):
         self.form = self.form_class(self.request.GET)
         self.user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
-        return super(FindClients, self).dispatch(*args, **kwargs)
+        return super(Clients, self).dispatch(*args, **kwargs)
     def get_context_data(self, **kwargs):
-        context = super(FindClients, self).get_context_data(**kwargs)
+        context = super(Clients, self).get_context_data(**kwargs)
         context['form'] = self.form
         return context
     def get_queryset(self):
