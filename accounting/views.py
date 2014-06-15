@@ -2,10 +2,11 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm
+from accounting.forms import OrganizationForm#, LastNameSearchForm
 from accounting.models import Organization, UserOrganization, Client, Payment
 from django.views.generic.edit import CreateView
 from django.views.generic import ListView
+from django import forms
 
 
 @login_required(login_url="/login/")
@@ -68,19 +69,22 @@ class TakePayment(CreateView):
         return context
 
 class FindClients(ListView):
+    class LastNameSearchForm(forms.Form):
+        #name = forms.CharField(required=False)
+        name = forms.CharField(max_length=3, required=False)
+    form_class = LastNameSearchForm
     def dispatch(self, *args, **kwargs):
+        self.form = self.form_class(self.request.GET)
         self.user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
-        #clients = user_org.organization.client_set.all()
         return super(FindClients, self).dispatch(*args, **kwargs)
+    def get_context_data(self, **kwargs):
+        context = super(FindClients, self).get_context_data(**kwargs)
+        context['form'] = self.form
+        return context
     def get_queryset(self):
-        #self.publisher = get_object_or_404(Publisher, name=self.args[0])
-        #return Book.objects.filter(publisher=self.publisher)
-        try:
-            name = self.request.GET['name']
-        except:
-            name = ''
-        if (name != ''):
+        if self.form.is_valid():
+            name = self.form.cleaned_data['name']
             object_list = self.user_org.organization.client_set.filter(lfm__icontains = name)
         else:
-            object_list = self.user_org.organization.client_set.all()
+            object_list = self.user_org.organization.client_set.none()
         return object_list
