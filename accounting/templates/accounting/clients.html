@@ -5,7 +5,7 @@
 {% block content %}
     <h2>clients</h2>
     <ul>
-        {% for client in object_list %}
+        {% for client in clients %}
             <li><a href="{% url 'accounting:take_payment' client.id %}">{{ client.lfm }}</a></li>
         {% endfor %}
     </ul>

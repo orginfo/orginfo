@@ -64,9 +64,10 @@ class TakePayment(CreateView):
 
 class Clients(ListView):
     class LastNameSearchForm(forms.Form):
-        #name = forms.CharField(required=False)
-        name = forms.CharField(max_length=3, required=False)
+        name = forms.CharField(max_length=10, required=False)
     form_class = LastNameSearchForm
+    context_object_name = 'clients'
+    template_name = 'accounting/clients.html'
     def dispatch(self, *args, **kwargs):
         self.form = self.form_class(self.request.GET)
         self.user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
