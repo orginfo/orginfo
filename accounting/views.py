@@ -83,3 +83,18 @@ class Clients(ListView):
         else:
             object_list = self.user_org.organization.client_set.none()
         return object_list
+
+class AddClient(CreateView):
+    model = Client
+    template_name = 'accounting/add_client.html'
+    exclude = ('organization',)
+    fields = ['lfm']
+    def dispatch(self, *args, **kwargs):
+        user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
+        if not user_org.organization:
+            raise Http404
+        self.organization = user_org.organization
+        return super(AddClient, self).dispatch(*args, **kwargs)
+    def form_valid(self, form):
+         form.instance.organization = self.organization
+         return super(AddClient, self).form_valid(form)
