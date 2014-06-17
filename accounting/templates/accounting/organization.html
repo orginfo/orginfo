@@ -1,6 +1,6 @@
-<form action="{% url 'accounting:organization_details' %}" method="post">{% csrf_token %}
-<table>
-{{ form.as_table }}
-</table>
-<input type="submit" value="Submit" />
-</form>
+{% extends "starter-template.html" %}
+
+{% block container %}
+{% load crispy_forms_tags %}
+{% crispy form %}
+{% endblock %}

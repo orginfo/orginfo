@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm
+from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, AddClientForm
 from accounting.models import Organization, UserOrganization, Client, Payment
 from django.views.generic.edit import CreateView
 from django.views.generic import ListView
@@ -42,6 +42,7 @@ def organization_details(request):
     })
 
 class TakePayment(CreateView):
+    form_class = ExampleForm
     model = Payment
     template_name = 'accounting/take_payment.html'
     fields = ['amount']
@@ -63,8 +64,6 @@ class TakePayment(CreateView):
         return context
 
 class Clients(ListView):
-    class LastNameSearchForm(forms.Form):
-        name = forms.CharField(max_length=10, required=False)
     form_class = LastNameSearchForm
     context_object_name = 'clients'
     template_name = 'accounting/clients.html'
@@ -85,6 +84,7 @@ class Clients(ListView):
         return object_list
 
 class AddClient(CreateView):
+    form_class = AddClientForm
     model = Client
     template_name = 'accounting/add_client.html'
     exclude = ('organization',)

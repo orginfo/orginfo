@@ -1,5 +1,6 @@
-{{ client.lfm }}
-<form action="" method="post">{% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Create" />
-</form>
+{% extends "starter-template.html" %}
+
+{% block container %}
+{% load crispy_forms_tags %}
+{% crispy form %}
+{% endblock %}

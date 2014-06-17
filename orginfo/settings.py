@@ -37,6 +37,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'accounting',
+    'crispy_forms',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -83,6 +84,13 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-TEMPLATE_DIRS = ('/home/am/projects/orginfo/accounting/templates',)
+TEMPLATE_DIRS = ('/home/am/projects/orginfo/accounting/templates', os.path.join(BASE_DIR, 'orginfo/templates'),)
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
+
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
+from django.conf import global_settings
+TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
+    "django.core.context_processors.request",
+)
