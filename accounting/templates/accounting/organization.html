@@ -1,6 +1,10 @@
+{% extends "starter-template.html" %}
+
+{% block container %}
 <form action="{% url 'accounting:organization_details' %}" method="post">{% csrf_token %}
 <table>
 {{ form.as_table }}
 </table>
 <input type="submit" value="Submit" />
 </form>
+{% endblock %}

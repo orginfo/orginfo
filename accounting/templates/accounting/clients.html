@@ -1,8 +1,10 @@
+{% extends "starter-template.html" %}
+
+{% block container %}
 <form action="{% url 'accounting:clients' %}" method="get">
 {{ form.as_p }}
 <input type="submit" value="Find" />
 </form>
-{% block content %}
 {% if clients %}
     <h2>clients</h2>
     <ul>
