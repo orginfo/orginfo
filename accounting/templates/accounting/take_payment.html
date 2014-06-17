@@ -5,10 +5,11 @@
 <fieldset>
 <legend>{{ client.lfm }}</legend>
   {% for field in form %}
-  <div class="form-group">
+  <div class="form-group has-error">
     <label for="{{ field.id_for_label }}" class="col-sm-2 control-label">{{ field.label }}</label>
     <div class="col-sm-10">
       {{ field }}
+      <p class="help-block">Example block-level help text here.</p>
     </div>
   </div>
   {% endfor %}
