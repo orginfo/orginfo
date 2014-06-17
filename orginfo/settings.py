@@ -83,6 +83,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-TEMPLATE_DIRS = ('/home/am/projects/orginfo/accounting/templates',)
+TEMPLATE_DIRS = ('/home/am/projects/orginfo/accounting/templates', os.path.join(BASE_DIR, 'orginfo/templates'),)
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
