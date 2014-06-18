@@ -1,10 +1,8 @@
 {% extends "starter-template.html" %}
 
 {% block container %}
-<form action="{% url 'accounting:clients' %}" method="get">
-{{ form.as_p }}
-<input type="submit" value="Find" />
-</form>
+{% load crispy_forms_tags %}
+{% crispy form %}
 {% if clients %}
     <h2>clients</h2>
     <ul>

@@ -11,6 +11,7 @@ from django import forms
 from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder
+from crispy_forms.bootstrap import StrictButton
 
 class ExampleForm(ModelForm):
     def __init__(self, *args, **kwargs):
@@ -88,9 +89,21 @@ class TakePayment(CreateView):
         context['client'] = self.client
         return context
 
+class LastNameSearchForm(forms.Form):
+    name = forms.CharField(max_length=10, required=False)
+    def __init__(self, *args, **kwargs):
+        super(LastNameSearchForm, self).__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_method = 'get'
+        self.helper.form_class = 'form-inline'
+        self.helper.field_template = 'bootstrap3/layout/inline_field.html'
+        self.helper.layout = Layout(
+            'name',
+            StrictButton('Find', css_class='btn-default', type='submit'),
+        )
+
 class Clients(ListView):
-    class LastNameSearchForm(forms.Form):
-        name = forms.CharField(max_length=10, required=False)
     form_class = LastNameSearchForm
     context_object_name = 'clients'
     template_name = 'accounting/clients.html'
