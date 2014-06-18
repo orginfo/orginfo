@@ -29,9 +29,12 @@ body {
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="{% url 'accounting:index' %}">Home</a></li>
-            <li><a href="{% url 'accounting:clients' %}">Clients</a></li>
-            <li><a href="{% url 'accounting:organization_details' %}">About</a></li>
+            {% url 'accounting:index' as l2home %}
+            <li{% if request.get_full_path == l2home %} class="active"{% endif %}><a href="{% url 'accounting:index' %}">Home</a></li>
+            {% url 'accounting:clients' as l2clients %}
+            <li{% if request.get_full_path == l2clients %} class="active"{% endif %}><a href="{% url 'accounting:clients' %}">Clients</a></li>
+            {% url 'accounting:organization_details' as l2about %}
+            <li{% if request.get_full_path == l2about %} class="active"{% endif %}><a href="{% url 'accounting:organization_details' %}">About</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
