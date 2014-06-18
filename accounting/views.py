@@ -11,7 +11,7 @@ from django import forms
 from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout
-from crispy_forms.bootstrap import FormActions
+from crispy_forms.bootstrap import FormActions, StrictButton
 
 class ExampleForm(ModelForm):
     def __init__(self, *args, **kwargs):
@@ -23,8 +23,8 @@ class ExampleForm(ModelForm):
         self.helper.field_class = 'col-lg-8'
         self.helper.layout = Layout(
             'amount',
-            FormActions(Submit('submit', 'Take', css_class='btn-primary')),
-            #StrictButton('Sign in', css_class='btn-default'),
+            #FormActions(Submit('submit', 'Take', css_class='btn-primary')),
+            StrictButton('Sign in', css_class='btn-default'),
         )
     class Meta:
         model = Payment
