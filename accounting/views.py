@@ -2,37 +2,11 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm
+from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, AddClientForm
 from accounting.models import Organization, UserOrganization, Client, Payment
 from django.views.generic.edit import CreateView
 from django.views.generic import ListView
 from django import forms
-
-from django.forms import ModelForm
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder
-from crispy_forms.bootstrap import StrictButton
-
-class ExampleForm(ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(ExampleForm, self).__init__(*args, **kwargs)
-
-        self.helper = FormHelper()
-        self.helper.form_class = 'form-horizontal'
-        self.helper.label_class = 'col-sm-2'
-        self.helper.field_class = 'col-sm-6'
-        self.helper.layout = Layout(
-            Fieldset(
-                '{{ client }}',
-                'amount',
-            ),
-            ButtonHolder(
-                Submit('submit', 'Take', css_class='btn-default')
-            )
-        )
-    class Meta:
-        model = Payment
-        fields = ['amount']
 
 
 @login_required(login_url="/login/")
@@ -89,20 +63,6 @@ class TakePayment(CreateView):
         context['client'] = self.client
         return context
 
-class LastNameSearchForm(forms.Form):
-    name = forms.CharField(max_length=10, required=False)
-    def __init__(self, *args, **kwargs):
-        super(LastNameSearchForm, self).__init__(*args, **kwargs)
-
-        self.helper = FormHelper()
-        self.helper.form_method = 'get'
-        self.helper.form_class = 'form-inline'
-        self.helper.field_template = 'bootstrap3/layout/inline_field.html'
-        self.helper.layout = Layout(
-            'name',
-            StrictButton('Find', css_class='btn-default', type='submit'),
-        )
-
 class Clients(ListView):
     form_class = LastNameSearchForm
     context_object_name = 'clients'
@@ -122,27 +82,6 @@ class Clients(ListView):
         else:
             object_list = self.user_org.organization.client_set.none()
         return object_list
-
-class AddClientForm(ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(AddClientForm, self).__init__(*args, **kwargs)
-
-        self.helper = FormHelper()
-        self.helper.form_class = 'form-horizontal'
-        self.helper.label_class = 'col-sm-2'
-        self.helper.field_class = 'col-sm-6'
-        self.helper.layout = Layout(
-            Fieldset(
-                'Add client',
-                'lfm',
-            ),
-            ButtonHolder(
-                Submit('submit', 'Add', css_class='btn-default')
-            )
-        )
-    class Meta:
-        model = Client
-        fields = ['lfm']
 
 class AddClient(CreateView):
     form_class = AddClientForm
