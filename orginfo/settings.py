@@ -37,6 +37,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'accounting',
+    'crispy_forms',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -86,3 +87,5 @@ STATIC_URL = '/static/'
 TEMPLATE_DIRS = ('/home/am/projects/orginfo/accounting/templates', os.path.join(BASE_DIR, 'orginfo/templates'),)
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
+
+CRISPY_TEMPLATE_PACK = 'bootstrap3'

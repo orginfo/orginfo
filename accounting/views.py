@@ -8,6 +8,34 @@ from django.views.generic.edit import CreateView
 from django.views.generic import ListView
 from django import forms
 
+from django.forms import ModelForm
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Submit, Layout
+from crispy_forms.bootstrap import StrictButton
+
+class ExampleForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(ExampleForm, self).__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-lg-2'
+        self.helper.field_class = 'col-lg-8'
+        self.helper.layout = Layout(
+            'amount',
+#            StrictButton('Sign in', css_class='btn-default'),
+        )
+        self.helper.add_input(Submit('submit', 'Submit'))
+
+#        self.helper = FormHelper()
+#        self.helper.form_id = 'id-exampleForm'
+#        self.helper.form_class = 'blueForms'
+#        self.helper.form_method = 'post'
+#        self.helper.form_action = ''
+#        self.helper.add_input(Submit('submit', 'Submit'))
+    class Meta:
+        model = Payment
+
 
 @login_required(login_url="/login/")
 def index(request):
@@ -42,6 +70,7 @@ def organization_details(request):
     })
 
 class TakePayment(CreateView):
+    form_class = ExampleForm
     model = Payment
     template_name = 'accounting/take_payment.html'
     fields = ['amount']
