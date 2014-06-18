@@ -110,7 +110,29 @@ class Clients(ListView):
             object_list = self.user_org.organization.client_set.none()
         return object_list
 
+class AddClientForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(AddClientForm, self).__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-sm-2'
+        self.helper.field_class = 'col-sm-6'
+        self.helper.layout = Layout(
+            Fieldset(
+                'Add client',
+                'lfm',
+            ),
+            ButtonHolder(
+                Submit('submit', 'Add', css_class='btn-default')
+            )
+        )
+    class Meta:
+        model = Client
+        fields = ['lfm']
+
 class AddClient(CreateView):
+    form_class = AddClientForm
     model = Client
     template_name = 'accounting/add_client.html'
     exclude = ('organization',)
