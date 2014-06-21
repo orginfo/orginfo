@@ -98,3 +98,15 @@ class AddClient(CreateView):
     def form_valid(self, form):
          form.instance.organization = self.organization
          return super(AddClient, self).form_valid(form)
+
+def report(request):
+    "the last payment in the organization"
+    user_org = get_object_or_404(UserOrganization, user=request.user.id)
+    if not user_org.organization:
+        raise Http404
+    last_payment = Payment.objects.filter(client__organization=user_org.organization).last()
+    context = {
+        'last_payment': last_payment,
+        'period': '2014-06-01 (TODO)'
+    }
+    return render(request, 'accounting/report.html', context)

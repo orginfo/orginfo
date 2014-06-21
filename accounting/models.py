@@ -16,6 +16,13 @@ class Client(models.Model):
     def __str__(self):
         return self.lfm + "(" + self.organization.__str__() + ")"
 
+class RealEstate(models.Model):
+    address = models.CharField(max_length=200)
+    parent = models.ForeignKey('self', null=True, blank=True, default = None)
+    def __str__(self):
+        return self.address
+
 class Payment(models.Model):
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     client = models.ForeignKey(Client)
+    real_estate = models.ForeignKey(RealEstate, null=True, blank=True, default = None)

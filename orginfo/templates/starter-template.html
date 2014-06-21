@@ -35,6 +35,8 @@ body {
             <li{% if request.get_full_path == l2clients %} class="active"{% endif %}><a href="{% url 'accounting:clients' %}">Clients</a></li>
             {% url 'accounting:organization_details' as l2about %}
             <li{% if request.get_full_path == l2about %} class="active"{% endif %}><a href="{% url 'accounting:organization_details' %}">About</a></li>
+            {% url 'accounting:report' as l2report %}
+            <li{% if request.get_full_path == l2report %} class="active"{% endif %}><a href="{% url 'accounting:report' %}" target="_blank">Report</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>

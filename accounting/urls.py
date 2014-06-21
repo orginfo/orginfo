@@ -10,4 +10,5 @@ urlpatterns = patterns('',
     url(r'^clients/$', login_required(views.Clients.as_view()), name='clients'),
     url(r'^clients/add/$', login_required(views.AddClient.as_view(success_url="/clients/")), name='add_client'),
     url(r'^$', views.index, name='index'),
+    url(r'^report/$', views.report, name='report'),
 )
