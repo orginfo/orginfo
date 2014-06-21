@@ -98,3 +98,12 @@ class AddClient(CreateView):
     def form_valid(self, form):
          form.instance.organization = self.organization
          return super(AddClient, self).form_valid(form)
+
+def report(request):
+    context = {
+        'period': '2014-06-01',
+        'lfm': 'Юрлов Ю.Ю.',
+        'organization': 'ООО "Рога и копыта"',
+        'address': 'ул. Пушкина, д. Колотушкина'
+    }
+    return render(request, 'accounting/report.html', context)
