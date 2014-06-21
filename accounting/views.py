@@ -10,6 +10,8 @@ from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import TariffValidity
 from datetime import date
 from django.db.models import Q
+from django.shortcuts import render
+
 
 
 
@@ -106,3 +108,16 @@ def index(request):
     robot()
     
     return HttpResponse("Робот отработал успешно.")
+
+def report(request):
+    "the last payment in the organization"
+#    user_org = get_object_or_404(UserOrganization, user=request.user.id)
+#    if not user_org.organization:
+#        raise Http404
+#    last_payment = Payment.objects.filter(client__organization=user_org.organization).last()
+    context = {
+        #'last_payment': last_payment,
+        'last_payment': None,
+        'period': '2014-06-01 (TODO)'
+    }
+    return render(request, 'accounting/report.html', context)
