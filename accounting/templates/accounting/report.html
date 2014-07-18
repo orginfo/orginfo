@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% if last_payment %}
 <div class="panel panel-default">
   <div class="panel-heading">Раздел 1. <strong>Сведения о плательщике и исполнителе услуг</strong></div>
   <div class="panel-body">
@@ -12,15 +13,15 @@
               за <span style="text-decoration: underline">{{period}}</span> (расчетный период)
             </div>
             <div class="col-md-9">
-              Ф.И.О. (наименование) плательщика соственника/нанимателя <span style="text-decoration: underline">{{lfm}}</span>
+              Ф.И.О. (наименование) плательщика соственника/нанимателя <span style="text-decoration: underline">{{last_payment.client.lfm}}</span>
             </div>
           </div>
           <div class="row">
             <div class="col-md-9">
-              Наименование организации или Ф.И.О. индивидуального предпринимателя - исполнителя услуг <span style="text-decoration: underline">{{organization}}</span>
+              Наименование организации или Ф.И.О. индивидуального предпринимателя - исполнителя услуг <span style="text-decoration: underline">{{last_payment.client.organization.name}}</span>
             </div>
             <div class="col-md-9">
-              Адрес <span style="text-decoration: underline">{{address}}</span>
+              Адрес <span style="text-decoration: underline">{{last_payment.real_estate.address}}</span>
             </div>
           </div>
         </div>
@@ -32,6 +33,9 @@
 body { font-size: 8pt; }
 .container-fluid, .panel-heading, .panel-body { padding: 0px; }
 </style>
+{% else %}
+    No payments.
+{% endif %}
 {% endblock %}
 
 {% block script %}
