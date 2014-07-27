@@ -20,20 +20,6 @@ class UserOrganization(models.Model):
     user = models.ForeignKey(User)
     organization = models.ForeignKey(Organization, null=True, blank=True, default = None)
 
-class Client(models.Model):
-    """Клиент.
-
-    Клиент принадлежит организации, которая предоставляет ему услуги.
-    У клиента есть свой лицевой счет, который характеризуется его номером,
-    сейчас это ID клиента, и суммой на лицевом счете. Лицевой счет
-    инкапсулирован в понятие клиента.
-    """
-    lfm = models.CharField(max_length=200)
-    organization = models.ForeignKey(Organization)
-    amount = models.DecimalField(max_digits=8, decimal_places=2, default=1)
-    def __str__(self):
-        return self.lfm + "(" + self.organization.__str__() + ")"
-
 class RealEstate(models.Model):
     """Объект недвижимости.
 
@@ -45,6 +31,21 @@ class RealEstate(models.Model):
     parent = models.ForeignKey('self', null=True, blank=True, default = None)
     def __str__(self):
         return self.address
+
+class Client(models.Model):
+    """Клиент.
+
+    Клиент принадлежит организации, которая предоставляет ему услуги.
+    У клиента есть свой лицевой счет, который характеризуется его номером,
+    сейчас это ID клиента, и суммой на лицевом счете. Лицевой счет
+    инкапсулирован в понятие клиента.
+    """
+    lfm = models.CharField(max_length=200)
+    organization = models.ForeignKey(Organization)
+    amount = models.DecimalField(max_digits=8, decimal_places=2, default=1)
+    real_estate2 = models.ForeignKey(RealEstate)
+    def __str__(self):
+        return self.lfm + "(" + self.organization.__str__() + ")"
 
 class Payment(models.Model):
     """Платеж.
@@ -60,7 +61,8 @@ class ServiceClient(models.Model):
     """Связь услуга-клиент.
 
     Связь указывает на то, какая именно услуга потребляется определенным
-    клиентом.
+    клиентом. Альтернатива выставить флаг в модели Client, но тогда не сможем
+    отключать услугу, выставлять ее время.
     """
     client = models.ForeignKey(Client)
     service_name = models.CharField(max_length=200)
