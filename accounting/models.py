@@ -26,9 +26,15 @@ class RealEstate(models.Model):
     Объектом недвижимости может являться многоквартирный дом, жилой дом,
     квартира, комната. При этом у модели есть связь, которая показывает,
     например, какая именно комната принадлежит какой именно квартире.
+
+    cold_water_counter_setup_date -- это дата установки счетчика холодной
+    воды. Не совсем понятна ситуация со сменой счетчиков, т.е. должна ли
+    находится информация cold_water_counter_setup_date именно в объекте
+    недвижимости.
     """
     address = models.CharField(max_length=200)
     parent = models.ForeignKey('self', null=True, blank=True, default = None)
+    cold_water_counter_setup_date = models.DateField(blank=True, null=True)
     def __str__(self):
         return self.address
 
@@ -73,6 +79,8 @@ class ColdWaterCounter(models.Model):
     value = models.IntegerField()
     real_estate = models.ForeignKey(RealEstate)
     date = models.DateField()
+    def __str__(self):
+        return str(self.date)
 
 class ColdWaterValue(models.Model):
     """Вычисления объема потребления холодной воды."""
