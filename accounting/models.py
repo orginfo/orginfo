@@ -43,7 +43,7 @@ class Client(models.Model):
     lfm = models.CharField(max_length=200)
     organization = models.ForeignKey(Organization)
     amount = models.DecimalField(max_digits=8, decimal_places=2, default=1)
-    real_estate2 = models.ForeignKey(RealEstate)
+    real_estate = models.ForeignKey(RealEstate)
     def __str__(self):
         return self.lfm + "(" + self.organization.__str__() + ")"
 
