@@ -72,7 +72,6 @@ class ServiceClient(models.Model):
     """
     client = models.ForeignKey(Client)
     service_name = models.CharField(max_length=200)
-    pass
 
 class ColdWaterCounter(models.Model):
     """Показания приборов учета холодной воды."""
@@ -87,3 +86,13 @@ class ColdWaterValue(models.Model):
     value = models.IntegerField()
     real_estate = models.ForeignKey(RealEstate)
     date = models.DateField()
+    def __str__(self):
+        return str(self.date)
+
+class ColdWaterTariff(models.Model):
+    """Тариф по услуге холодного водоснабжения для конкретного клиента."""
+    client = models.ForeignKey(Client)
+    value = models.IntegerField()
+    def __str__(self):
+        return "%s %s" % (str(self.client), self.value)
+

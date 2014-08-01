@@ -1,5 +1,5 @@
 from django.contrib import admin
-from accounting.models import Organization, UserOrganization, Client, RealEstate, Payment, ServiceClient, ColdWaterCounter, ColdWaterValue
+from accounting.models import Organization, UserOrganization, Client, RealEstate, Payment, ServiceClient, ColdWaterCounter, ColdWaterValue, ColdWaterTariff
 
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('name',)
@@ -25,6 +25,9 @@ class ColdWaterCounterAdmin(admin.ModelAdmin):
 class ColdWaterValueAdmin(admin.ModelAdmin):
     list_display = ('value', 'real_estate', 'date')
 
+class ColdWaterTariffAdmin(admin.ModelAdmin):
+    list_display = ('client', 'value')
+
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(UserOrganization, UserOrganizationAdmin)
 admin.site.register(Client, ClientAdmin)
@@ -33,3 +36,4 @@ admin.site.register(Payment, PaymentAdmin)
 admin.site.register(ServiceClient, ServiceClientAdmin)
 admin.site.register(ColdWaterCounter, ColdWaterCounterAdmin)
 admin.site.register(ColdWaterValue, ColdWaterValueAdmin)
+admin.site.register(ColdWaterTariff, ColdWaterTariffAdmin)
