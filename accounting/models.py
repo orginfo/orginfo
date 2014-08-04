@@ -45,11 +45,19 @@ class Client(models.Model):
     У клиента есть свой лицевой счет, который характеризуется его номером,
     сейчас это ID клиента, и суммой на лицевом счете. Лицевой счет
     инкапсулирован в понятие клиента.
+    TODO: со временем перенести поля residential residents в отдельную
+    таблицу, потому что эта информация может меняться, а иногда полезно делать
+    перерасчет, но информация, возможна будет потеряна.
+    residential -- флаг, указывающий жилое ли помещение. Находится здесь,
+    потому что как используется помещение зависит больше от клиента, а не от
+    помещения.
     """
     lfm = models.CharField(max_length=200)
     organization = models.ForeignKey(Organization)
     amount = models.DecimalField(max_digits=8, decimal_places=2, default=1)
     real_estate = models.ForeignKey(RealEstate)
+    residential = models.BooleanField(default=True)
+    residents = models.IntegerField(default=-1)
     def __str__(self):
         return self.lfm + "(" + self.organization.__str__() + ")"
 
