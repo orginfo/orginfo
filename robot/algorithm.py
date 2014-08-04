@@ -5,7 +5,7 @@ from django.db.models import Sum
 def get_all_clients():
     return Client.objects.all()
 
-#from accounting.models import Client, ColdWaterCounter, ColdWaterValue
+#from accounting.models import Client, ColdWaterCounter, ColdWaterValue, RealEstate
 #import datetime
 #from django.db.models import Sum
 #client = Client.objects.all().last()
@@ -21,6 +21,7 @@ def write_of_cold_water_service(client):
             last_reading.date.day >= 20 and last_reading.date.day <= 25
         if was_reading_in_this_period:
             previous_reading = readings[readings.count()-2]
+            #MAYBE: альтернотивное имя Volume
             value = last_reading.value - previous_reading.value
             cold_water_value = ColdWaterValue(real_estate=client.real_estate, value=value, date=datetime.date.today())
             cold_water_value.save()
@@ -62,6 +63,24 @@ def write_of_cold_water_service(client):
             #TODO: нужен флаг -- manual
             cold_water_value = ColdWaterValue(real_estate=client.real_estate, value=0, date=datetime.date.today())
             cold_water_value.save()
+
+def calculate_multiplicity():
+    for apartment_building in RealEstate.objects.filter(apartment_building=True):
+        real_estates = []
+        for flat in RealEstate.objects.filter(parent=apartment_building):
+            if flat.communal:
+                for room in RealEstate.objects.filter(parent=flat):
+                    real_estates.append(room)
+            else:
+                real_estates.append(flat)
+
+        #TODO: тестовая дата. Изменить.
+        today=datetime.date.today()
+        date = datetime.date(year=today.year,month=1,day=25)
+
+        value = ColdWaterValue.objects.filter(real_estate__in=real_estates, date=date).aggregate(Sum('value'))['value__sum']
+        #TODO: необходима таблица перерасчетов?
+        recalculated_value = 0
 
 def write_off():
     """Списание средств с клиентских счетов.

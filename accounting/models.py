@@ -35,6 +35,8 @@ class RealEstate(models.Model):
     address = models.CharField(max_length=200)
     parent = models.ForeignKey('self', null=True, blank=True, default = None)
     cold_water_counter_setup_date = models.DateField(blank=True, null=True)
+    apartment_building = models.BooleanField(default=False)
+    communal = models.BooleanField(default=False)
     def __str__(self):
         return self.address
 
