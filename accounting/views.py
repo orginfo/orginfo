@@ -7,11 +7,17 @@ from accounting.models import Organization, UserOrganization, Client, Payment
 from django.views.generic.edit import CreateView
 from django.views.generic import ListView
 from django import forms
+from robot.algorithm import get_all_clients
 
 
 @login_required(login_url="/login/")
 def index(request):
     return render(request, 'accounting/index.html', {})
+
+def robot(request):
+    get_all_clients()
+    return render(request, 'accounting/index.html', {})
+
 
 @login_required(login_url="/login/")
 def organization_details(request):
