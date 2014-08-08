@@ -1,4 +1,4 @@
-from accounting.models import Client, ColdWaterReading, ColdWaterVolume
+from accounting.models import Client, ColdWaterReading, ColdWaterVolume, ColdWaterTariff, RealEstate
 import datetime
 from django.db.models import Sum
 
@@ -10,6 +10,7 @@ def how_many_periods_was_from(date):
     today
     """
     a = 1
+    print("bugaga")
     return 5
 
 how_many_periods_was_from(datetime.date.today())
@@ -47,17 +48,18 @@ def write_of_cold_water_service(client):
                 #Поэтому мы можем спокойно использовать выборку из базы на
                 #основании дат и быть уверены что в них присутствуют объемы,
                 #вычисленные по норме.
-                recalculated_value = ColdWaterVolume.objects.order_by('date').filter(real_estate=client.real_estate, date__range=(previous_reading.date, last_reading.date)).aggregate(Sum('value'))['value__sum']
-                cold_water_value = ColdWaterVolume(real_estate=client.real_estate, value=value, date=datetime.date.today())
+                recalculated_value = ColdWaterVolume.objects.order_by('date').filter(real_estate=client.real_estate, date__range=(next_to_last_reading.date, last_reading.date)).aggregate(Sum('value'))['value__sum']
+                cold_water_value = ColdWaterVolume(real_estate=client.real_estate, value=recalculated_value, date=datetime.date.today())
                 cold_water_value.save()
+                tariff = ColdWaterTariff.objects.filter(client=client).last()
                 client.amount = client.amount + recalculated_value * tariff.value
                 client.save()
         date_3_months_ago = datetime.date.today() - datetime.timedelta(3*365/12)
         was_reading_in_3_last_months = readings.filter(date__gte=date_3_months_ago).count() > 0
         if was_reading_in_3_last_months:
             six_months_ago = datetime.date.today() - datetime.timedelta(6*365/12)
-            value_sum = ColdWaterValue.objects.order_by('date').filter(real_estate=client.real_estate, date__gte=six_months_ago).aggregate(Sum('value'))['value__sum']
-            cold_water_value = ColdWaterValue(real_estate=client.real_estate, value=value_sum/6, date=datetime.date.today())
+            value_sum = ColdWaterVolume.objects.order_by('date').filter(real_estate=client.real_estate, date__gte=six_months_ago).aggregate(Sum('value'))['value__sum']
+            cold_water_value = ColdWaterVolume(real_estate=client.real_estate, value=value_sum/6, date=datetime.date.today())
             cold_water_value.save()
             #TODO: должна учитываться сумма в какой-то таблице.
             client.amount = client.amount + value_sum / 6 * tariff.value
@@ -67,18 +69,18 @@ def write_of_cold_water_service(client):
     else:
         use_norms = True
     if use_norms and client.residential:
-        six_months_ago_values = ColdWaterValue.objects.order_by('date').filter(real_estate=client.real_estate, date__gte=six_months_ago)
+        six_months_ago_values = ColdWaterVolume.objects.order_by('date').filter(real_estate=client.real_estate, date__gte=six_months_ago)
         was_six_periods = six_months_ago_values.count() == 6
         if was_six_periods:
             value = six_months_ago_values.aggregate(Sum('value'))['value__sum']
-            cold_water_value = ColdWaterValue(real_estate=client.real_estate, value=value, date=datetime.date.today())
+            cold_water_value = ColdWaterVolume(real_estate=client.real_estate, value=value, date=datetime.date.today())
             cold_water_value.save()
             #TODO: должна учитываться сумма в какой-то таблице.
             client.amount = client.amount - value * tariff.value
             client.save()
         else:
             #TODO: нужен флаг -- manual
-            cold_water_value = ColdWaterValue(real_estate=client.real_estate, value=0, date=datetime.date.today())
+            cold_water_value = ColdWaterVolume(real_estate=client.real_estate, value=0, date=datetime.date.today())
             cold_water_value.save()
 
 def calculate_multiplicity():
@@ -95,7 +97,7 @@ def calculate_multiplicity():
         today=datetime.date.today()
         date = datetime.date(year=today.year,month=1,day=25)
 
-        value = ColdWaterValue.objects.filter(real_estate__in=real_estates, date=date).aggregate(Sum('value'))['value__sum']
+        value = ColdWaterVolume.objects.filter(real_estate__in=real_estates, date=date).aggregate(Sum('value'))['value__sum']
         #TODO: необходима таблица перерасчетов?
         recalculated_value = 0
 
