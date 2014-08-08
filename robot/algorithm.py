@@ -1,4 +1,4 @@
-from accounting.models import Client, ColdWaterCounter, ColdWaterValue
+from accounting.models import Client, ColdWaterReading, ColdWaterVolume
 import datetime
 from django.db.models import Sum
 
@@ -9,30 +9,46 @@ def how_many_periods_was_from(date):
     """Сколько отчетных периодов прошло с указанной даты.
     today
     """
-    
+    a = 1
     return 5
 
-#from accounting.models import Client, ColdWaterCounter, ColdWaterValue, RealEstate
+how_many_periods_was_from(datetime.date.today())
+
+#from accounting.models import Client, ColdWaterReading, ColdWaterValue, RealEstate
 #import datetime
 #from django.db.models import Sum
 #client = Client.objects.all().last()
 def write_of_cold_water_service(client):
+    """Списание средств за холодную воду.
+
+    В ColdWaterReading за один отчетный период хранится только одно показание.
+    Как быть в случае, когда установлен счетчик с ненулевым показанием? Ведь
+    тогда откуда брать показание, оно будет явно описано в данных, а не будет
+    хардкода в алгоритме.
+    """
     use_norms = False
     setup_date = client.real_estate.cold_water_counter_setup_date
     counter_exists = setup_date is not None
     if counter_exists and how_many_periods_was_from(setup_date) >= 6:
-        readings = ColdWaterCounter.objects.filter(real_estate=client.real_estate).order_by('date')
+        readings = ColdWaterReading.objects.filter(real_estate=client.real_estate).order_by('date')
         last_reading = readings.last()
         was_reading_in_last_period = how_many_periods_was_from(last_reading.date) == 1
         if was_reading_in_last_period:
-            next_to_last_reading = readings[readings.count()-2] #TODO:а с чего мы взяли, что это последний?
+            next_to_last_reading = readings[readings.count()-2]
             volume = last_reading.value - next_to_last_reading.value
             volume_model = ColdWaterVolume(real_estate=client.real_estate, volume=volume, date=datetime.date.today())
             volume_model.save()
-            if (last_reading.date - previous_reading.date).days > 30:
+            #if last_reading.period.number - next_to_last_reading.period.number > 1:
+            if (last_reading.date - next_to_last_reading.date).days > 30:
                 #TODO: Необходимо вычислять даты :(
-                recalculated_value = ColdWaterValue.objects.order_by('date').filter(real_estate=client.real_estate, date__range=(previous_reading.date, last_reading.date)).aggregate(Sum('value'))['value__sum']
-                cold_water_value = ColdWaterValue(real_estate=client.real_estate, value=value, date=datetime.date.today())
+                #В ColdWaterVolume может быть несколько объемов по одной дате,
+                #потому что необходимо учитывать еще и перерасчеты. Но
+                #перерасчетов не будет в периоды не подтвержденные счетчиками.
+                #Поэтому мы можем спокойно использовать выборку из базы на
+                #основании дат и быть уверены что в них присутствуют объемы,
+                #вычисленные по норме.
+                recalculated_value = ColdWaterVolume.objects.order_by('date').filter(real_estate=client.real_estate, date__range=(previous_reading.date, last_reading.date)).aggregate(Sum('value'))['value__sum']
+                cold_water_value = ColdWaterVolume(real_estate=client.real_estate, value=value, date=datetime.date.today())
                 cold_water_value.save()
                 client.amount = client.amount + recalculated_value * tariff.value
                 client.save()

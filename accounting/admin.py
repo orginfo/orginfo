@@ -1,5 +1,5 @@
 from django.contrib import admin
-from accounting.models import Organization, UserOrganization, Client, RealEstate, Payment, ServiceClient, ColdWaterCounter, ColdWaterValue, ColdWaterTariff
+from accounting.models import Organization, UserOrganization, Client, RealEstate, Payment, ServiceClient, ColdWaterReading, ColdWaterVolume, ColdWaterTariff, Period
 
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('name',)
@@ -19,11 +19,14 @@ class PaymentAdmin(admin.ModelAdmin):
 class ServiceClientAdmin(admin.ModelAdmin):
     list_display = ('client', 'service_name')
 
-class ColdWaterCounterAdmin(admin.ModelAdmin):
-    list_display = ('value', 'real_estate', 'date')
+class PeriodAdmin(admin.ModelAdmin):
+    list_display = ('serial_number', 'start', 'end')
 
-class ColdWaterValueAdmin(admin.ModelAdmin):
-    list_display = ('value', 'real_estate', 'date')
+class ColdWaterReadingAdmin(admin.ModelAdmin):
+    list_display = ('period', 'value', 'real_estate', 'date')
+
+class ColdWaterVolumeAdmin(admin.ModelAdmin):
+    list_display = ('period', 'value', 'real_estate', 'date')
 
 class ColdWaterTariffAdmin(admin.ModelAdmin):
     list_display = ('client', 'value')
@@ -34,6 +37,7 @@ admin.site.register(Client, ClientAdmin)
 admin.site.register(RealEstate, RealEstateAdmin)
 admin.site.register(Payment, PaymentAdmin)
 admin.site.register(ServiceClient, ServiceClientAdmin)
-admin.site.register(ColdWaterCounter, ColdWaterCounterAdmin)
-admin.site.register(ColdWaterValue, ColdWaterValueAdmin)
+admin.site.register(Period, PeriodAdmin)
+admin.site.register(ColdWaterReading, ColdWaterReadingAdmin)
+admin.site.register(ColdWaterVolume, ColdWaterVolumeAdmin)
 admin.site.register(ColdWaterTariff, ColdWaterTariffAdmin)

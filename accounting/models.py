@@ -83,17 +83,51 @@ class ServiceClient(models.Model):
     client = models.ForeignKey(Client)
     service_name = models.CharField(max_length=200)
 
-class ColdWaterCounter(models.Model):
-    """Показания приборов учета холодной воды."""
+class Period(models.Model):
+    """Расчетный период.
+
+    В алгоритме робота возникла неоднозначность из-за даты проведения расчета.
+    На нее ровняться не следует, т.к. она находится вне расчетного периода,
+    который обсчитан по этой дате.
+
+    Если вводить даты периода здесь, то будет довольно большая избыточность.
+    К тому же нужна сущность что бы связать сущности:
+    - объем услуги
+    - пересчитанный объем услуги
+    - показание счетчика
+    Наличие сущности период, на которую завязаны вышеописанные сущности, решит
+    вышеописанную проблему.
+    Введение периода усложняет алгоритм, если расчитывать не относительно этого
+    термина, а относительно дат.
+
+    serial_number -- порядковый номер периода. Этим номером проходит сквозная
+    нумерация всех периодов.
+
+    start, end -- даты начала и конца периода соответсвенно.
+    """
+    serial_number = models.IntegerField()
+    start = models.DateField()
+    end = models.DateField()
+    def __str__(self):
+        return "#%s(%s->%s)" % (str(self.serial_number), str(self.start), str(self.end))
+
+class ColdWaterReading(models.Model):
+    """Показания приборов учета холодной воды.
+
+    """
+    period = models.ForeignKey(Period)
     value = models.IntegerField()
     real_estate = models.ForeignKey(RealEstate)
     date = models.DateField()
     def __str__(self):
-        return str(self.date)
+        return "%s: %s" % (str(self.period), str(self.value))
 
-class ColdWaterValue(models.Model):
-    """Вычисления объема потребления холодной воды."""
-    value = models.IntegerField()
+class ColdWaterVolume(models.Model):
+    """Вычисления объема потребления холодной воды.
+
+    """
+    period = models.ForeignKey(Period)
+    value = models.FloatField()
     real_estate = models.ForeignKey(RealEstate)
     date = models.DateField()
     def __str__(self):
