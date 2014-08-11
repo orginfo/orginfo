@@ -1,4 +1,4 @@
-from accounting.models import Client, ColdWaterReading, ColdWaterVolume, ColdWaterTariff, RealEstate
+from accounting.models import Client, ColdWaterReading, ColdWaterVolume, ColdWaterTariff, RealEstate, Period
 import datetime
 from django.db.models import Sum
 
@@ -9,9 +9,7 @@ def how_many_periods_was_from(date):
     """Сколько отчетных периодов прошло с указанной даты.
     today
     """
-    a = 1
-    print("bugaga")
-    return 5
+    return 6
 
 how_many_periods_was_from(datetime.date.today())
 
@@ -28,9 +26,14 @@ def write_of_cold_water_service(client):
     хардкода в алгоритме.
     """
     use_norms = False
+    
+    #last_six_periods = (None, last_periods)[last_periods.count() == 3]#TODO:
     setup_date = client.real_estate.cold_water_counter_setup_date
+    if setup_date:
+        periods_with_counter = Period.objects.order_by('start').filter(start__gte=setup_date)
+        count = periods_with_counter.count()
     counter_exists = setup_date is not None
-    if counter_exists and how_many_periods_was_from(setup_date) >= 6:
+    if counter_exists and count >= 3:
         readings = ColdWaterReading.objects.filter(real_estate=client.real_estate).order_by('date')
         last_reading = readings.last()
         was_reading_in_last_period = how_many_periods_was_from(last_reading.date) == 1
@@ -69,19 +72,20 @@ def write_of_cold_water_service(client):
     else:
         use_norms = True
     if use_norms and client.residential:
-        six_months_ago_values = ColdWaterVolume.objects.order_by('date').filter(real_estate=client.real_estate, date__gte=six_months_ago)
-        was_six_periods = six_months_ago_values.count() == 6
-        if was_six_periods:
-            value = six_months_ago_values.aggregate(Sum('value'))['value__sum']
-            cold_water_value = ColdWaterVolume(real_estate=client.real_estate, value=value, date=datetime.date.today())
-            cold_water_value.save()
-            #TODO: должна учитываться сумма в какой-то таблице.
-            client.amount = client.amount - value * tariff.value
-            client.save()
-        else:
-            #TODO: нужен флаг -- manual
-            cold_water_value = ColdWaterVolume(real_estate=client.real_estate, value=0, date=datetime.date.today())
-            cold_water_value.save()
+#        six_months_ago_values = ColdWaterVolume.objects.order_by('date').filter(real_estate=client.real_estate, date__gte=six_months_ago)
+#        was_six_periods = six_months_ago_values.count() == 6
+#        if was_six_periods:
+#            value = six_months_ago_values.aggregate(Sum('value'))['value__sum']
+#            cold_water_value = ColdWaterVolume(real_estate=client.real_estate, value=value, date=datetime.date.today())
+#            cold_water_value.save()
+#            #TODO: должна учитываться сумма в какой-то таблице.
+#            client.amount = client.amount - value * tariff.value
+#            client.save()
+#        else:
+#            #TODO: нужен флаг -- manual
+#            cold_water_value = ColdWaterVolume(real_estate=client.real_estate, value=0, date=datetime.date.today())
+#            cold_water_value.save()
+        pass
 
 def calculate_multiplicity():
     for apartment_building in RealEstate.objects.filter(apartment_building=True):
