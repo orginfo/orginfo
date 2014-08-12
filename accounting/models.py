@@ -116,7 +116,7 @@ class ColdWaterReading(models.Model):
 
     """
     period = models.ForeignKey(Period)
-    value = models.IntegerField()
+    value = models.FloatField()
     real_estate = models.ForeignKey(RealEstate)
     date = models.DateField()
     def __str__(self):
@@ -127,7 +127,7 @@ class ColdWaterVolume(models.Model):
 
     """
     period = models.ForeignKey(Period)
-    value = models.FloatField()
+    volume = models.FloatField()
     real_estate = models.ForeignKey(RealEstate)
     date = models.DateField()
     def __str__(self):

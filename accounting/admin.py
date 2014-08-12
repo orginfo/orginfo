@@ -26,7 +26,7 @@ class ColdWaterReadingAdmin(admin.ModelAdmin):
     list_display = ('period', 'value', 'real_estate', 'date')
 
 class ColdWaterVolumeAdmin(admin.ModelAdmin):
-    list_display = ('period', 'value', 'real_estate', 'date')
+    list_display = ('period', 'volume', 'real_estate', 'date')
 
 class ColdWaterTariffAdmin(admin.ModelAdmin):
     list_display = ('client', 'value')
