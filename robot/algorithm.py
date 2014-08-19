@@ -1,4 +1,4 @@
-from accounting.models import Client, ColdWaterReading, ColdWaterVolume, RealEstate, Period
+from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period
 import datetime
 from django.db.models import Sum
 
