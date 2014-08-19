@@ -2,17 +2,6 @@ from accounting.models import Client, ColdWaterReading, ColdWaterVolume, RealEst
 import datetime
 from django.db.models import Sum
 
-def get_all_clients():
-    return Client.objects.all()
-
-def how_many_periods_was_from(date):
-    """Сколько отчетных периодов прошло с указанной даты.
-    today
-    """
-    return 6
-
-how_many_periods_was_from(datetime.date.today())
-
 #from accounting.models import Client, ColdWaterReading, ColdWaterValue, RealEstate
 #import datetime
 #from django.db.models import Sum
@@ -79,31 +68,40 @@ def write_of_cold_water_service(client):
             #TODO: нужен флаг -- manual
             pass
 
-def calculate_multiplicity():
-    for apartment_building in RealEstate.objects.filter(apartment_building=True):
-        real_estates = []
-        for flat in RealEstate.objects.filter(parent=apartment_building):
-            if flat.communal:
-                for room in RealEstate.objects.filter(parent=flat):
-                    real_estates.append(room)
-            else:
-                real_estates.append(flat)
-
-        #TODO: тестовая дата. Изменить.
-        today=datetime.date.today()
-        date = datetime.date(year=today.year,month=1,day=25)
-
-        value = ColdWaterVolume.objects.filter(real_estate__in=real_estates, date=date).aggregate(Sum('volume'))['volume__sum']
-        #TODO: необходима таблица перерасчетов?
-        recalculated_value = 0
-
 def write_off():
     """Списание средств с клиентских счетов.
 
     Списание произодится раз в месяц 25 числа.
     """
-    for client in Client.objects.all():
-        is_cold_water_service = client.serviceclient_set.filter(
-            service_name="Холодное водоснабжение").last()
-        if is_cold_water_service:
-            write_of_cold_water_service(client)
+    for building in RealEstate.objects.filter(type='b'):
+        periods = Period.objects.order_by('start')
+        last_period_reading = periods[periods.count()-1].coldwaterreading_set.filter(real_estate=building).get()
+        next_to_last_period_reading = periods[periods.count()-2].coldwaterreading_set.filter(real_estate=building).get()
+        cold_water_building_volume = last_period_reading.volume - next_to_last_period_reading.volume
+
+        real_estates = []
+        for flat in RealEstate.objects.filter(parent=building):
+            if flat.type == 'r':
+                for room in RealEstate.objects.filter(parent=flat):
+                    real_estates.append(room)
+            else:
+                real_estates.append(flat)
+
+        #TODO: удобно определить cold_water_volume_clients_sum
+        cold_water_volume_clients_sum = 800
+        for real_estate in real_estates:
+            client = real_estate.client_set.objects.last()
+            is_cold_water_service = client.serviceclient_set.filter(
+                service_name="Холодное водоснабжение").last()
+            if is_cold_water_service:
+                write_of_cold_water_service(client)
+
+        #TODO: расчет общедомовых нужд
+        volume = cold_water_building_volume / len(real_estates)
+        for real_estate in real_estates:
+            if cold_water_building_volume < cold_water_volume_clients_sum:
+                cold_water_volume = ColdWaterVolume(real_estate=real_estate, volume=volume, date=datetime.date.today())
+                cold_water_volume.save()
+            if cold_water_building_volume > cold_water_volume_clients_sum:
+                #TODO: добавить этот объем.
+                pass

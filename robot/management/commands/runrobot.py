@@ -1,21 +1,8 @@
-from django.core.management.base import BaseCommand, CommandError
-from robot.algorithm import get_all_clients
+from django.core.management.base import BaseCommand
+from robot.algorithm import write_off
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'
-
-#    def add_arguments(self, parser):
-#        parser.add_argument('poll_id', nargs='+', type=int)
-
     def handle(self, *args, **options):
-#            try:
-#                poll = Poll.objects.get(pk=poll_id)
-#            except Poll.DoesNotExist:
-#                raise CommandError('Poll "%s" does not exist' % poll_id)
-
-#            poll.opened = False
-#            poll.save()
-            for client in get_all_clients():
-                self.stdout.write(client.lfm)
-
+            write_off()
             self.stdout.write('Successfully ran evaluations')

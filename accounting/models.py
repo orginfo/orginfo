@@ -35,8 +35,13 @@ class RealEstate(models.Model):
     address = models.CharField(max_length=200)
     parent = models.ForeignKey('self', null=True, blank=True, default = None)
     cold_water_counter_setup_date = models.DateField(blank=True, null=True)
-    apartment_building = models.BooleanField(default=False)
-    communal = models.BooleanField(default=False)
+    REAL_ESTATE_TYPES = (
+        ('f', 'Flat'),
+        ('r', 'Room'),
+        ('h', 'House'),
+        ('b', 'Building'),
+    )
+    type = models.CharField(max_length=1, choices=REAL_ESTATE_TYPES, default='h')
     def __str__(self):
         return self.address
 
