@@ -2,10 +2,7 @@ from accounting.models import Client, ColdWaterReading, ColdWaterVolume, RealEst
 import datetime
 from django.db.models import Sum
 
-#from accounting.models import Client, ColdWaterReading, ColdWaterValue, RealEstate
-#import datetime
-#from django.db.models import Sum
-#client = Client.objects.all().last()
+
 def write_of_cold_water_service(client):
     """Списание средств за холодную воду.
 
