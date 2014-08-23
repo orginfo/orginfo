@@ -32,16 +32,21 @@ class RealEstate(models.Model):
     находится информация cold_water_counter_setup_date именно в объекте
     недвижимости.
     """
+    FLAT_TYPE = 'f'
+    ROOM_TYPE = 'r'
+    HOUSE_TYPE = 'h'
+    BUILDING_TYPE = 'b'
+    REAL_ESTATE_TYPES = (
+        (FLAT_TYPE, 'Flat'),
+        (ROOM_TYPE, 'Room'),
+        (HOUSE_TYPE, 'House'),
+        (BUILDING_TYPE, 'Building'),
+    )
+
     address = models.CharField(max_length=200)
     parent = models.ForeignKey('self', null=True, blank=True, default = None)
     cold_water_counter_setup_date = models.DateField(blank=True, null=True)
-    REAL_ESTATE_TYPES = (
-        ('f', 'Flat'),
-        ('r', 'Room'),
-        ('h', 'House'),
-        ('b', 'Building'),
-    )
-    type = models.CharField(max_length=1, choices=REAL_ESTATE_TYPES, default='h')
+    type = models.CharField(max_length=1, choices=REAL_ESTATE_TYPES, default=HOUSE_TYPE)
     def __str__(self):
         return self.address
 

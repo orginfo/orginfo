@@ -12,12 +12,13 @@ def write_of_cold_water_service(client):
     хардкода в алгоритме.
     """
     use_norms = False
+
+    periods_with_counter = None
     setup_date = client.real_estate.cold_water_counter_setup_date
-    counter_exists = setup_date is not None
     if setup_date:
         periods_with_counter = Period.objects.order_by('start').filter(start__gte=setup_date)
-        count = periods_with_counter.count()
-    if counter_exists and count >= 3:
+
+    if periods_with_counter and periods_with_counter.count() >= 3:
         last_period_reading = periods_with_counter.last().coldwaterreading_set.filter(real_estate=client.real_estate).get()
         was_reading_in_last_period = last_period_reading is not None
         if was_reading_in_last_period:
@@ -70,7 +71,7 @@ def write_off():
 
     Списание произодится раз в месяц 25 числа.
     """
-    for building in RealEstate.objects.filter(type='b'):
+    for building in RealEstate.objects.filter(type=RealEstate.BUILDING_TYPE):
         periods = Period.objects.order_by('start')
         last_period_reading = periods[periods.count()-1].coldwaterreading_set.filter(real_estate=building).get()
         next_to_last_period_reading = periods[periods.count()-2].coldwaterreading_set.filter(real_estate=building).get()
@@ -93,12 +94,15 @@ def write_off():
             if is_cold_water_service:
                 write_of_cold_water_service(client)
 
-        #TODO: расчет общедомовых нужд
-        volume = cold_water_building_volume / len(real_estates)
-        for real_estate in real_estates:
-            if cold_water_building_volume < cold_water_volume_clients_sum:
+        #расчет общедомовых нужд
+        volume = (cold_water_building_volume - cold_water_volume_clients_sum) / len(real_estates)
+        if volume != 0:
+            for real_estate in real_estates:
                 cold_water_volume = ColdWaterVolume(real_estate=real_estate, volume=volume, date=datetime.date.today())
                 cold_water_volume.save()
-            if cold_water_building_volume > cold_water_volume_clients_sum:
-                #TODO: добавить этот объем.
-                pass
+
+        #TODO: списать средства с лицевого счета.
+
+    for house in RealEstate.objects.filter(type=RealEstate.HOUSE_TYPE):
+        #TODO: проделать вышеописанную операцию для домовладения.
+        pass
