@@ -12,4 +12,5 @@ urlpatterns = patterns('',
     url(r'^$', views.index, name='index'),
     url(r'^report/$', views.report, name='report'),
     url(r'^robot/$', views.robot, name='robot'),
+    url(r'^real_estates/add/$', views.AddRealEstate.as_view(success_url="/"), name='add_real_estate'),
 )
