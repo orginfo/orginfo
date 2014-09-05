@@ -4,6 +4,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder
 from crispy_forms.bootstrap import StrictButton
 from accounting.models import Payment, Client, RealEstate
+from django.forms.widgets import TextInput
 
 class OrganizationForm(forms.Form):
     name = forms.CharField()
@@ -103,3 +104,6 @@ class ExampleForm2(ModelForm):
     class Meta:
         model = RealEstate
         #fields = ['amount']
+        widgets = {
+            'parent': TextInput(),
+        }
