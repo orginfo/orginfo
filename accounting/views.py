@@ -61,8 +61,8 @@ class TakePayment(CreateView):
             raise Http404
         return super(TakePayment, self).dispatch(*args, **kwargs)
     def form_valid(self, form):
-         form.instance.client = self.client
-         return super(TakePayment, self).form_valid(form)
+        form.instance.client = self.client
+        return super(TakePayment, self).form_valid(form)
     def get_context_data(self, **kwargs):
         context = super(TakePayment, self).get_context_data(**kwargs)
         context['client'] = self.client
@@ -101,8 +101,8 @@ class AddClient(CreateView):
         self.organization = user_org.organization
         return super(AddClient, self).dispatch(*args, **kwargs)
     def form_valid(self, form):
-         form.instance.organization = self.organization
-         return super(AddClient, self).form_valid(form)
+        form.instance.organization = self.organization
+        return super(AddClient, self).form_valid(form)
 
 def report(request):
     "the last payment in the organization"
