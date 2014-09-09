@@ -82,9 +82,9 @@ class AddClientForm(ModelForm):
         model = Client
         fields = ['lfm']
 
-class ExampleForm2(ModelForm):
+class CreateRealEstateForm(ModelForm):
     def __init__(self, *args, **kwargs):
-        super(ExampleForm2, self).__init__(*args, **kwargs)
+        super(CreateRealEstateForm, self).__init__(*args, **kwargs)
 
         self.helper = FormHelper()
         self.helper.form_class = 'form-horizontal'
@@ -92,9 +92,10 @@ class ExampleForm2(ModelForm):
         self.helper.field_class = 'col-sm-6'
         self.helper.layout = Layout(
             Fieldset(
-                'address',
+                'Real estate',
                 'address',
                 'parent',
+                'cold_water_counter_setup_date',
                 'type',
             ),
             ButtonHolder(
@@ -105,5 +106,5 @@ class ExampleForm2(ModelForm):
         model = RealEstate
         #fields = ['amount']
         widgets = {
-            'parent': TextInput(),
+#            'parent': TextInput(),
         }

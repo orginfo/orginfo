@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, AddClientForm, ExampleForm2
+from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, AddClientForm, CreateRealEstateForm
 from accounting.models import Organization, UserOrganization, Client, Payment, RealEstate
 from django.views.generic.edit import CreateView
 from django.views.generic import ListView
@@ -116,8 +116,7 @@ def report(request):
     }
     return render(request, 'accounting/report.html', context)
 
-class AddRealEstate(CreateView):
+class CreateRealEstate(CreateView):
     model = RealEstate
     template_name = 'accounting/add_client.html'
-    form_class = ExampleForm2
-    pass
+    form_class = CreateRealEstateForm
