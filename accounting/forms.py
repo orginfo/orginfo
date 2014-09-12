@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder
+from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder, Field
 from crispy_forms.bootstrap import StrictButton
 from accounting.models import Payment, Client, RealEstate
 from django.forms.widgets import TextInput
@@ -95,7 +95,7 @@ class CreateRealEstateForm(ModelForm):
                 'Real estate',
                 'address',
                 'parent',
-                'cold_water_counter_setup_date',
+                Field('cold_water_counter_setup_date', placeholder="ГГГГ-ММ-ДД"),
                 'type',
             ),
             ButtonHolder(
