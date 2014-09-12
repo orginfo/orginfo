@@ -104,7 +104,7 @@ class CreateRealEstateForm(ModelForm):
         )
     class Meta:
         model = RealEstate
-        #fields = ['amount']
+        fields = ['address', 'parent', 'cold_water_counter_setup_date', 'type']
         widgets = {
 #            'parent': TextInput(),
         }
