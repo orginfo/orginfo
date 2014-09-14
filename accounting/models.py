@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 
 class Organization(models.Model):
     """Организация.
@@ -72,6 +73,8 @@ class Client(models.Model):
     residents = models.IntegerField(default=-1)
     def __str__(self):
         return self.lfm + "(" + self.organization.__str__() + ")"
+    def get_absolute_url(self):
+        return reverse('accounting:client_update', kwargs={'pk': self.pk})
 
 class Payment(models.Model):
     """Платеж.

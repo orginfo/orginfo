@@ -2,9 +2,9 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, AddClientForm, CreateRealEstateForm
+from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm
 from accounting.models import Organization, UserOrganization, Client, Payment, RealEstate
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic import ListView
 from robot.algorithm import write_off
 
@@ -88,21 +88,37 @@ class Clients(ListView):
             object_list = self.user_org.organization.client_set.none()
         return object_list
 
-class AddClient(CreateView):
-    form_class = AddClientForm
+class CreateClient(CreateView):
+    form_class = CreateClientForm
     model = Client
     template_name = 'accounting/add_client.html'
     exclude = ('organization',)
-    fields = ['lfm']
+    fields = ['lfm', 'amount', 'real_estate', 'residential', 'residents']
     def dispatch(self, *args, **kwargs):
         user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
         if not user_org.organization:
             raise Http404
         self.organization = user_org.organization
-        return super(AddClient, self).dispatch(*args, **kwargs)
+        return super(CreateClient, self).dispatch(*args, **kwargs)
     def form_valid(self, form):
         form.instance.organization = self.organization
-        return super(AddClient, self).form_valid(form)
+        return super(CreateClient, self).form_valid(form)
+
+class UpdateClient(UpdateView):
+    form_class = CreateClientForm
+    model = Client
+    template_name = 'accounting/add_client.html'
+    exclude = ('organization',)
+    fields = ['lfm', 'amount', 'real_estate', 'residential', 'residents']
+    def dispatch(self, *args, **kwargs):
+        user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
+        if not user_org.organization:
+            raise Http404
+        self.organization = user_org.organization
+        return super(UpdateClient, self).dispatch(*args, **kwargs)
+    def form_valid(self, form):
+        form.instance.organization = self.organization
+        return super(UpdateClient, self).form_valid(form)
 
 def report(request):
     "the last payment in the organization"

@@ -61,9 +61,9 @@ class LastNameSearchForm(forms.Form):
             StrictButton('Find', css_class='btn-default', type='submit'),
         )
 
-class AddClientForm(ModelForm):
+class CreateClientForm(ModelForm):
     def __init__(self, *args, **kwargs):
-        super(AddClientForm, self).__init__(*args, **kwargs)
+        super(CreateClientForm, self).__init__(*args, **kwargs)
 
         self.helper = FormHelper()
         self.helper.form_class = 'form-horizontal'
@@ -73,6 +73,10 @@ class AddClientForm(ModelForm):
             Fieldset(
                 'Add client',
                 'lfm',
+                'amount',
+                'real_estate',
+                'residential',
+                'residents'
             ),
             ButtonHolder(
                 Submit('submit', 'Add', css_class='btn-default')
@@ -80,7 +84,7 @@ class AddClientForm(ModelForm):
         )
     class Meta:
         model = Client
-        fields = ['lfm']
+        fields = ['lfm', 'amount', 'real_estate', 'residential', 'residents']
 
 class CreateRealEstateForm(ModelForm):
     def __init__(self, *args, **kwargs):
