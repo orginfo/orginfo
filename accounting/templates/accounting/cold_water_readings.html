@@ -23,7 +23,7 @@
         {% endfor %}
         </tbody>
     </table>
-    <a class="btn btn-primary btn-default" role="button" href="{% url "accounting:update_reading" real_estate_id %}">Create</a>
+    <a class="btn btn-primary btn-default" role="button" href="{% url "accounting:create_reading" real_estate_id %}">Create</a>
 {% else %}
     <p>No readings are available.</p>
 {% endif %}
