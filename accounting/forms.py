@@ -126,7 +126,6 @@ class CreateColdWaterReadingForm(ModelForm):
                 'Cold water reading',
                 'period',
                 'value',
-                'real_estate',
                 Field('date', placeholder="ГГГГ-ММ-ДД"),
             ),
             ButtonHolder(
@@ -135,4 +134,4 @@ class CreateColdWaterReadingForm(ModelForm):
         )
     class Meta:
         model = ColdWaterReading
-        fields = ['period', 'value', 'real_estate', 'date']
+        fields = ['period', 'value', 'date']
