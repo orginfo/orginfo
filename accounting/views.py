@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
 from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm
-from accounting.models import Organization, UserOrganization, Client, Payment, RealEstate
+from accounting.models import Organization, UserOrganization, Client, Payment, RealEstate, ColdWaterReading
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic import ListView
 from robot.algorithm import write_off
@@ -136,3 +136,10 @@ class CreateRealEstate(CreateView):
     model = RealEstate
     template_name = 'accounting/add_client.html'
     form_class = CreateRealEstateForm
+
+class ColdWaterReadings(ListView):
+    model = ColdWaterReading
+    template_name = 'accounting/cold_water_readings.html'
+    context_object_name = 'readings'
+    def get_queryset(self):
+        return ColdWaterReading.objects.filter(real_estate=self.kwargs['real_estate_id']);

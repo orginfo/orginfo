@@ -1,0 +1,29 @@
+{% extends "starter-template.html" %}
+
+{% block container %}
+{% if readings %}
+    <h2>readings</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Period</th>
+                <th>Value</th>
+                <th>Real estate</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for reading in readings %}
+            <tr>
+                <td>{{ reading.period }}</td>
+                <td>{{ reading.value }}</td>
+                <td>{{ reading.real_estate }}</td>
+                <td>{{ reading.date }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No readings are available.</p>
+{% endif %}
+{% endblock %}
