@@ -157,3 +157,13 @@ class CreateColdWaterReading(CreateView):
     def form_valid(self, form):
         form.instance.real_estate_id = self.kwargs['real_estate_id']
         return super(CreateColdWaterReading, self).form_valid(form)
+
+class UpdateColdWaterReading(UpdateView):
+    model = ColdWaterReading
+    form_class = CreateColdWaterReadingForm
+    template_name = 'accounting/add_client.html'
+    def get_success_url(self):
+        return reverse('accounting:readings', kwargs={'real_estate_id': self.kwargs['real_estate_id']})
+    def form_valid(self, form):
+        form.instance.real_estate_id = self.kwargs['real_estate_id']
+        return super(UpdateColdWaterReading, self).form_valid(form)
