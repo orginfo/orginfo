@@ -143,6 +143,10 @@ class ColdWaterReadings(ListView):
     context_object_name = 'readings'
     def get_queryset(self):
         return ColdWaterReading.objects.filter(real_estate=self.kwargs['real_estate_id']);
+    def get_context_data(self, **kwargs):
+        context = super(ColdWaterReadings, self).get_context_data(**kwargs)
+        context['url_to_create'] = reverse('accounting:create_reading', kwargs=self.kwargs)
+        return context
 
 class CreateColdWaterReading(CreateView):
     model = ColdWaterReading
