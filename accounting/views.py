@@ -145,7 +145,7 @@ class ColdWaterReadings(ListView):
         return ColdWaterReading.objects.filter(real_estate=self.kwargs['real_estate_id']);
     def get_context_data(self, **kwargs):
         context = super(ColdWaterReadings, self).get_context_data(**kwargs)
-        context['url_to_create'] = reverse('accounting:create_reading', kwargs=self.kwargs)
+        context['real_estate_id'] = self.kwargs['real_estate_id']
         return context
 
 class CreateColdWaterReading(CreateView):

@@ -15,7 +15,7 @@
         <tbody>
         {% for reading in readings %}
             <tr>
-                <td>{{ reading.period }}</td>
+                <td><a href="{% url "accounting:update_reading" real_estate_id reading.id %}">{{ reading.period }}</a></td>
                 <td>{{ reading.value }}</td>
                 <td>{{ reading.real_estate }}</td>
                 <td>{{ reading.date }}</td>
@@ -23,7 +23,7 @@
         {% endfor %}
         </tbody>
     </table>
-    <a class="btn btn-primary btn-default" role="button" href="{{ url_to_create }}">Create</a>
+    <a class="btn btn-primary btn-default" role="button" href="{% url "accounting:update_reading" real_estate_id %}">Create</a>
 {% else %}
     <p>No readings are available.</p>
 {% endif %}
