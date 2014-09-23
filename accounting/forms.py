@@ -3,7 +3,7 @@ from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder, Field
 from crispy_forms.bootstrap import StrictButton
-from accounting.models import Payment, Client, RealEstate, ColdWaterReading
+from accounting.models import Payment, Client, RealEstate, ColdWaterReading, ServiceClient
 from django.forms.widgets import TextInput
 
 class OrganizationForm(forms.Form):
@@ -135,3 +135,24 @@ class CreateColdWaterReadingForm(ModelForm):
     class Meta:
         model = ColdWaterReading
         fields = ['period', 'value', 'date']
+
+class CreateClientServiceForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(CreateClientServiceForm, self).__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-sm-2'
+        self.helper.field_class = 'col-sm-6'
+        self.helper.layout = Layout(
+            Fieldset(
+                'client service',
+                'service_name',
+            ),
+            ButtonHolder(
+                Submit('submit', 'Create', css_class='btn-default')
+            )
+        )
+    class Meta:
+        model = ServiceClient
+        fields = ['service_name']

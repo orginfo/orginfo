@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm, CreateColdWaterReadingForm
+from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm
 from accounting.models import Organization, UserOrganization, Client, Payment, RealEstate, ColdWaterReading, ServiceClient
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic import ListView
@@ -174,4 +174,18 @@ class ClientServices(ListView):
     context_object_name = 'services'
     def get_queryset(self):
         return ServiceClient.objects.filter(client=self.kwargs['pk']);
+    def get_context_data(self, **kwargs):
+        context = super(ClientServices, self).get_context_data(**kwargs)
+        context['client_id'] = self.kwargs['pk']
+        return context
+
+class CreateClientService(CreateView):
+    model = ServiceClient
+    template_name = 'accounting/add_client.html'
+    form_class = CreateClientServiceForm
+    def get_success_url(self):
+        return reverse('accounting:client_services', kwargs=self.kwargs)
+    def form_valid(self, form):
+        form.instance.client_id = self.kwargs['pk']
+        return super(CreateClientService, self).form_valid(form)
 
