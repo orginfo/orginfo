@@ -93,8 +93,14 @@ class ServiceClient(models.Model):
     клиентом. Альтернатива выставить флаг в модели Client, но тогда не сможем
     отключать услугу, выставлять ее время.
     """
+    COLD_WATER_SERVICE = 'COLD_WATER_SERVICE'
+    HOT_WATER_SERVICE = 'HOT_WATER_SERVICE'
+    SERVICE_NAMES = (
+        (COLD_WATER_SERVICE, 'Cold water'),
+        (HOT_WATER_SERVICE, 'Hot water'),
+    )
     client = models.ForeignKey(Client)
-    service_name = models.CharField(max_length=200)
+    service_name = models.CharField(max_length=100, choices=SERVICE_NAMES, default=COLD_WATER_SERVICE)
 
 class Period(models.Model):
     """Расчетный период.

@@ -1,4 +1,4 @@
-from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period
+from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient
 import datetime
 from django.db.models import Sum
 
@@ -75,7 +75,7 @@ def write_off():
         periods = Period.objects.order_by('start')
         last_period_reading = periods[periods.count()-1].coldwaterreading_set.filter(real_estate=building).get()
         next_to_last_period_reading = periods[periods.count()-2].coldwaterreading_set.filter(real_estate=building).get()
-        cold_water_building_volume = last_period_reading.volume - next_to_last_period_reading.volume
+        cold_water_building_volume = last_period_reading.value - next_to_last_period_reading.value
 
         real_estates = []
         for flat in RealEstate.objects.filter(parent=building):
@@ -88,9 +88,9 @@ def write_off():
         #TODO: удобно определить cold_water_volume_clients_sum
         cold_water_volume_clients_sum = 800
         for real_estate in real_estates:
-            client = real_estate.client_set.objects.last()
+            client = real_estate.client_set.last()
             is_cold_water_service = client.serviceclient_set.filter(
-                service_name="Холодное водоснабжение").last()
+                service_name=ServiceClient.COLD_WATER_SERVICE).last()
             if is_cold_water_service:
                 write_of_cold_water_service(client)
 
