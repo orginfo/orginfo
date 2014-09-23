@@ -101,6 +101,8 @@ class ServiceClient(models.Model):
     )
     client = models.ForeignKey(Client)
     service_name = models.CharField(max_length=100, choices=SERVICE_NAMES, default=COLD_WATER_SERVICE)
+    start = models.DateField()
+    end = models.DateField(blank=True, null=True)
 
 class Period(models.Model):
     """Расчетный период.

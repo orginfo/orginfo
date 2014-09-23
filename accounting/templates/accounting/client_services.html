@@ -7,14 +7,16 @@
         <thead>
             <tr>
                 <th>Service</th>
-                <th>Delete</th>
+                <th>Start</th>
+                <th>End</th>
             </tr>
         </thead>
         <tbody>
         {% for service in services %}
             <tr>
                 <td>{{ service.get_service_name_display }}</td>
-                <td>&nbsp;</td>
+                <td>{{ service.start }}</td>
+                <td>{{ service.end|default:"-" }}</td>
             </tr>
         {% endfor %}
         </tbody>

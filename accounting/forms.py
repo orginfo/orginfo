@@ -148,6 +148,8 @@ class CreateClientServiceForm(ModelForm):
             Fieldset(
                 'client service',
                 'service_name',
+                Field('start', placeholder="ГГГГ-ММ-ДД"),
+                Field('end', placeholder="ГГГГ-ММ-ДД"),
             ),
             ButtonHolder(
                 Submit('submit', 'Create', css_class='btn-default')
@@ -155,4 +157,4 @@ class CreateClientServiceForm(ModelForm):
         )
     class Meta:
         model = ServiceClient
-        fields = ['service_name']
+        fields = ['service_name', 'start', 'end']

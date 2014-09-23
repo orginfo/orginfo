@@ -89,6 +89,7 @@ def write_off():
         cold_water_volume_clients_sum = 800
         for real_estate in real_estates:
             client = real_estate.client_set.last()
+            #TODO: как вычислить is_cold_water_service с учетом start/end 
             is_cold_water_service = client.serviceclient_set.filter(
                 service_name=ServiceClient.COLD_WATER_SERVICE).last()
             if is_cold_water_service:
