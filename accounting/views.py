@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
 from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm, CreateColdWaterReadingForm
-from accounting.models import Organization, UserOrganization, Client, Payment, RealEstate, ColdWaterReading
+from accounting.models import Organization, UserOrganization, Client, Payment, RealEstate, ColdWaterReading, ServiceClient
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic import ListView
 from robot.algorithm import write_off
@@ -167,3 +167,11 @@ class UpdateColdWaterReading(UpdateView):
     def form_valid(self, form):
         form.instance.real_estate_id = self.kwargs['real_estate_id']
         return super(UpdateColdWaterReading, self).form_valid(form)
+
+class ClientServices(ListView):
+    model = ServiceClient
+    template_name = 'accounting/client_services.html'
+    context_object_name = 'services'
+    def get_queryset(self):
+        return ServiceClient.objects.filter(client=self.kwargs['pk']);
+

@@ -1,0 +1,25 @@
+{% extends "starter-template.html" %}
+
+{% block container %}
+{% if services %}
+    <h2>services</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for service in services %}
+            <tr>
+                <td>{{ service.get_service_name_display }}</td>
+                <td>&nbsp;</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No services are available.</p>
+{% endif %}
+{% endblock %}
