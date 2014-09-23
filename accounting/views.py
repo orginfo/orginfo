@@ -189,3 +189,12 @@ class CreateClientService(CreateView):
         form.instance.client_id = self.kwargs['pk']
         return super(CreateClientService, self).form_valid(form)
 
+class UpdateClientService(UpdateView):
+    model = ServiceClient
+    form_class = CreateClientServiceForm
+    template_name = 'accounting/add_client.html'
+    def get_success_url(self):
+        return reverse('accounting:client_services', kwargs={'pk': self.kwargs['client_id']})
+    def form_valid(self, form):
+        form.instance.client_id = self.kwargs['client_id']
+        return super(UpdateClientService, self).form_valid(form)

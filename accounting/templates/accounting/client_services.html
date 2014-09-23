@@ -14,7 +14,7 @@
         <tbody>
         {% for service in services %}
             <tr>
-                <td>{{ service.get_service_name_display }}</td>
+                <td><a href="{% url "accounting:client_service" client_id service.id %}">{{ service.get_service_name_display }}</a></td>
                 <td>{{ service.start }}</td>
                 <td>{{ service.end|default:"-" }}</td>
             </tr>
