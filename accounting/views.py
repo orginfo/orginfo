@@ -119,6 +119,14 @@ class UpdateClient(UpdateView):
     def form_valid(self, form):
         form.instance.organization = self.organization
         return super(UpdateClient, self).form_valid(form)
+    def get_initial(self):
+        # Get the initial dictionary from the superclass method
+        initial = super(UpdateClient, self).get_initial()
+        # Copy the dictionary so we don't accidentally change a mutable dict
+        initial = initial.copy()
+        initial['parent_street'] = "Bugaga"
+        # etc...
+        return initial
 
 def report(request):
     "the last payment in the organization"
