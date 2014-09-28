@@ -18,14 +18,14 @@ def write_of_cold_water_service(client):
     if setup_date:
         periods_with_counter = Period.objects.order_by('start').filter(start__gte=setup_date)
 
-    if periods_with_counter and periods_with_counter.count() >= 3:
+    if periods_with_counter and periods_with_counter.count() >= 6:
         last_period_reading = periods_with_counter.last().coldwaterreading_set.filter(real_estate=client.real_estate).get()
         was_reading_in_last_period = last_period_reading is not None
         if was_reading_in_last_period:
             #TODO: next_to_last_period_reading может отсутствовать.
             i = periods_with_counter.count() - 2
             while 0 <= i:
-                readings = periods_with_counter[0].coldwaterreading_set.filter(real_estate=client.real_estate)
+                readings = periods_with_counter[i].coldwaterreading_set.filter(real_estate=client.real_estate)
                 if readings.count():
                     next_to_last_period_reading = readings.get()
                     break
