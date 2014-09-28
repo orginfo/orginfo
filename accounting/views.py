@@ -108,8 +108,8 @@ class UpdateClient(UpdateView):
     form_class = CreateClientForm
     model = Client
     template_name = 'accounting/add_client.html'
-    exclude = ('organization',)
-    fields = ['lfm', 'amount', 'real_estate', 'residential', 'residents']
+    exclude = ('organization', 'real_estate')
+    fields = ['lfm', 'amount', 'residential', 'residents']
     def dispatch(self, *args, **kwargs):
         user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
         if not user_org.organization:
@@ -118,14 +118,14 @@ class UpdateClient(UpdateView):
         return super(UpdateClient, self).dispatch(*args, **kwargs)
     def form_valid(self, form):
         form.instance.organization = self.organization
+        parent_street = form.cleaned_data['parent_street']
+        form.instance.real_estate = RealEstate.objects.filter(address=parent_street).get()
         return super(UpdateClient, self).form_valid(form)
     def get_initial(self):
-        # Get the initial dictionary from the superclass method
         initial = super(UpdateClient, self).get_initial()
         # Copy the dictionary so we don't accidentally change a mutable dict
         initial = initial.copy()
-        initial['parent_street'] = "Bugaga"
-        # etc...
+        initial['parent_street'] = self.object.real_estate.address
         return initial
 
 def report(request):

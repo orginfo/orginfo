@@ -63,8 +63,6 @@ class LastNameSearchForm(forms.Form):
 
 class CreateClientForm(ModelForm):
     parent_street = forms.CharField()
-    parent_building = forms.CharField()
-    parent_flat = forms.CharField()
     def __init__(self, *args, **kwargs):
         super(CreateClientForm, self).__init__(*args, **kwargs)
 
@@ -77,10 +75,7 @@ class CreateClientForm(ModelForm):
                 'Add client',
                 'lfm',
                 'amount',
-                'real_estate',
                 'parent_street',
-                'parent_building',
-                'parent_flat',
                 'residential',
                 'residents'
             ),
@@ -90,13 +85,13 @@ class CreateClientForm(ModelForm):
         )
     class Meta:
         model = Client
-        fields = ['lfm', 'amount', 'real_estate', 'residential', 'residents']
+        fields = ['lfm', 'amount', 'residential', 'residents']
     def clean(self):
+        #TODO: добавить проверку на пустоту.
         parent_street = self.cleaned_data['parent_street']
         error_messages = []
 
         # validate piece
-        real_estates = RealEstate.objects.filter(address__contains=parent_street)
         if RealEstate.objects.filter(address__contains=parent_street).count() is not 1:
             error_messages.append('Illegal Piece selected')
             #self._errors["parent_street"] = self.error_class(["Please enter a valid model"])
