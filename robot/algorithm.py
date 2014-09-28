@@ -1,4 +1,4 @@
-from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient
+from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals
 import datetime
 from django.db.models import Sum
 
@@ -73,6 +73,7 @@ def write_off():
     """
     for building in RealEstate.objects.filter(type=RealEstate.BUILDING_TYPE):
         periods = Period.objects.order_by('start')
+        #TODO: счетчик может отсутствовать
         last_period_reading = periods[periods.count()-1].coldwaterreading_set.filter(real_estate=building).get()
         next_to_last_period_reading = periods[periods.count()-2].coldwaterreading_set.filter(real_estate=building).get()
         cold_water_building_volume = last_period_reading.value - next_to_last_period_reading.value
@@ -105,5 +106,22 @@ def write_off():
         #TODO: списать средства с лицевого счета.
 
     for house in RealEstate.objects.filter(type=RealEstate.HOUSE_TYPE):
-        #TODO: проделать вышеописанную операцию для домовладения.
-        pass
+        does_cold_water_counter_exist = False
+        if does_cold_water_counter_exist:
+            write_of_cold_water_service(client)
+        else:
+            #TODo: Вычислить объем для земельного участка и расположенных на нем надворных построек
+            # У клиента могут быть виды сельскохозяйственных животных, направления использования
+            # Вычисляем общий оъбем для видов сельскохозяйственных животных
+            animals_volume = 0
+            for animals in Animals:
+                animals_volume = animals_volume + (animals.count * animals.animaltype_set.get().norm)
+            
+            # Вычисляем общий оъбем для направления использования
+            use_case_volume = 0
+                
+            total_volume = animals_volume + use_case_volume
+            cold_water_volume = ColdWaterVolume(real_estate=house, volume=total_volume, date=datetime.date.today())
+            cold_water_volume.save()
+            
+            #TODO: списать средства с лицевого счета.

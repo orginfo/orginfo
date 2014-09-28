@@ -161,3 +161,15 @@ class ColdWaterTariff(models.Model):
     def __str__(self):
         return "%s %s" % (str(self.client), self.value)
 
+class AnimalType(models.Model):
+    """Тип сельскохозяйственных животных."""
+    name = models.CharField(max_length=200)
+    norm = models.FloatField();
+    def __str__(self):
+        return "%s %s" % (self.name, str(self.norm))
+
+class Animals(models.Model):
+    """Сельскохозяйственные животные для всех домовладений."""
+    count = models.IntegerField(default=-1)
+    real_estate = models.ForeignKey(RealEstate)
+    type = models.ForeignKey(AnimalType)
