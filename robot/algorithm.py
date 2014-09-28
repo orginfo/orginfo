@@ -114,14 +114,16 @@ def write_off():
             # У клиента могут быть виды сельскохозяйственных животных, направления использования
             # Вычисляем общий оъбем для видов сельскохозяйственных животных
             animals_volume = 0
-            for animals in Animals:
-                animals_volume = animals_volume + (animals.count * animals.animaltype_set.get().norm)
+            animals_for_house = Animals.objects.filter(real_estate=house)
+            for animals in animals_for_house:
+                animals_volume = animals_volume + (animals.count * animals.type.norm)
             
             # Вычисляем общий оъбем для направления использования
             use_case_volume = 0
                 
             total_volume = animals_volume + use_case_volume
-            cold_water_volume = ColdWaterVolume(real_estate=house, volume=total_volume, date=datetime.date.today())
+            period = Period.objects.last()
+            cold_water_volume = ColdWaterVolume(period=period, real_estate=house, volume=total_volume, date=datetime.date.today())
             cold_water_volume.save()
             
             #TODO: списать средства с лицевого счета.
