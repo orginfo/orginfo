@@ -1,5 +1,5 @@
 from django.contrib import admin
-from accounting.models import Organization, UserOrganization, Client, RealEstate, Payment, ServiceClient, ColdWaterReading, ColdWaterVolume, ColdWaterTariff, Period, Animals, AnimalType
+from accounting.models import Organization, UserOrganization, Client, RealEstate, Payment, ServiceClient, ColdWaterReading, ColdWaterVolume, ColdWaterTariff, Period, Animals, AnimalType, TypeWaterNorm
 
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('name',)
@@ -37,6 +37,9 @@ class AnimalsAdmin(admin.ModelAdmin):
 class AnimalTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'norm',)
 
+class TypeWaterNormAdmin(admin.ModelAdmin):
+    list_display = ('improvement_status', 'cold_water_norm', 'hot_water_norm', 'disposal_water_norm',)
+
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(UserOrganization, UserOrganizationAdmin)
 admin.site.register(Client, ClientAdmin)
@@ -49,3 +52,4 @@ admin.site.register(ColdWaterVolume, ColdWaterVolumeAdmin)
 admin.site.register(ColdWaterTariff, ColdWaterTariffAdmin)
 admin.site.register(Animals, AnimalsAdmin)
 admin.site.register(AnimalType, AnimalTypeAdmin)
+admin.site.register(TypeWaterNorm, TypeWaterNormAdmin)

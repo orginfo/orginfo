@@ -51,6 +51,19 @@ class RealEstate(models.Model):
     def __str__(self):
         return self.address
 
+class TypeWaterNorm(models.Model):
+    """Нормативы потребления коммунальных услуг по холодному водоснабжению, горячему водоснабжению и водоотведению
+       в жилых помещениях на территории Новосиирской области.
+       из "Приложение № 1 к приказу департамента по тарифам Новосибирской области".
+       
+       improvement_status - Степень благоустройства жилых помещений.
+       
+    """
+    improvement_status = models.CharField(max_length=500)
+    cold_water_norm = models.FloatField()
+    hot_water_norm = models.FloatField()
+    disposal_water_norm = models.FloatField()
+
 class Client(models.Model):
     """Клиент.
 
@@ -64,6 +77,9 @@ class Client(models.Model):
     residential -- флаг, указывающий жилое ли помещение. Находится здесь,
     потому что как используется помещение зависит больше от клиента, а не от
     помещения.
+    
+    amount - сумма денег на счете клиента
+    residents - количество зарегестированных (проживающих)
     """
     lfm = models.CharField(max_length=200)
     organization = models.ForeignKey(Organization)
@@ -71,6 +87,11 @@ class Client(models.Model):
     real_estate = models.ForeignKey(RealEstate)
     residential = models.BooleanField(default=True)
     residents = models.IntegerField(default=-1)
+    #TODO: разобраться почему происходит 
+    #You are trying to add a non-nullable field 'type_water_norm' to client without a default;
+    #MAYBE: Удалить папку migrations.
+    #type_water_norm = models.ForeignKey(TypeWaterNorm, null=True, blank=True, default = None)
+    type_water_norm = models.ForeignKey(TypeWaterNorm)
     def __str__(self):
         return self.lfm + "(" + self.organization.__str__() + ")"
     def get_absolute_url(self):
