@@ -51,7 +51,9 @@ def write_of_cold_water_service(client):
 
     if use_norms and client.residential:
         #Формула № 4а
-        #Payment = client.GetRegusteredUser() * client.Norms.GetNorm() * client.Tariff.GetTariff();
+        volume = client.residents * client.type_water_norm.cold_water_norm
+        cold_water_volume = ColdWaterVolume(real_estate=client.real_estate, volume=volume, date=datetime.date.today())
+        cold_water_volume.save()
         pass
     else:
         #average_six_period_volume = 
@@ -106,10 +108,15 @@ def write_off():
         #TODO: списать средства с лицевого счета.
 
     for house in RealEstate.objects.filter(type=RealEstate.HOUSE_TYPE):
+        client = house.client
         does_cold_water_counter_exist = False
         if does_cold_water_counter_exist:
             write_of_cold_water_service(client)
         else:
+            volume = client.residents * client.type_water_norm.cold_water_norm
+            cold_water_volume = ColdWaterVolume(real_estate=client.real_estate, volume=volume, date=datetime.date.today())
+            cold_water_volume.save()
+            
             #TODo: Вычислить объем для земельного участка и расположенных на нем надворных построек
             # У клиента могут быть виды сельскохозяйственных животных, направления использования
             # Вычисляем общий оъбем для видов сельскохозяйственных животных
