@@ -1,0 +1,13 @@
+{% extends "starter-template.html" %}
+
+{% block container %}
+<ul class="nav nav-tabs" role="tablist">
+  <li><a href="{% url "accounting:readings" real_estate_id %}">Readings</a></li>
+  <li class="active"><a href="{% url "accounting:client_update" client_id %}">Client</a></li>
+  <li><a href="{% url "accounting:client_services" client_id %}">Services</a></li>
+  <li><a href="{% url "accounting:take_payment" client_id %}">Payment</a></li>
+</ul>
+<br />
+{% load crispy_forms_tags %}
+{% crispy form %}
+{% endblock %}

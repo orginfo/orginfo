@@ -71,14 +71,11 @@ class CreateClientForm(ModelForm):
         self.helper.label_class = 'col-sm-2'
         self.helper.field_class = 'col-sm-6'
         self.helper.layout = Layout(
-            Fieldset(
-                'Add client',
-                'lfm',
-                'amount',
-                'parent_street',
-                'residential',
-                'residents'
-            ),
+            'lfm',
+            'amount',
+            'parent_street',
+            'residential',
+            'residents',
             ButtonHolder(
                 Submit('submit', 'Add', css_class='btn-default')
             )

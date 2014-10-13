@@ -109,7 +109,7 @@ class CreateClient(CreateView):
 class UpdateClient(UpdateView):
     form_class = CreateClientForm
     model = Client
-    template_name = 'accounting/add_client.html'
+    template_name = 'accounting/update_client.html'
     exclude = ('organization', 'real_estate')
     fields = ['lfm', 'amount', 'residential', 'residents']
     def dispatch(self, *args, **kwargs):
@@ -129,6 +129,13 @@ class UpdateClient(UpdateView):
         initial = initial.copy()
         initial['parent_street'] = self.object.real_estate.address
         return initial
+    def get_context_data(self, **kwargs):
+        context = super(UpdateClient, self).get_context_data(**kwargs)
+        client_id = self.kwargs['pk']
+        context['client_id'] = client_id
+        real_estate_id = Client.objects.filter(id=client_id).get().id
+        context['real_estate_id'] = real_estate_id
+        return context
 
 def report(request):
     "the last payment in the organization"
@@ -208,3 +215,4 @@ class UpdateClientService(UpdateView):
     def form_valid(self, form):
         form.instance.client_id = self.kwargs['client_id']
         return super(UpdateClientService, self).form_valid(form)
+
