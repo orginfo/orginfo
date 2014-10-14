@@ -240,3 +240,8 @@ class UpdateClientService(UpdateView):
         form.instance.client_id = self.kwargs['client_id']
         return super(UpdateClientService, self).form_valid(form)
 
+class RealEstates(ListView):
+    model = RealEstate
+    template_name = 'accounting/real_estates.html'
+    context_object_name = 'real_estates'
+    #TODO: ограничить лишь для конкретного МУП-а.
