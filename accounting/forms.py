@@ -135,12 +135,9 @@ class CreateColdWaterReadingForm(ModelForm):
         self.helper.label_class = 'col-sm-2'
         self.helper.field_class = 'col-sm-6'
         self.helper.layout = Layout(
-            Fieldset(
-                'Cold water reading',
-                'period',
-                'value',
-                Field('date', placeholder="ГГГГ-ММ-ДД"),
-            ),
+            'period',
+            'value',
+            Field('date', placeholder="ГГГГ-ММ-ДД"),
             ButtonHolder(
                 Submit('submit', 'Create', css_class='btn-default')
             )

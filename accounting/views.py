@@ -66,6 +66,10 @@ class TakePayment(CreateView):
     def get_context_data(self, **kwargs):
         context = super(TakePayment, self).get_context_data(**kwargs)
         context['client'] = self.client
+        client_id = self.kwargs['client_id']
+        context['client_id'] = client_id
+        real_estate_id = Client.objects.filter(id=client_id).get().id
+        context['real_estate_id'] = real_estate_id
         return context
 
 class Clients(ListView):
@@ -162,28 +166,45 @@ class ColdWaterReadings(ListView):
         return ColdWaterReading.objects.filter(real_estate=self.kwargs['real_estate_id']);
     def get_context_data(self, **kwargs):
         context = super(ColdWaterReadings, self).get_context_data(**kwargs)
-        context['real_estate_id'] = self.kwargs['real_estate_id']
+        real_estate_id = self.kwargs['real_estate_id']
+        context['real_estate_id'] = real_estate_id
+        client_id = RealEstate.objects.filter(id=real_estate_id).get().client_set.last().id
+        context['client_id'] = client_id
         return context
 
 class CreateColdWaterReading(CreateView):
     model = ColdWaterReading
     form_class = CreateColdWaterReadingForm
-    template_name = 'accounting/add_client.html'
+    template_name = 'accounting/cold_water_reading.html'
     def get_success_url(self):
         return reverse('accounting:readings', kwargs=self.kwargs)
     def form_valid(self, form):
         form.instance.real_estate_id = self.kwargs['real_estate_id']
         return super(CreateColdWaterReading, self).form_valid(form)
+    def get_context_data(self, **kwargs):
+        context = super(CreateColdWaterReading, self).get_context_data(**kwargs)
+        real_estate_id = self.kwargs['real_estate_id']
+        context['real_estate_id'] = real_estate_id
+        client_id = RealEstate.objects.filter(id=real_estate_id).get().client_set.last().id
+        context['client_id'] = client_id
+        return context
 
 class UpdateColdWaterReading(UpdateView):
     model = ColdWaterReading
     form_class = CreateColdWaterReadingForm
-    template_name = 'accounting/add_client.html'
+    template_name = 'accounting/cold_water_reading.html'
     def get_success_url(self):
         return reverse('accounting:readings', kwargs={'real_estate_id': self.kwargs['real_estate_id']})
     def form_valid(self, form):
         form.instance.real_estate_id = self.kwargs['real_estate_id']
         return super(UpdateColdWaterReading, self).form_valid(form)
+    def get_context_data(self, **kwargs):
+        context = super(UpdateColdWaterReading, self).get_context_data(**kwargs)
+        real_estate_id = self.kwargs['real_estate_id']
+        context['real_estate_id'] = real_estate_id
+        client_id = RealEstate.objects.filter(id=real_estate_id).get().client_set.last().id
+        context['client_id'] = client_id
+        return context
 
 class ClientServices(ListView):
     model = ServiceClient
@@ -193,7 +214,10 @@ class ClientServices(ListView):
         return ServiceClient.objects.filter(client=self.kwargs['pk']);
     def get_context_data(self, **kwargs):
         context = super(ClientServices, self).get_context_data(**kwargs)
-        context['client_id'] = self.kwargs['pk']
+        client_id = self.kwargs['pk']
+        context['client_id'] = client_id
+        real_estate_id = Client.objects.filter(id=client_id).get().id
+        context['real_estate_id'] = real_estate_id
         return context
 
 class CreateClientService(CreateView):

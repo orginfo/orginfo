@@ -1,8 +1,18 @@
 {% extends "starter-template.html" %}
 
 {% block container %}
+<ul class="nav nav-tabs" role="tablist">
+  {% url "accounting:readings" real_estate_id as l2readings %}
+  <li{% if request.get_full_path == l2readings %} class="active"{% endif %}><a href="{{ l2readings }}">Readings</a></li>
+  {% url "accounting:client_update" client_id as l2client %}
+  <li{% if request.get_full_path == l2client %} class="active"{% endif %}><a href="{{ l2client }}">Client</a></li>
+  {% url "accounting:client_services" client_id as l2services %}
+  <li{% if request.get_full_path == l2services %} class="active"{% endif %}><a href="{{ l2services }}">Services</a></li>
+  {% url "accounting:take_payment" client_id as l2payment %}
+  <li{% if request.get_full_path == l2payment %} class="active"{% endif %}><a href="{{ l2payment }}">Payment</a></li>
+</ul>
+<br />
 {% if readings %}
-    <h2>readings</h2>
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -23,8 +33,8 @@
         {% endfor %}
         </tbody>
     </table>
-    <a class="btn btn-primary btn-default" role="button" href="{% url "accounting:create_reading" real_estate_id %}">Create</a>
 {% else %}
     <p>No readings are available.</p>
 {% endif %}
+    <a class="btn btn-primary btn-default" role="button" href="{% url "accounting:create_reading" real_estate_id %}">Create</a>
 {% endblock %}

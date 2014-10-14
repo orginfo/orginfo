@@ -2,8 +2,7 @@
 
 {% block container %}
 <ul class="nav nav-tabs" role="tablist">
-  {% url "accounting:readings" real_estate_id as l2readings %}
-  <li{% if request.get_full_path == l2readings %} class="active"{% endif %}><a href="{{ l2readings }}">Readings</a></li>
+  <li class="active"><a href="#">Readings</a></li>
   {% url "accounting:client_update" client_id as l2client %}
   <li{% if request.get_full_path == l2client %} class="active"{% endif %}><a href="{{ l2client }}">Client</a></li>
   {% url "accounting:client_services" client_id as l2services %}
