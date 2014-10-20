@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'accounting',
     'crispy_forms',
+    'robot',
 )
 
 MIDDLEWARE_CLASSES = (

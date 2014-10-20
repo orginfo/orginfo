@@ -12,6 +12,29 @@
   <li{% if request.get_full_path == l2payment %} class="active"{% endif %}><a href="{{ l2payment }}">Payment</a></li>
 </ul>
 <br />
-{% load crispy_forms_tags %}
-{% crispy form %}
+{% if readings %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Period</th>
+                <th>Value</th>
+                <th>Real estate</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for reading in readings %}
+            <tr>
+                <td><a href="{% url "accounting:update_reading" real_estate_id reading.id %}">{{ reading.period }}</a></td>
+                <td>{{ reading.value }}</td>
+                <td>{{ reading.real_estate }}</td>
+                <td>{{ reading.date }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No readings are available.</p>
+{% endif %}
+    <a class="btn btn-primary btn-default" role="button" href="{% url "accounting:create_reading" real_estate_id %}">Create</a>
 {% endblock %}

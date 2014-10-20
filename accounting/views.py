@@ -2,16 +2,21 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, AddClientForm
-from accounting.models import Organization, UserOrganization, Client, Payment
-from django.views.generic.edit import CreateView
+from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm
+from accounting.models import Organization, UserOrganization, Client, Payment, RealEstate, ColdWaterReading, ServiceClient
+from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic import ListView
-from django import forms
+from robot.algorithm import write_off
 
 
 @login_required(login_url="/login/")
 def index(request):
     return render(request, 'accounting/index.html', {})
+
+def robot(request):
+    write_off()
+    return render(request, 'accounting/index.html', {})
+
 
 @login_required(login_url="/login/")
 def organization_details(request):
@@ -56,11 +61,15 @@ class TakePayment(CreateView):
             raise Http404
         return super(TakePayment, self).dispatch(*args, **kwargs)
     def form_valid(self, form):
-         form.instance.client = self.client
-         return super(TakePayment, self).form_valid(form)
+        form.instance.client = self.client
+        return super(TakePayment, self).form_valid(form)
     def get_context_data(self, **kwargs):
         context = super(TakePayment, self).get_context_data(**kwargs)
         context['client'] = self.client
+        client_id = self.kwargs['client_id']
+        context['client_id'] = client_id
+        real_estate_id = Client.objects.filter(id=client_id).get().id
+        context['real_estate_id'] = real_estate_id
         return context
 
 class Clients(ListView):
@@ -83,21 +92,54 @@ class Clients(ListView):
             object_list = self.user_org.organization.client_set.none()
         return object_list
 
-class AddClient(CreateView):
-    form_class = AddClientForm
+class CreateClient(CreateView):
+    form_class = CreateClientForm
     model = Client
     template_name = 'accounting/add_client.html'
-    exclude = ('organization',)
-    fields = ['lfm']
+    exclude = ('organization', 'real_estate',)
+    fields = ['lfm', 'amount', 'residential', 'residents']
     def dispatch(self, *args, **kwargs):
         user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
         if not user_org.organization:
             raise Http404
         self.organization = user_org.organization
-        return super(AddClient, self).dispatch(*args, **kwargs)
+        return super(CreateClient, self).dispatch(*args, **kwargs)
     def form_valid(self, form):
-         form.instance.organization = self.organization
-         return super(AddClient, self).form_valid(form)
+        form.instance.organization = self.organization
+        parent_street = form.cleaned_data['parent_street']
+        form.instance.real_estate = RealEstate.objects.filter(address=parent_street).get()
+        return super(CreateClient, self).form_valid(form)
+
+class UpdateClient(UpdateView):
+    form_class = CreateClientForm
+    model = Client
+    template_name = 'accounting/update_client.html'
+    exclude = ('organization', 'real_estate')
+    fields = ['lfm', 'amount', 'residential', 'residents']
+    def dispatch(self, *args, **kwargs):
+        user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
+        if not user_org.organization:
+            raise Http404
+        self.organization = user_org.organization
+        return super(UpdateClient, self).dispatch(*args, **kwargs)
+    def form_valid(self, form):
+        form.instance.organization = self.organization
+        parent_street = form.cleaned_data['parent_street']
+        form.instance.real_estate = RealEstate.objects.filter(address=parent_street).get()
+        return super(UpdateClient, self).form_valid(form)
+    def get_initial(self):
+        initial = super(UpdateClient, self).get_initial()
+        # Copy the dictionary so we don't accidentally change a mutable dict
+        initial = initial.copy()
+        initial['parent_street'] = self.object.real_estate.address
+        return initial
+    def get_context_data(self, **kwargs):
+        context = super(UpdateClient, self).get_context_data(**kwargs)
+        client_id = self.kwargs['pk']
+        context['client_id'] = client_id
+        real_estate_id = Client.objects.filter(id=client_id).get().id
+        context['real_estate_id'] = real_estate_id
+        return context
 
 def report(request):
     "the last payment in the organization"
@@ -110,3 +152,96 @@ def report(request):
         'period': '2014-06-01 (TODO)'
     }
     return render(request, 'accounting/report.html', context)
+
+class CreateRealEstate(CreateView):
+    model = RealEstate
+    template_name = 'accounting/add_client.html'
+    form_class = CreateRealEstateForm
+
+class ColdWaterReadings(ListView):
+    model = ColdWaterReading
+    template_name = 'accounting/cold_water_readings.html'
+    context_object_name = 'readings'
+    def get_queryset(self):
+        return ColdWaterReading.objects.filter(real_estate=self.kwargs['real_estate_id']);
+    def get_context_data(self, **kwargs):
+        context = super(ColdWaterReadings, self).get_context_data(**kwargs)
+        real_estate_id = self.kwargs['real_estate_id']
+        context['real_estate_id'] = real_estate_id
+        client_id = RealEstate.objects.filter(id=real_estate_id).get().client_set.last().id
+        context['client_id'] = client_id
+        return context
+
+class CreateColdWaterReading(CreateView):
+    model = ColdWaterReading
+    form_class = CreateColdWaterReadingForm
+    template_name = 'accounting/cold_water_reading.html'
+    def get_success_url(self):
+        return reverse('accounting:readings', kwargs=self.kwargs)
+    def form_valid(self, form):
+        form.instance.real_estate_id = self.kwargs['real_estate_id']
+        return super(CreateColdWaterReading, self).form_valid(form)
+    def get_context_data(self, **kwargs):
+        context = super(CreateColdWaterReading, self).get_context_data(**kwargs)
+        real_estate_id = self.kwargs['real_estate_id']
+        context['real_estate_id'] = real_estate_id
+        client_id = RealEstate.objects.filter(id=real_estate_id).get().client_set.last().id
+        context['client_id'] = client_id
+        return context
+
+class UpdateColdWaterReading(UpdateView):
+    model = ColdWaterReading
+    form_class = CreateColdWaterReadingForm
+    template_name = 'accounting/cold_water_reading.html'
+    def get_success_url(self):
+        return reverse('accounting:readings', kwargs={'real_estate_id': self.kwargs['real_estate_id']})
+    def form_valid(self, form):
+        form.instance.real_estate_id = self.kwargs['real_estate_id']
+        return super(UpdateColdWaterReading, self).form_valid(form)
+    def get_context_data(self, **kwargs):
+        context = super(UpdateColdWaterReading, self).get_context_data(**kwargs)
+        real_estate_id = self.kwargs['real_estate_id']
+        context['real_estate_id'] = real_estate_id
+        client_id = RealEstate.objects.filter(id=real_estate_id).get().client_set.last().id
+        context['client_id'] = client_id
+        return context
+
+class ClientServices(ListView):
+    model = ServiceClient
+    template_name = 'accounting/client_services.html'
+    context_object_name = 'services'
+    def get_queryset(self):
+        return ServiceClient.objects.filter(client=self.kwargs['pk']);
+    def get_context_data(self, **kwargs):
+        context = super(ClientServices, self).get_context_data(**kwargs)
+        client_id = self.kwargs['pk']
+        context['client_id'] = client_id
+        real_estate_id = Client.objects.filter(id=client_id).get().id
+        context['real_estate_id'] = real_estate_id
+        return context
+
+class CreateClientService(CreateView):
+    model = ServiceClient
+    template_name = 'accounting/add_client.html'
+    form_class = CreateClientServiceForm
+    def get_success_url(self):
+        return reverse('accounting:client_services', kwargs=self.kwargs)
+    def form_valid(self, form):
+        form.instance.client_id = self.kwargs['pk']
+        return super(CreateClientService, self).form_valid(form)
+
+class UpdateClientService(UpdateView):
+    model = ServiceClient
+    form_class = CreateClientServiceForm
+    template_name = 'accounting/add_client.html'
+    def get_success_url(self):
+        return reverse('accounting:client_services', kwargs={'pk': self.kwargs['client_id']})
+    def form_valid(self, form):
+        form.instance.client_id = self.kwargs['client_id']
+        return super(UpdateClientService, self).form_valid(form)
+
+class RealEstates(ListView):
+    model = RealEstate
+    template_name = 'accounting/real_estates.html'
+    context_object_name = 'real_estates'
+    #TODO: ограничить лишь для конкретного МУП-а.
