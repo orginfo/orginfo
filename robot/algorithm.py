@@ -3,7 +3,7 @@ import datetime
 from django.db.models import Sum
 
 
-def write_of_cold_water_service(client):
+def calculate_individual_cold_water_volume(client):
     """Списание средств за холодную воду.
 
     В ColdWaterReading за один отчетный период хранится только одно показание.
@@ -11,8 +11,6 @@ def write_of_cold_water_service(client):
     тогда откуда брать показание, оно будет явно описано в данных, а не будет
     хардкода в алгоритме.
     """
-    use_norms = False
-
     periods_with_counter = None
     setup_date = client.real_estate.cold_water_counter_setup_date
     if setup_date:
@@ -32,46 +30,35 @@ def write_of_cold_water_service(client):
                 i = i - 1
             unconfirmed_reading_volumes = ColdWaterVolume.objects.filter(real_estate=client.real_estate, period__serial_number__in=range(last_period_reading.period.serial_number+1, next_to_last_period_reading.period.serial_number)).aggregate(Sum('volume'))['volume__sum'] or 0
             volume = last_period_reading.value - next_to_last_period_reading.value - unconfirmed_reading_volumes
-            volume_model = ColdWaterVolume(period=periods_with_counter[periods_with_counter.count()-1], real_estate=client.real_estate, volume=volume, date=datetime.date.today())
-            volume_model.save()
+            return volume
 
         second_from_the_end_period_reading = ColdWaterReading.objects.filter(real_estate=client.real_estate, period=periods_with_counter[periods_with_counter.count()-2]).last()
         third_from_the_end_period_reading = ColdWaterReading.objects.filter(real_estate=client.real_estate, period=periods_with_counter[periods_with_counter.count()-3]).last()
         was_reading_in_second_or_third_period_from_the_end = second_from_the_end_period_reading or third_from_the_end_period_reading
-        if was_reading_in_second_or_third_period_from_the_end and was_reading_in_last_period == False:
+        if was_reading_in_second_or_third_period_from_the_end:
             last_six_volumes_sum = ColdWaterVolume.objects.filter(real_estate=client.real_estate, period__serial_number__in=range(periods_with_counter.last().serial_number-6+1, periods_with_counter.last().serial_number+1)).aggregate(Sum('volume'))['volume__sum']
             average_volume = last_six_volumes_sum/6
-            cold_water_volume = ColdWaterVolume(real_estate=client.real_estate, volume=average_volume, date=datetime.date.today())
-            cold_water_volume.save()
+            return average_volume
 
-        else:
-            use_norms = True
-    else:
-        use_norms = True
-
-    if use_norms and client.residential:
+    if client.residential:
         #Формула № 4а
         volume = client.residents * client.type_water_norm.cold_water_norm
-        cold_water_volume = ColdWaterVolume(real_estate=client.real_estate, volume=volume, date=datetime.date.today())
-        cold_water_volume.save()
-        pass
-    else:
-        #average_six_period_volume = 
-        periods = Period.objects.order_by('start')
-        start_period_index = periods.count()-6-1
-        if start_period_index > 0:
-            last_six_volumes_sum = ColdWaterVolume.objects.filter(real_estate=client.real_estate, period__serial_number__gte=periods[start_period_index].serial_number).aggregate(Sum('volume'))['volume__sum']
-            average_volume = last_six_volumes_sum/6
-            cold_water_volume = ColdWaterVolume(real_estate=client.real_estate, volume=average_volume, date=datetime.date.today())
-            cold_water_volume.save()
-        else:
-            #TODO: нужен флаг -- manual
-            pass
+        return volume
+
+    periods = Period.objects.order_by('start')
+    start_period_index = periods.count()-6-1
+    if start_period_index > 0:
+        last_six_volumes_sum = ColdWaterVolume.objects.filter(real_estate=client.real_estate, period__serial_number__gte=periods[start_period_index].serial_number).aggregate(Sum('volume'))['volume__sum']
+        average_volume = last_six_volumes_sum/6
+        return average_volume
+
+    return None #TODO: нужен флаг -- manual
 
 def write_off():
     """Списание средств с клиентских счетов.
 
     Списание произодится раз в месяц 25 числа.
+    #TODO: за один расчет для одного клиента может быть несколько записей ColdWaterVolume
     """
     for building in RealEstate.objects.filter(type=RealEstate.BUILDING_TYPE):
         periods = Period.objects.order_by('start')
@@ -88,15 +75,18 @@ def write_off():
             else:
                 real_estates.append(flat)
 
-        #TODO: удобно определить cold_water_volume_clients_sum
-        cold_water_volume_clients_sum = 800
+        cold_water_volume_clients_sum = 0
         for real_estate in real_estates:
             client = real_estate.client_set.last()
             #TODO: как вычислить is_cold_water_service с учетом start/end 
             is_cold_water_service = client.serviceclient_set.filter(
                 service_name=ServiceClient.COLD_WATER_SERVICE).last()
             if is_cold_water_service:
-                write_of_cold_water_service(client)
+                volume = calculate_individual_cold_water_volume(client)
+                volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=volume, date=datetime.date.today())
+                volume_model.save()
+
+                cold_water_volume_clients_sum = cold_water_volume_clients_sum + volume
 
         #расчет общедомовых нужд
         volume = (cold_water_building_volume - cold_water_volume_clients_sum) / len(real_estates)
@@ -111,7 +101,9 @@ def write_off():
         client = house.client
         does_cold_water_counter_exist = False
         if does_cold_water_counter_exist:
-            write_of_cold_water_service(client)
+            volume = calculate_individual_cold_water_volume(client)
+            volume_model = ColdWaterVolume(period=periods.last(), real_estate=house, volume=volume, date=datetime.date.today())
+            volume_model.save()
         else:
             volume = client.residents * client.type_water_norm.cold_water_norm
             cold_water_volume = ColdWaterVolume(real_estate=client.real_estate, volume=volume, date=datetime.date.today())
