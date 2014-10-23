@@ -1,4 +1,4 @@
-from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals
+﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals
 import datetime
 from django.db.models import Sum
 
@@ -68,23 +68,23 @@ def write_off():
         cold_water_building_volume = last_period_reading.value - next_to_last_period_reading.value
 
         real_estates = []
-        for flat in RealEstate.objects.filter(parent=building):
-            if flat.type == 'r':
-                for room in RealEstate.objects.filter(parent=flat):
-                    real_estates.append(room)
-            else:
-                real_estates.append(flat)
+        for real_estate in RealEstate.objects.filter(parent=building):
+            real_estates.append(real_estate)
 
         cold_water_volume_clients_sum = 0
         for real_estate in real_estates:
-            client = real_estate.client_set.last()
-            #TODO: как вычислить is_cold_water_service с учетом start/end 
-            is_cold_water_service = client.serviceclient_set.filter(
-                service_name=ServiceClient.COLD_WATER_SERVICE).last()
-            if is_cold_water_service:
-                volume = calculate_individual_cold_water_volume(client)
-                volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=volume, date=datetime.date.today())
-                volume_model.save()
+            if real_estate.type != 'c':
+                client = real_estate.client_set.last()
+                #TODO: как вычислить is_cold_water_service с учетом start/end 
+                is_cold_water_service = client.serviceclient_set.filter(
+                    service_name=ServiceClient.COLD_WATER_SERVICE).last()
+                if is_cold_water_service:
+                    volume = calculate_individual_cold_water_volume(client)
+                    volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=volume, date=datetime.date.today())
+                    volume_model.save()
+
+                else:
+                    volume = calculate_communal_cold_water_volume()
 
                 cold_water_volume_clients_sum = cold_water_volume_clients_sum + volume
 
@@ -92,8 +92,11 @@ def write_off():
         volume = (cold_water_building_volume - cold_water_volume_clients_sum) / len(real_estates)
         if volume != 0:
             for real_estate in real_estates:
-                cold_water_volume = ColdWaterVolume(real_estate=real_estate, volume=volume, date=datetime.date.today())
-                cold_water_volume.save()
+                if real_estate.type != 'c'
+                    cold_water_volume = ColdWaterVolume(real_estate=real_estate, volume=volume, date=datetime.date.today())
+                    cold_water_volume.save()
+                else:
+                    distribute_cold_water_volume (real_estate)
 
         #TODO: списать средства с лицевого счета.
 
