@@ -84,9 +84,10 @@ def write_off():
                     volume_model.save()
 
             else:
-                #TODO: Вызываем рассчет объёма холодной воды для коммунального объекта недвижимости.
-                #TODO: У этого объекта нет клиента, поэтому нужно учесть, какие параметры необходимо передать в функцию.
-                volume = calculate_individual_cold_water_volume()
+                cold_water_norm = 1 #TODO: взять из из самого верхнего real_estate.
+                residential = False #TODO: откуда взять этот параметр.
+                residents = 10 #TODO: можно обсчитать.
+                volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, residential, residents)
                 # flat_residents - общее количество проживающих в квартире
                 # flat_area - общая площадь комнат квартиры.
                 flat_residents = 0
@@ -141,7 +142,7 @@ def write_off():
         client = house.client
         does_cold_water_counter_exist = False
         if does_cold_water_counter_exist:
-            volume = calculate_individual_cold_water_volume(client)
+            volume = calculate_individual_cold_water_volume(house, client.type_water_norm.cold_water_norm, client.residential, client.residents)
             volume_model = ColdWaterVolume(period=periods.last(), real_estate=house, volume=volume, date=datetime.date.today())
             volume_model.save()
         else:
