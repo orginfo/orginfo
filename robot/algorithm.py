@@ -108,7 +108,8 @@ def write_off():
                         proportion = room.client.residents / flat_residents
                     else:
                         #TODO: Вычислить долю по площади.
-                    
+                        pass
+
                     room_volume = proportion * volume
                     volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=volume, date=datetime.date.today())
                     volume_model.save()
@@ -123,7 +124,7 @@ def write_off():
         if volume != 0:
             #TODO: Где хранится площадь помещения, в RealEstate или Client?
             for real_estate in real_estates:
-                if real_estate.type != 'c'
+                if real_estate.type != 'c':
                     real_estate_volume = real_estate.площадь / building_area * volume
                     #TODO: Общедомовые нужды(ОДН) должны храниться в отдельной таблице, так как эти данные будут использоваться при перерасчетах.
                     cold_water_volume = ColdWaterVolume(real_estate=real_estate, volume=volume, date=datetime.date.today())
