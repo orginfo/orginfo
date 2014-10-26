@@ -3,7 +3,7 @@ import datetime
 from django.db.models import Sum
 
 
-def calculate_individual_cold_water_volume(client):
+def calculate_individual_cold_water_volume(real_estate, cold_water_norm, residential, residents):
     """Списание средств за холодную воду.
 
     В ColdWaterReading за один отчетный период хранится только одно показание.
@@ -12,43 +12,43 @@ def calculate_individual_cold_water_volume(client):
     хардкода в алгоритме.
     """
     periods_with_counter = None
-    setup_date = client.real_estate.cold_water_counter_setup_date
+    setup_date = real_estate.cold_water_counter_setup_date
     if setup_date:
         periods_with_counter = Period.objects.order_by('start').filter(start__gte=setup_date)
 
     if periods_with_counter and periods_with_counter.count() >= 6:
-        last_period_reading = periods_with_counter.last().coldwaterreading_set.filter(real_estate=client.real_estate).get()
+        last_period_reading = periods_with_counter.last().coldwaterreading_set.filter(real_estate=real_estate).get()
         was_reading_in_last_period = last_period_reading is not None
         if was_reading_in_last_period:
             #TODO: next_to_last_period_reading может отсутствовать.
             i = periods_with_counter.count() - 2
             while 0 <= i:
-                readings = periods_with_counter[i].coldwaterreading_set.filter(real_estate=client.real_estate)
+                readings = periods_with_counter[i].coldwaterreading_set.filter(real_estate=real_estate)
                 if readings.count():
                     next_to_last_period_reading = readings.get()
                     break
                 i = i - 1
-            unconfirmed_reading_volumes = ColdWaterVolume.objects.filter(real_estate=client.real_estate, period__serial_number__in=range(last_period_reading.period.serial_number+1, next_to_last_period_reading.period.serial_number)).aggregate(Sum('volume'))['volume__sum'] or 0
+            unconfirmed_reading_volumes = ColdWaterVolume.objects.filter(real_estate=real_estate, period__serial_number__in=range(last_period_reading.period.serial_number+1, next_to_last_period_reading.period.serial_number)).aggregate(Sum('volume'))['volume__sum'] or 0
             volume = last_period_reading.value - next_to_last_period_reading.value - unconfirmed_reading_volumes
             return volume
 
-        second_from_the_end_period_reading = ColdWaterReading.objects.filter(real_estate=client.real_estate, period=periods_with_counter[periods_with_counter.count()-2]).last()
-        third_from_the_end_period_reading = ColdWaterReading.objects.filter(real_estate=client.real_estate, period=periods_with_counter[periods_with_counter.count()-3]).last()
+        second_from_the_end_period_reading = ColdWaterReading.objects.filter(real_estate=real_estate, period=periods_with_counter[periods_with_counter.count()-2]).last()
+        third_from_the_end_period_reading = ColdWaterReading.objects.filter(real_estate=real_estate, period=periods_with_counter[periods_with_counter.count()-3]).last()
         was_reading_in_second_or_third_period_from_the_end = second_from_the_end_period_reading or third_from_the_end_period_reading
         if was_reading_in_second_or_third_period_from_the_end:
-            last_six_volumes_sum = ColdWaterVolume.objects.filter(real_estate=client.real_estate, period__serial_number__in=range(periods_with_counter.last().serial_number-6+1, periods_with_counter.last().serial_number+1)).aggregate(Sum('volume'))['volume__sum']
+            last_six_volumes_sum = ColdWaterVolume.objects.filter(real_estate=real_estate, period__serial_number__in=range(periods_with_counter.last().serial_number-6+1, periods_with_counter.last().serial_number+1)).aggregate(Sum('volume'))['volume__sum']
             average_volume = last_six_volumes_sum/6
             return average_volume
 
-    if client.residential:
+    if residential:
         #Формула № 4а
-        volume = client.residents * client.type_water_norm.cold_water_norm
+        volume = residents * cold_water_norm
         return volume
 
     periods = Period.objects.order_by('start')
     start_period_index = periods.count()-6-1
     if start_period_index > 0:
-        last_six_volumes_sum = ColdWaterVolume.objects.filter(real_estate=client.real_estate, period__serial_number__gte=periods[start_period_index].serial_number).aggregate(Sum('volume'))['volume__sum']
+        last_six_volumes_sum = ColdWaterVolume.objects.filter(real_estate=real_estate, period__serial_number__gte=periods[start_period_index].serial_number).aggregate(Sum('volume'))['volume__sum']
         average_volume = last_six_volumes_sum/6
         return average_volume
 
@@ -79,7 +79,7 @@ def write_off():
                 is_cold_water_service = client.serviceclient_set.filter(
                     service_name=ServiceClient.COLD_WATER_SERVICE).last()
                 if is_cold_water_service:
-                    volume = calculate_individual_cold_water_volume(client)
+                    volume = calculate_individual_cold_water_volume(real_estate, client.type_water_norm.cold_water_norm, client.residential, client.residents)
                     volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=volume, date=datetime.date.today())
                     volume_model.save()
 
