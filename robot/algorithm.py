@@ -1,5 +1,6 @@
 from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals
 import datetime
+from robot.errors import ForgottenInitialReadingError
 from django.db.models import Sum
 
 
@@ -28,6 +29,8 @@ def calculate_individual_cold_water_volume(real_estate, cold_water_norm, residen
                     next_to_last_period_reading = readings.get()
                     break
                 i = i - 1
+            if next_to_last_period_reading is None:
+                raise ForgottenInitialReadingError
             unconfirmed_reading_volumes = ColdWaterVolume.objects.filter(real_estate=real_estate, period__serial_number__in=range(last_period_reading.period.serial_number+1, next_to_last_period_reading.period.serial_number)).aggregate(Sum('volume'))['volume__sum'] or 0
             volume = last_period_reading.value - next_to_last_period_reading.value - unconfirmed_reading_volumes
             return volume
@@ -79,7 +82,10 @@ def write_off():
                 is_cold_water_service = client.serviceclient_set.filter(
                     service_name=ServiceClient.COLD_WATER_SERVICE).last()
                 if is_cold_water_service:
-                    volume = calculate_individual_cold_water_volume(real_estate, client.type_water_norm.cold_water_norm, client.residential, client.residents)
+                    try:
+                        volume = calculate_individual_cold_water_volume(real_estate, client.type_water_norm.cold_water_norm, client.residential, client.residents)
+                    except ForgottenInitialReadingError:
+                        pass
                     volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=volume, date=datetime.date.today())
                     volume_model.save()
 
@@ -87,7 +93,10 @@ def write_off():
                 cold_water_norm = 1 #TODO: взять из из самого верхнего real_estate.
                 residential = False #TODO: откуда взять этот параметр.
                 residents = 10 #TODO: можно обсчитать.
-                volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, residential, residents)
+                try:
+                    volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, residential, residents)
+                except ForgottenInitialReadingError:
+                    pass
                 # flat_residents - общее количество проживающих в квартире
                 # flat_area - общая площадь комнат квартиры.
                 flat_residents = 0
@@ -142,7 +151,10 @@ def write_off():
         client = house.client
         does_cold_water_counter_exist = False
         if does_cold_water_counter_exist:
-            volume = calculate_individual_cold_water_volume(house, client.type_water_norm.cold_water_norm, client.residential, client.residents)
+            try:
+                volume = calculate_individual_cold_water_volume(house, client.type_water_norm.cold_water_norm, client.residential, client.residents)
+            except ForgottenInitialReadingError:
+                pass
             volume_model = ColdWaterVolume(period=periods.last(), real_estate=house, volume=volume, date=datetime.date.today())
             volume_model.save()
         else:
