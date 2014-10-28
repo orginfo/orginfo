@@ -24,14 +24,16 @@ class RobotTestCase(TestCase):
         #показания.
 
         real_estate = RealEstate(address="ул. Ленина, д. 1, кв. 2", parent=None, cold_water_counter_setup_date=datetime.date(2001, 1, 13), type=RealEstate.FLAT_TYPE)
-        Period(serial_number=1, start=datetime.date(2000, 12, 26), end=datetime.date(2001, 1, 25))
-        Period(serial_number=2, start=datetime.date(2001, 1, 26), end=datetime.date(2001, 2, 25))
-        Period(serial_number=3, start=datetime.date(2000, 2, 26), end=datetime.date(2001, 3, 25))
-        Period(serial_number=4, start=datetime.date(2000, 3, 26), end=datetime.date(2001, 4, 25))
-        Period(serial_number=5, start=datetime.date(2000, 4, 26), end=datetime.date(2001, 5, 25))
-        Period(serial_number=6, start=datetime.date(2000, 5, 26), end=datetime.date(2001, 6, 25))
-        last_period = Period(serial_number=7, start=datetime.date(2000, 6, 26), end=datetime.date(2001, 7, 25))
-        ColdWaterReading(period=last_period, value=-1, real_estate=real_estate, date=datetime.date(2001, 7, 22))
+        real_estate.save()
+        Period(serial_number=1, start=datetime.date(2000, 12, 26), end=datetime.date(2001, 1, 25)).save()
+        Period(serial_number=2, start=datetime.date(2001, 1, 26), end=datetime.date(2001, 2, 25)).save()
+        Period(serial_number=3, start=datetime.date(2001, 2, 26), end=datetime.date(2001, 3, 25)).save()
+        Period(serial_number=4, start=datetime.date(2001, 3, 26), end=datetime.date(2001, 4, 25)).save()
+        Period(serial_number=5, start=datetime.date(2001, 4, 26), end=datetime.date(2001, 5, 25)).save()
+        Period(serial_number=6, start=datetime.date(2001, 5, 26), end=datetime.date(2001, 6, 25)).save()
+        last_period = Period(serial_number=7, start=datetime.date(2001, 6, 26), end=datetime.date(2001, 7, 25))
+        last_period.save()
+        ColdWaterReading(period=last_period, value=-1, real_estate=real_estate, date=datetime.date(2001, 7, 22)).save()
 
         error_occured = False
         try:

@@ -22,6 +22,7 @@ def calculate_individual_cold_water_volume(real_estate, cold_water_norm, residen
         was_reading_in_last_period = last_period_reading is not None
         if was_reading_in_last_period:
             #TODO: next_to_last_period_reading может отсутствовать.
+            next_to_last_period_reading = None
             i = periods_with_counter.count() - 2
             while 0 <= i:
                 readings = periods_with_counter[i].coldwaterreading_set.filter(real_estate=real_estate)
