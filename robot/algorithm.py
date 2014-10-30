@@ -1,4 +1,4 @@
-from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals
+﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals
 import datetime
 from robot.errors import ForgottenInitialReadingError
 from django.db.models import Sum
@@ -60,7 +60,7 @@ def calculate_individual_cold_water_volume(real_estate, cold_water_norm, residen
 def write_off():
     """Списание средств с клиентских счетов.
 
-    Списание произодится раз в месяц 25 числа.
+    Списание произодится раз в месяц 26 числа.
     #TODO: за один расчет для одного клиента может быть несколько записей ColdWaterVolume
     """
     for building in RealEstate.objects.filter(type=RealEstate.BUILDING_TYPE):
@@ -90,21 +90,22 @@ def write_off():
                     volume_model.save()
 
             else:
-                cold_water_norm = 1 #TODO: взять из из самого верхнего real_estate.
+                cold_water_norm = 1 #TODO: взять из самого верхнего real_estate.
                 residential = False #TODO: откуда взять этот параметр.
+                total_rooms_volume # Общий объем холодного водоснабжения для коммунальной квартиры/блока офисов/секции общещития.
                 residents = 10 #TODO: можно обсчитать.
                 try:
-                    volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, residential, residents)
+                    total_rooms_volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, residential, residents)
                 except ForgottenInitialReadingError:
                     pass
+                
                 # flat_residents - общее количество проживающих в квартире
-                # flat_area - общая площадь комнат квартиры.
-                flat_residents = 0
-                flat_area = 0
-                #TODO: Заменить блок вычислений на запрос - агрегацию суммы площадей каждого помещения для объектов с 'parent=real_estate'.
+                #TODO: У родительского помещения 'parent=real_estate' должа быть указана общая площадь. Создать поле 'area' в  'RealEstate'.
+                flat_residents = 0 #TODO: Подумать, может ли так же хранить для каждого помещения общее количество проживающих?
+                # В 'volume' будет добавлено суммарное количество объема всех комнат. Значение может отличаться от 'total_rooms_volume'. В этом случае, разница объемов будет учтена и рассчитана в расчет ОДН.
+                # Вычисляем общее количество проживающих в помещении (блоке, коммунальной квартире и т.д.)
                 #TODO: Заменить блок вычислений на запрос - агрегацию суммы зарегестрированных в каждом помещении для объектов с 'parent=real_estate'.
                 for room in RealEstate.objects.filter(parent=real_estate):
-                    #TODO: так же выполнить суммирование площадей помещений.
                     flat_residents = flat_residents + flat_residents.client.residents
 
                 #Вычисляем необходимые объемы для каждого помещения.
@@ -117,31 +118,39 @@ def write_off():
                     if room.residential:
                         proportion = room.client.residents / flat_residents
                     else:
-                        #TODO: Вычислить долю по площади.
-                        pass
+                        #Вычисление доли по площади.
+                        #TODO: Внести в 'RealEstate' поле 'area'.
+                        proportion = room.area / real_estate.area
 
-                    room_volume = proportion * volume
-                    volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=volume, date=datetime.date.today())
+                    room_volume = proportion * total_rooms_volume
+                    volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=room_volume, date=datetime.date.today())
                     volume_model.save()
+                    
+                    volume = volume + room_volume;
 
-            # Суммируем объемы помещений. Если квартира коммунальная, тогда учитываем ее объем (он в свою очередь равен сумме объемов всех внутренних помещений)
+            # Суммируем объемы помещений. Если квартира коммунальная (или блок общещия, или блок с офисами), тогда используем сумму объемов всех внутренних помещений клиентов.
             cold_water_volume_clients_sum = cold_water_volume_clients_sum + volume
+
         #расчет общедомовых нужд. Доля объма на помещение определяется от соотношения площади помещения к общей площади всех жилых и нежилых помещений.
         # building_area - общая площадь всех жилых помещений (квартир) и нежилых помещений в многоквартирном доме.
-        # TODO: Необходимо вычислить building_area
-        building_area = 1000
+        # TODO: Здание должно иметь параметр area.
         volume = cold_water_building_volume - cold_water_volume_clients_sum
         if volume != 0:
-            #TODO: Где хранится площадь помещения, в RealEstate или Client?
             for real_estate in real_estates:
                 if real_estate.type != 'c':
-                    real_estate_volume = real_estate.площадь / building_area * volume
+                    real_estate_volume = real_estate.area / building.area * volume
                     #TODO: Общедомовые нужды(ОДН) должны храниться в отдельной таблице, так как эти данные будут использоваться при перерасчетах.
                     cold_water_volume = ColdWaterVolume(real_estate=real_estate, volume=volume, date=datetime.date.today())
                     cold_water_volume.save()
                 else:
+                    # Вычисляем объем для всей квартиры/блока/секции
+                    real_estate_volume = real_estate.area / building.area * volume
+                    # Распределяем общий объем между внутренними помещениями клиентов.
+                    # TODO: Полагаю, что для распределения требуется не общая площадь квартиры/блока/секции, а общая площадь помещений клиентов. Либо другой вариант- нужно вычислять отношение суммы площади клиента и занимаемой им площади к общей площади квартиры/блока/секции. Использую 1й вариант.
+                    # TODO: Необходимо подсчитать сумму площадей помещений, занимаемыми клиентами.  
+                    rooms_area = 200
                     for room in RealEstate.objects.filter(parent=real_estate):
-                        room_volume = room.площадь / building_area * volume
+                        room_volume = room.area / rooms_area * volume
                         #TODO: ОДН должны храниться в отдельной таблице, так как эти данные будут использоваться при перерасчетах.
                         #TODO: Нужно сохранить объем ОДН в отдельную таблицу по ОДН.
 
@@ -162,7 +171,7 @@ def write_off():
             cold_water_volume = ColdWaterVolume(real_estate=client.real_estate, volume=volume, date=datetime.date.today())
             cold_water_volume.save()
             
-            #TODo: Вычислить объем для земельного участка и расположенных на нем надворных построек
+            #TODO: Вычислить объем для земельного участка и расположенных на нем надворных построек
             # У клиента могут быть виды сельскохозяйственных животных, направления использования
             # Вычисляем общий оъбем для видов сельскохозяйственных животных
             animals_volume = 0
@@ -170,7 +179,7 @@ def write_off():
             for animals in animals_for_house:
                 animals_volume = animals_volume + (animals.count * animals.type.norm)
             
-            # Вычисляем общий оъбем для направления использования
+            # Вычисляем общий объем для направления использования
             use_case_volume = 0
                 
             total_volume = animals_volume + use_case_volume
@@ -179,3 +188,4 @@ def write_off():
             cold_water_volume.save()
             
             #TODO: списать средства с лицевого счета.
+
