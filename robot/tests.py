@@ -5,6 +5,8 @@ from robot.algorithm import calculate_individual_cold_water_volume
 from accounting.models import RealEstate, Period, ColdWaterReading
 import datetime
 
+from django.db import transaction
+
 #python manage.py test robot
 #(py34dj17)am@am:~/projects/orginfo/orginfo$ python ../manage.py test robot
 class RobotTestCase(TestCase):
@@ -39,3 +41,28 @@ class RobotTestCase(TestCase):
             error_occured = True
 
         self.assertTrue(error_occured)
+
+    def test_rollback(self):
+        """ В случае ошибки в write_off() данные должны быть отменены.
+
+        #TODO: Пока не знаю как написать тест, поэтому здесь будет вот такая
+        заглушка:
+        """
+        try:
+            with transaction.atomic():
+                Period(serial_number=1, start=datetime.date(2000, 12, 26), end=datetime.date(2001, 1, 25)).save()
+                raise ForgottenInitialReadingError
+                Period(serial_number=2, start=datetime.date(2001, 1, 26), end=datetime.date(2001, 2, 25)).save()
+        except ForgottenInitialReadingError:
+            pass
+
+        self.assertEqual(0, Period.objects.all().count())
+
+        try:
+            with transaction.atomic():
+                Period(serial_number=1, start=datetime.date(2000, 12, 26), end=datetime.date(2001, 1, 25)).save()
+                Period(serial_number=2, start=datetime.date(2001, 1, 26), end=datetime.date(2001, 2, 25)).save()
+        except ForgottenInitialReadingError:
+            pass
+
+        self.assertEqual(2, Period.objects.all().count())
