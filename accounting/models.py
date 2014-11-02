@@ -37,11 +37,13 @@ class RealEstate(models.Model):
     ROOM_TYPE = 'r'
     HOUSE_TYPE = 'h'
     BUILDING_TYPE = 'b'
+    SHARE_TYPE = 's'
     REAL_ESTATE_TYPES = (
         (FLAT_TYPE, 'Flat'),
         (ROOM_TYPE, 'Room'),
         (HOUSE_TYPE, 'House'),
         (BUILDING_TYPE, 'Building'),
+        (SHARE_TYPE, 'Share'),
     )
 
     address = models.CharField(max_length=200)

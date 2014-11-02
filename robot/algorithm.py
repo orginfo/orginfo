@@ -79,7 +79,7 @@ def write_off():
         
                 cold_water_volume_clients_sum = 0
                 for real_estate in real_estates:
-                    if real_estate.type != 'c':
+                    if real_estate.type != RealEstate.SHARE_TYPE:
                         client = real_estate.client_set.last()
                         #TODO: как вычислить is_cold_water_service с учетом start/end 
                         is_cold_water_service = client.serviceclient_set.filter(
@@ -134,7 +134,7 @@ def write_off():
                 volume = cold_water_building_volume - cold_water_volume_clients_sum
                 if volume != 0:
                     for real_estate in real_estates:
-                        if real_estate.type != 'c':
+                        if real_estate.type != RealEstate.SHARE_TYPE:
                             real_estate_volume = real_estate.area / building.area * volume
                             #TODO: Общедомовые нужды(ОДН) должны храниться в отдельной таблице, так как эти данные будут использоваться при перерасчетах.
                             cold_water_volume = ColdWaterVolume(real_estate=real_estate, volume=volume, date=datetime.date.today())
