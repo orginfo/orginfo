@@ -50,6 +50,7 @@ class RealEstate(models.Model):
     parent = models.ForeignKey('self', null=True, blank=True, default = None)
     cold_water_counter_setup_date = models.DateField(blank=True, null=True)
     type = models.CharField(max_length=1, choices=REAL_ESTATE_TYPES, default=HOUSE_TYPE)
+    space = models.FloatField()
     def __str__(self):
         return self.address
 
