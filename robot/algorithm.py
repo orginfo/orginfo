@@ -69,10 +69,21 @@ def write_off():
             for building in RealEstate.objects.filter(type=RealEstate.BUILDING_TYPE):
                 periods = Period.objects.order_by('start')
                 #TODO: счетчик может отсутствовать
-                last_period_reading = periods[periods.count()-1].coldwaterreading_set.filter(real_estate=building).get()
-                next_to_last_period_reading = periods[periods.count()-2].coldwaterreading_set.filter(real_estate=building).get()
-                cold_water_building_volume = last_period_reading.value - next_to_last_period_reading.value
-        
+                cold_water_building_volume = None
+                setup_date = building.cold_water_counter_setup_date
+                if setup_date:
+                    last_period_reading = periods[periods.count()-1].coldwaterreading_set.filter(real_estate=building).get()
+                    next_to_last_period_reading = periods[periods.count()-2].coldwaterreading_set.filter(real_estate=building).get()
+                    if last_period_reading and next_to_last_period_reading:
+                        cold_water_building_volume = last_period_reading.value - next_to_last_period_reading.value
+                #Расчёт по норме.
+                if cold_water_building_volume:
+                    #TODO: Нужно вычислить объем жилого помещения residential_cold_water_volume
+                    residential_cold_water_volume = 0
+                    #TODO: Нужно получить объем нежилого помещения not_residential_cold_water_volume (Предоставляется поставщиком услуги)
+                    volume + not_residential_cold_water_volume = 0
+                    cold_water_building_volume = residential_cold_water_volume + not_residential_cold_water_volume
+
                 real_estates = []
                 for real_estate in RealEstate.objects.filter(parent=building):
                     real_estates.append(real_estate)
