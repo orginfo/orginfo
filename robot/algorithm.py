@@ -97,7 +97,7 @@ def write_off():
                         total_rooms_volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, residential, residents)
                         
                         # flat_residents - общее количество проживающих в квартире
-                        #TODO: У родительского помещения 'parent=real_estate' должа быть указана общая площадь. Создать поле 'area' в  'RealEstate'.
+                        #TODO: У родительского помещения 'parent=real_estate' должа быть указана общая площадь.
                         flat_residents = 0 #TODO: Подумать, может ли так же хранить для каждого помещения общее количество проживающих?
                         # В 'volume' будет добавлено суммарное количество объема всех комнат. Значение может отличаться от 'total_rooms_volume'. В этом случае, разница объемов будет учтена и рассчитана в расчет ОДН.
                         # Вычисляем общее количество проживающих в помещении (блоке, коммунальной квартире и т.д.)
@@ -116,8 +116,7 @@ def write_off():
                                 proportion = room.client.residents / flat_residents
                             else:
                                 #Вычисление доли по площади.
-                                #TODO: Внести в 'RealEstate' поле 'area'.
-                                proportion = room.area / real_estate.area
+                                proportion = room.space / real_estate.space
         
                             room_volume = proportion * total_rooms_volume
                             volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=room_volume, date=datetime.date.today())
@@ -129,25 +128,24 @@ def write_off():
                     cold_water_volume_clients_sum = cold_water_volume_clients_sum + volume
         
                 #расчет общедомовых нужд. Доля объма на помещение определяется от соотношения площади помещения к общей площади всех жилых и нежилых помещений.
-                # building_area - общая площадь всех жилых помещений (квартир) и нежилых помещений в многоквартирном доме.
-                # TODO: Здание должно иметь параметр area.
+                # building_space - общая площадь всех жилых помещений (квартир) и нежилых помещений в многоквартирном доме.
                 volume = cold_water_building_volume - cold_water_volume_clients_sum
                 if volume != 0:
                     for real_estate in real_estates:
                         if real_estate.type != RealEstate.SHARE_TYPE:
-                            real_estate_volume = real_estate.area / building.area * volume
+                            real_estate_volume = real_estate.space / building.space * volume
                             #TODO: Общедомовые нужды(ОДН) должны храниться в отдельной таблице, так как эти данные будут использоваться при перерасчетах.
                             cold_water_volume = ColdWaterVolume(real_estate=real_estate, volume=volume, date=datetime.date.today())
                             cold_water_volume.save()
                         else:
                             # Вычисляем объем для всей квартиры/блока/секции
-                            real_estate_volume = real_estate.area / building.area * volume
+                            real_estate_volume = real_estate.space / building.space * volume
                             # Распределяем общий объем между внутренними помещениями клиентов.
                             # TODO: Полагаю, что для распределения требуется не общая площадь квартиры/блока/секции, а общая площадь помещений клиентов. Либо другой вариант- нужно вычислять отношение суммы площади клиента и занимаемой им площади к общей площади квартиры/блока/секции. Использую 1й вариант.
                             # TODO: Необходимо подсчитать сумму площадей помещений, занимаемыми клиентами.  
-                            rooms_area = 200
+                            rooms_space = 200
                             for room in RealEstate.objects.filter(parent=real_estate):
-                                room_volume = room.area / rooms_area * volume
+                                room_volume = room.space / rooms_space * volume
                                 #TODO: ОДН должны храниться в отдельной таблице, так как эти данные будут использоваться при перерасчетах.
                                 #TODO: Нужно сохранить объем ОДН в отдельную таблицу по ОДН.
         
