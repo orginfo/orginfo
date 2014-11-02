@@ -197,3 +197,8 @@ class Animals(models.Model):
     count = models.IntegerField(default=-1)
     real_estate = models.ForeignKey(RealEstate)
     type = models.ForeignKey(AnimalType)
+
+class ColdWaterNorm(models.Model):
+    norm = models.FloatField()
+    #region = 
+    residential = models.BooleanField(default=True)

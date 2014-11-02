@@ -78,10 +78,19 @@ def write_off():
                         cold_water_building_volume = last_period_reading.value - next_to_last_period_reading.value
                 #Расчёт по норме.
                 if cold_water_building_volume:
-                    #TODO: Нужно вычислить объем жилого помещения residential_cold_water_volume
-                    residential_cold_water_volume = 0
+                    residents = 0
+                    for real_estate in RealEstate.objects.filter(parent=building):
+                        if real_estate.type == RealEstate.FLAT_TYPE:
+                            residents = residents + real_estate.client_set.last().residents
+                        if real_estate.type == RealEstate.SHARE_TYPE:
+                            for share in RealEstate.objects.filter(parent=real_estate):
+                                if share.type == RealEstate.ROOM_TYPE:
+                                    residents = residents + share.client_set.last().residents
+
+                    norm = 0#TODO: посчитать
+                    residential_cold_water_volume = residents * norm
                     #TODO: Нужно получить объем нежилого помещения not_residential_cold_water_volume (Предоставляется поставщиком услуги)
-                    volume + not_residential_cold_water_volume = 0
+                    not_residential_cold_water_volume = 0
                     cold_water_building_volume = residential_cold_water_volume + not_residential_cold_water_volume
 
                 real_estates = []
