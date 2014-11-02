@@ -1,4 +1,4 @@
-﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals
+﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals, ColdWaterNorm
 import datetime
 from robot.errors import ForgottenInitialReadingError
 from django.db.models import Sum
@@ -68,11 +68,32 @@ def write_off():
         with transaction.atomic():
             for building in RealEstate.objects.filter(type=RealEstate.BUILDING_TYPE):
                 periods = Period.objects.order_by('start')
-                #TODO: счетчик может отсутствовать
-                last_period_reading = periods[periods.count()-1].coldwaterreading_set.filter(real_estate=building).get()
-                next_to_last_period_reading = periods[periods.count()-2].coldwaterreading_set.filter(real_estate=building).get()
-                cold_water_building_volume = last_period_reading.value - next_to_last_period_reading.value
-        
+                cold_water_building_volume = None
+                setup_date = building.cold_water_counter_setup_date
+                if setup_date:
+                    last_period_reading = periods[periods.count()-1].coldwaterreading_set.filter(real_estate=building).get()
+                    next_to_last_period_reading = periods[periods.count()-2].coldwaterreading_set.filter(real_estate=building).get()
+                    if last_period_reading and next_to_last_period_reading:
+                        cold_water_building_volume = last_period_reading.value - next_to_last_period_reading.value
+                #Расчёт по норме.
+                if cold_water_building_volume is None:
+                    residents = 0
+                    for real_estate in RealEstate.objects.filter(parent=building):
+                        if real_estate.type == RealEstate.FLAT_TYPE:
+                            residents = residents + real_estate.client_set.last().residents
+                        if real_estate.type == RealEstate.SHARE_TYPE:
+                            for share in RealEstate.objects.filter(parent=real_estate):
+                                if share.type == RealEstate.ROOM_TYPE:
+                                    residents = residents + share.client_set.last().residents
+
+                    norm = ColdWaterNorm.objects.filter(residential=building.client_set.last().residential, region=building.region).get()
+                    
+                    residential_cold_water_volume = residents * norm
+
+                    #TODO: not_residential_cold_water_volume предоставляется поставщиком услуги
+                    not_residential_cold_water_volume = 0
+                    cold_water_building_volume = residential_cold_water_volume + not_residential_cold_water_volume
+
                 real_estates = []
                 for real_estate in RealEstate.objects.filter(parent=building):
                     real_estates.append(real_estate)

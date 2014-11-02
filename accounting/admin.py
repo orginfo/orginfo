@@ -40,6 +40,12 @@ class AnimalTypeAdmin(admin.ModelAdmin):
 class TypeWaterNormAdmin(admin.ModelAdmin):
     list_display = ('improvement_status', 'cold_water_norm', 'hot_water_norm', 'disposal_water_norm',)
 
+class RegionAdmin(admin.ModelAdmin):
+    list_display = ('name')
+
+class ColdWaterNormAdmin(admin.ModelAdmin):
+    list_display = ('norm', 'region', 'residential',)
+
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(UserOrganization, UserOrganizationAdmin)
 admin.site.register(Client, ClientAdmin)
@@ -53,3 +59,6 @@ admin.site.register(ColdWaterTariff, ColdWaterTariffAdmin)
 admin.site.register(Animals, AnimalsAdmin)
 admin.site.register(AnimalType, AnimalTypeAdmin)
 admin.site.register(TypeWaterNorm, TypeWaterNormAdmin)
+admin.site.register(Region, RegionAdmin)
+admin.site.register(ColdWaterNorm, ColdWaterNormAdmin)
+
