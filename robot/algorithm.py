@@ -114,7 +114,6 @@ def write_off():
         
                     else:
                         cold_water_norm = ColdWaterNorm.objects.filter(residential=real_estate.residential, region=building.region).get()
-                        total_rooms_volume #TODO: Общий объем холодного водоснабжения для коммунальной квартиры/блока офисов/секции общещития.
                         total_rooms_volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, real_estate.residential, real_estate.residents)
                         
                         # flat_residents - общее количество проживающих в квартире
