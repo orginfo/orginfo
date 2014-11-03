@@ -37,9 +37,6 @@ class AnimalsAdmin(admin.ModelAdmin):
 class AnimalTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'norm',)
 
-class TypeWaterNormAdmin(admin.ModelAdmin):
-    list_display = ('improvement_status', 'cold_water_norm', 'hot_water_norm', 'disposal_water_norm',)
-
 class RegionAdmin(admin.ModelAdmin):
     list_display = ('name')
 
@@ -58,7 +55,6 @@ admin.site.register(ColdWaterVolume, ColdWaterVolumeAdmin)
 admin.site.register(ColdWaterTariff, ColdWaterTariffAdmin)
 admin.site.register(Animals, AnimalsAdmin)
 admin.site.register(AnimalType, AnimalTypeAdmin)
-admin.site.register(TypeWaterNorm, TypeWaterNormAdmin)
 admin.site.register(Region, RegionAdmin)
 admin.site.register(ColdWaterNorm, ColdWaterNormAdmin)
 

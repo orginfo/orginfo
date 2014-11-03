@@ -107,7 +107,8 @@ def write_off():
                             service_name=ServiceClient.COLD_WATER_SERVICE).last()
                         if is_cold_water_service:
                             #TODO: cold_water_norm не через клиента.
-                            volume = calculate_individual_cold_water_volume(real_estate, client.type_water_norm.cold_water_norm, real_estate.residential, real_estate.residents)
+                            cold_water_norm = ColdWaterNorm.objects.filter(residential=real_estate.residential, region=building.region).get()
+                            volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, real_estate.residential, real_estate.residents)
                             volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=volume, date=datetime.date.today())
                             volume_model.save()
         
@@ -173,13 +174,14 @@ def write_off():
         
             for house in RealEstate.objects.filter(type=RealEstate.HOUSE_TYPE):
                 client = house.client
+                cold_water_norm = ColdWaterNorm.objects.filter(residential=house.residential, region=house.region).get()
                 does_cold_water_counter_exist = False
                 if does_cold_water_counter_exist:
-                    volume = calculate_individual_cold_water_volume(house, client.type_water_norm.cold_water_norm, house.residential, house.residents)
+                    volume = calculate_individual_cold_water_volume(house, cold_water_norm, house.residential, house.residents)
                     volume_model = ColdWaterVolume(period=periods.last(), real_estate=house, volume=volume, date=datetime.date.today())
                     volume_model.save()
                 else:
-                    volume = client.residents * client.type_water_norm.cold_water_norm
+                    volume = client.residents * cold_water_norm
                     cold_water_volume = ColdWaterVolume(real_estate=client.real_estate, volume=volume, date=datetime.date.today())
                     cold_water_volume.save()
                     
