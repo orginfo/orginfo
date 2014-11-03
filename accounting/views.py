@@ -97,7 +97,7 @@ class CreateClient(CreateView):
     model = Client
     template_name = 'accounting/add_client.html'
     exclude = ('organization', 'real_estate',)
-    fields = ['lfm', 'amount', 'residential', 'residents']
+    fields = ['lfm', 'amount']
     def dispatch(self, *args, **kwargs):
         user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
         if not user_org.organization:
@@ -115,7 +115,7 @@ class UpdateClient(UpdateView):
     model = Client
     template_name = 'accounting/update_client.html'
     exclude = ('organization', 'real_estate')
-    fields = ['lfm', 'amount', 'residential', 'residents']
+    fields = ['lfm', 'amount']
     def dispatch(self, *args, **kwargs):
         user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
         if not user_org.organization:
