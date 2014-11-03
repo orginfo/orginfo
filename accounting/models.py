@@ -68,19 +68,6 @@ class RealEstate(models.Model):
     def __str__(self):
         return self.address
 
-class TypeWaterNorm(models.Model):
-    """Нормативы потребления коммунальных услуг по холодному водоснабжению, горячему водоснабжению и водоотведению
-       в жилых помещениях на территории Новосиирской области.
-       из "Приложение № 1 к приказу департамента по тарифам Новосибирской области".
-       
-       improvement_status - Степень благоустройства жилых помещений.
-       
-    """
-    improvement_status = models.CharField(max_length=500)
-    cold_water_norm = models.FloatField()
-    hot_water_norm = models.FloatField()
-    disposal_water_norm = models.FloatField()
-
 class Client(models.Model):
     """Клиент.
 
@@ -95,11 +82,6 @@ class Client(models.Model):
     organization = models.ForeignKey(Organization)
     amount = models.DecimalField(max_digits=8, decimal_places=2, default=1)
     real_estate = models.ForeignKey(RealEstate)
-    #TODO: разобраться почему происходит 
-    #You are trying to add a non-nullable field 'type_water_norm' to client without a default;
-    #MAYBE: Удалить папку migrations.
-    #type_water_norm = models.ForeignKey(TypeWaterNorm, null=True, blank=True, default = None)
-    type_water_norm = models.ForeignKey(TypeWaterNorm)
     def __str__(self):
         return self.lfm + "(" + self.organization.__str__() + ")"
     def get_absolute_url(self):
