@@ -68,7 +68,6 @@ def write_off():
         with transaction.atomic():
             for building in RealEstate.objects.filter(type=RealEstate.BUILDING_TYPE):
                 periods = Period.objects.order_by('start')
-                #TODO: счетчик может отсутствовать
                 cold_water_building_volume = None
                 setup_date = building.cold_water_counter_setup_date
                 if setup_date:
@@ -90,7 +89,8 @@ def write_off():
                     norm = ColdWaterNorm.objects.filter(residential=building.client_set.last().residential, region=building.region).get()
                     
                     residential_cold_water_volume = residents * norm
-                    #TODO: Нужно получить объем нежилого помещения not_residential_cold_water_volume (Предоставляется поставщиком услуги)
+
+                    #TODO: not_residential_cold_water_volume предоставляется поставщиком услуги
                     not_residential_cold_water_volume = 0
                     cold_water_building_volume = residential_cold_water_volume + not_residential_cold_water_volume
 
