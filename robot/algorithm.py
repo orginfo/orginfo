@@ -76,7 +76,7 @@ def write_off():
                     if last_period_reading and next_to_last_period_reading:
                         cold_water_building_volume = last_period_reading.value - next_to_last_period_reading.value
                 #Расчёт по норме.
-                if cold_water_building_volume:
+                if cold_water_building_volume is None:
                     residents = 0
                     for real_estate in RealEstate.objects.filter(parent=building):
                         if real_estate.type == RealEstate.FLAT_TYPE:
