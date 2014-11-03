@@ -35,6 +35,14 @@ class RealEstate(models.Model):
     воды. Не совсем понятна ситуация со сменой счетчиков, т.е. должна ли
     находится информация cold_water_counter_setup_date именно в объекте
     недвижимости.
+
+    TODO: со временем перенести поля residential residents в отдельную
+    таблицу, потому что эта информация может меняться, а иногда полезно делать
+    перерасчет, но информация, возможна будет потеряна.
+    residential -- флаг, указывающий жилое ли помещение. Находится здесь,
+    потому что как используется помещение зависит больше от клиента, а не от
+    помещения.
+    residents - количество зарегестированных (проживающих)
     """
     FLAT_TYPE = 'f'
     ROOM_TYPE = 'r'
@@ -55,6 +63,8 @@ class RealEstate(models.Model):
     cold_water_counter_setup_date = models.DateField(blank=True, null=True)
     type = models.CharField(max_length=1, choices=REAL_ESTATE_TYPES, default=HOUSE_TYPE)
     space = models.FloatField()
+    residential = models.BooleanField(default=True)
+    residents = models.IntegerField(default=-1)
     def __str__(self):
         return self.address
 
@@ -78,22 +88,13 @@ class Client(models.Model):
     У клиента есть свой лицевой счет, который характеризуется его номером,
     сейчас это ID клиента, и суммой на лицевом счете. Лицевой счет
     инкапсулирован в понятие клиента.
-    TODO: со временем перенести поля residential residents в отдельную
-    таблицу, потому что эта информация может меняться, а иногда полезно делать
-    перерасчет, но информация, возможна будет потеряна.
-    residential -- флаг, указывающий жилое ли помещение. Находится здесь,
-    потому что как используется помещение зависит больше от клиента, а не от
-    помещения.
-    
+
     amount - сумма денег на счете клиента
-    residents - количество зарегестированных (проживающих)
     """
     lfm = models.CharField(max_length=200)
     organization = models.ForeignKey(Organization)
     amount = models.DecimalField(max_digits=8, decimal_places=2, default=1)
     real_estate = models.ForeignKey(RealEstate)
-    residential = models.BooleanField(default=True)
-    residents = models.IntegerField(default=-1)
     #TODO: разобраться почему происходит 
     #You are trying to add a non-nullable field 'type_water_norm' to client without a default;
     #MAYBE: Удалить папку migrations.

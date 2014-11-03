@@ -74,15 +74,13 @@ class CreateClientForm(ModelForm):
             'lfm',
             'amount',
             'parent_street',
-            'residential',
-            'residents',
             ButtonHolder(
                 Submit('submit', 'Add', css_class='btn-default')
             )
         )
     class Meta:
         model = Client
-        fields = ['lfm', 'amount', 'residential', 'residents']
+        fields = ['lfm', 'amount']
     def clean(self):
         #TODO: добавить проверку на пустоту.
         parent_street = self.cleaned_data['parent_street']
@@ -114,6 +112,8 @@ class CreateRealEstateForm(ModelForm):
                 'parent',
                 Field('cold_water_counter_setup_date', placeholder="ГГГГ-ММ-ДД"),
                 'type',
+                'residential',
+                'residents',
             ),
             ButtonHolder(
                 Submit('submit', 'Take', css_class='btn-default')
@@ -121,7 +121,7 @@ class CreateRealEstateForm(ModelForm):
         )
     class Meta:
         model = RealEstate
-        fields = ['address', 'parent', 'cold_water_counter_setup_date', 'type']
+        fields = ['address', 'parent', 'cold_water_counter_setup_date', 'type', 'residential', 'residents']
         widgets = {
 #            'parent': TextInput(),
         }
