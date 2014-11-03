@@ -1,4 +1,4 @@
-﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals
+﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals, ColdWaterNorm
 import datetime
 from robot.errors import ForgottenInitialReadingError
 from django.db.models import Sum
@@ -87,7 +87,8 @@ def write_off():
                                 if share.type == RealEstate.ROOM_TYPE:
                                     residents = residents + share.client_set.last().residents
 
-                    norm = 0#TODO: посчитать
+                    norm = ColdWaterNorm.objects.filter(residential=building.client_set.last().residential, region=building.region).get()
+                    
                     residential_cold_water_volume = residents * norm
                     #TODO: Нужно получить объем нежилого помещения not_residential_cold_water_volume (Предоставляется поставщиком услуги)
                     not_residential_cold_water_volume = 0

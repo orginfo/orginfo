@@ -21,6 +21,9 @@ class UserOrganization(models.Model):
     user = models.ForeignKey(User)
     organization = models.ForeignKey(Organization, null=True, blank=True, default = None)
 
+class Region(models.Model):
+    name = models.CharField(max_length=200)
+
 class RealEstate(models.Model):
     """Объект недвижимости.
 
@@ -47,6 +50,7 @@ class RealEstate(models.Model):
     )
 
     address = models.CharField(max_length=200)
+    region = models.ForeignKey(Region)
     parent = models.ForeignKey('self', null=True, blank=True, default = None)
     cold_water_counter_setup_date = models.DateField(blank=True, null=True)
     type = models.CharField(max_length=1, choices=REAL_ESTATE_TYPES, default=HOUSE_TYPE)
@@ -200,5 +204,6 @@ class Animals(models.Model):
 
 class ColdWaterNorm(models.Model):
     norm = models.FloatField()
-    #region = 
-    residential = models.BooleanField(default=True)
+    region = models.ForeignKey(Region)
+    residential = models.BooleanField(default=True) 
+    
