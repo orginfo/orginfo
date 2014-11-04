@@ -3,7 +3,31 @@ import datetime
 from robot.errors import ForgottenInitialReadingError
 from django.db.models import Sum
 from django.db import transaction
+from django.db.models import Q
 
+
+def calculate_share_of_service_usage(client, service, period):
+    #отсечь диапозоны, что за границей периода
+    #TODO: плохое название ServiceClient
+    service_usages = list(ServiceClient.objects.filter((Q(end__gte=period.start) | Q(end=None)) & Q(start__lte=period.end) & Q(client=client)).order_by('start').all())
+
+    if len(service_usages) == 0:
+        return 0 #доля равна 0, ведь она не подключена.
+
+    #при необходимости обрезаем до границ period.start и period.end
+    if service_usages[0].start < period.start:
+        service_usages[0].start = period.start
+    last_index = len(service_usages) - 1
+    if service_usages[last_index].end is None or service_usages.last().end > period.end:
+        service_usages[last_index].end = period.end
+
+    #вычисляем количество дней с услугой и без услуги, берем долю.
+    days_in_period = (period.end - period.start).days
+    service_usages_days = 0
+    for usage in service_usages:
+        service_usages_days = service_usages_days + (usage.end - usage.start).days
+    share = service_usages_days / days_in_period
+    return share
 
 def calculate_individual_cold_water_volume(real_estate, cold_water_norm, residential, residents):
     """Списание средств за холодную воду.
@@ -44,17 +68,18 @@ def calculate_individual_cold_water_volume(real_estate, cold_water_norm, residen
             average_volume = last_six_volumes_sum/6
             return average_volume
 
-    if residential:
+    share = calculate_share_of_service_usage(real_estate.client_set.last(), ServiceClient.COLD_WATER_SERVICE, Period.objects.all().last())
+    if residential: #или счетчик меньше 6 периодов, или без счетчика
         #Формула № 4а
         volume = residents * cold_water_norm
-        return volume
+        return volume * share
 
     periods = Period.objects.order_by('start')
     start_period_index = periods.count()-6-1
     if start_period_index > 0:
         last_six_volumes_sum = ColdWaterVolume.objects.filter(real_estate=real_estate, period__serial_number__gte=periods[start_period_index].serial_number).aggregate(Sum('volume'))['volume__sum']
         average_volume = last_six_volumes_sum/6
-        return average_volume
+        return average_volume * share
 
     return None #TODO: нужен флаг -- manual
 
