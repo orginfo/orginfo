@@ -44,7 +44,8 @@ def calculate_individual_cold_water_volume(real_estate, cold_water_norm, residen
             average_volume = last_six_volumes_sum/6
             return average_volume
 
-    if residential:
+    portion = 1 # доля -- это отношение дней с подключенной услугой к общему дней в периоде.
+    if residential: #или счетчик меньше 6 периодов, или без счетчика
         #Формула № 4а
         volume = residents * cold_water_norm
         return volume
