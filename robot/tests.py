@@ -6,6 +6,7 @@ from accounting.models import RealEstate, Period, ColdWaterReading
 import datetime
 
 from django.db import transaction
+import accounting
 
 #python manage.py test robot
 #(py34dj17)am@am:~/projects/orginfo/orginfo$ python ../manage.py test robot
@@ -66,3 +67,37 @@ class RobotTestCase(TestCase):
             pass
 
         self.assertEqual(2, Period.objects.all().count())
+
+    def test_calculate_share_of_service_usage(self):
+        #Organization
+        #name = models.CharField(max_length=200)
+        organization = accounting.models.Organization(name="OOO OrgInfo")
+        organization.save()
+
+        region = accounting.models.Region(name="Тогучинский район")
+        region.save()
+        #Region(models.Model):
+        #name = models.CharField(max_length=200)
+
+        #address = models.CharField(max_length=200)
+        #region = models.ForeignKey(Region)
+        #parent = models.ForeignKey('self', null=True, blank=True, default = None)
+        #cold_water_counter_setup_date = models.DateField(blank=True, null=True)
+        #type = models.CharField(max_length=1, choices=REAL_ESTATE_TYPES, default=HOUSE_TYPE)
+        #space = models.FloatField()
+        #residential = models.BooleanField(default=True)
+        #residents = models.IntegerField(default=-1)
+
+        #Client
+        #lfm = models.CharField(max_length=200)
+        #organization = models.ForeignKey(Organization)
+        #amount = models.DecimalField(max_digits=8, decimal_places=2, default=1)
+        #real_estate = models.ForeignKey(RealEstate)
+
+        #ServiceClient
+        #client = models.ForeignKey(Client)
+        #service_name = models.CharField(max_length=100, choices=SERVICE_NAMES, default=COLD_WATER_SERVICE)
+        #start = models.DateField()
+        #end = models.DateField(blank=True, null=True)
+
+        pass
