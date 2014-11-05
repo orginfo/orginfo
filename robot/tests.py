@@ -12,18 +12,11 @@ import accounting
 #(py34dj17)am@am:~/projects/orginfo/orginfo$ python ../manage.py test robot
 class RobotTestCase(TestCase):
 
-    def test_synthetic(self):
-        """Синтетический тест.
-
-        Синтетический тест служит кирпичеком в архитектуре программы, после ее
-        становления будет заменен функциональными тестами.
-        http://djbook.ru/rel1.6/intro/tutorial05.html#create-a-test-to-expose-the-bug
-        """
-        self.assertEqual(True, False)
-
     def test_forgotten_initial_reading(self):
         """Забыли внести показания счетчика при установке."""
-        real_estate = RealEstate(address="ул. Ленина, д. 1, кв. 2", parent=None, cold_water_counter_setup_date=datetime.date(2001, 1, 13), type=RealEstate.FLAT_TYPE)
+        region = accounting.models.Region(name="Тогучинский район")
+        region.save()
+        real_estate = accounting.models.RealEstate(address="ул. Ленина, д. 1, кв. 2", region=region, parent=None, cold_water_counter_setup_date=datetime.date(2001, 1, 13), type=RealEstate.FLAT_TYPE, space=40, residential=True, residents=2)
         real_estate.save()
         Period(serial_number=1, start=datetime.date(2000, 12, 26), end=datetime.date(2001, 1, 25)).save()
         Period(serial_number=2, start=datetime.date(2001, 1, 26), end=datetime.date(2001, 2, 25)).save()
@@ -69,35 +62,17 @@ class RobotTestCase(TestCase):
         self.assertEqual(2, Period.objects.all().count())
 
     def test_calculate_share_of_service_usage(self):
-        #Organization
-        #name = models.CharField(max_length=200)
-        organization = accounting.models.Organization(name="OOO OrgInfo")
-        organization.save()
-
         region = accounting.models.Region(name="Тогучинский район")
         region.save()
-        #Region(models.Model):
-        #name = models.CharField(max_length=200)
+        real_estate = accounting.models.RealEstate(address="ул. Ленина, д. 1, кв. 2", region=region, parent=None, cold_water_counter_setup_date=datetime.date(2001, 1, 13), type=RealEstate.FLAT_TYPE, space=40, residential=True, residents=2)
+        real_estate.save()
+        organization = accounting.models.Organization(name="OOO OrgInfo")
+        organization.save()
+        client = accounting.models.Client(lfm="Андреев А.А.", organization=organization, amount=0, real_estate=real_estate)
+        client.save()
+        accounting.models.ServiceClient(client=client, service_name=accounting.models.ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 1, 19), end=datetime.date(2000, 1, 22)).save()
+        accounting.models.ServiceClient(client=client, service_name=accounting.models.ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 1, 24), end=datetime.date(2000, 2, 2)).save()
+        accounting.models.ServiceClient(client=client, service_name=accounting.models.ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 2, 16), end=datetime.date(2000, 2, 18)).save()
+        accounting.models.ServiceClient(client=client, service_name=accounting.models.ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 2, 20), end=None).save()
 
-        #address = models.CharField(max_length=200)
-        #region = models.ForeignKey(Region)
-        #parent = models.ForeignKey('self', null=True, blank=True, default = None)
-        #cold_water_counter_setup_date = models.DateField(blank=True, null=True)
-        #type = models.CharField(max_length=1, choices=REAL_ESTATE_TYPES, default=HOUSE_TYPE)
-        #space = models.FloatField()
-        #residential = models.BooleanField(default=True)
-        #residents = models.IntegerField(default=-1)
-
-        #Client
-        #lfm = models.CharField(max_length=200)
-        #organization = models.ForeignKey(Organization)
-        #amount = models.DecimalField(max_digits=8, decimal_places=2, default=1)
-        #real_estate = models.ForeignKey(RealEstate)
-
-        #ServiceClient
-        #client = models.ForeignKey(Client)
-        #service_name = models.CharField(max_length=100, choices=SERVICE_NAMES, default=COLD_WATER_SERVICE)
-        #start = models.DateField()
-        #end = models.DateField(blank=True, null=True)
-
-        pass
+        self.assertEqual(0, 0)
