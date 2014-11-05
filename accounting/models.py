@@ -114,6 +114,8 @@ class ServiceClient(models.Model):
     service_name = models.CharField(max_length=100, choices=SERVICE_NAMES, default=COLD_WATER_SERVICE)
     start = models.DateField()
     end = models.DateField(blank=True, null=True)
+    def __str__(self):
+        return "#%s(%s->%s)" % (self.service_name, str(self.start), str(self.end))
 
 class Period(models.Model):
     """Расчетный период.

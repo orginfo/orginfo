@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from robot.errors import ForgottenInitialReadingError
-from robot.algorithm import calculate_individual_cold_water_volume
+from robot.algorithm import calculate_individual_cold_water_volume, calculate_share_of_service_usage
 from accounting.models import RealEstate, Period, ColdWaterReading
 import datetime
 
@@ -74,5 +74,9 @@ class RobotTestCase(TestCase):
         accounting.models.ServiceClient(client=client, service_name=accounting.models.ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 1, 24), end=datetime.date(2000, 2, 2)).save()
         accounting.models.ServiceClient(client=client, service_name=accounting.models.ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 2, 16), end=datetime.date(2000, 2, 18)).save()
         accounting.models.ServiceClient(client=client, service_name=accounting.models.ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 2, 20), end=None).save()
+        period = Period(serial_number=2, start=datetime.date(2000, 1, 26), end=datetime.date(2000, 2, 25))
+        period.save()
+
+        calculate_share_of_service_usage(client, accounting.models.ServiceClient.COLD_WATER_SERVICE, period)
 
         self.assertEqual(0, 0)
