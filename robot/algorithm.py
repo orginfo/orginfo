@@ -104,20 +104,18 @@ def write_off():
                     #{
                     cold_water_volume_clients_sum = 0
                     for real_estate in real_estates:
-                        if real_estate.type != RealEstate.SHARE_TYPE:
-                            cold_water_norm = ColdWaterNorm.objects.filter(residential=real_estate.residential, region=building.region).get()
-                            volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, real_estate.residential, real_estate.residents)
-                            volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=volume, date=datetime.date.today())
-                            volume_model.save()
+                        if real_estate.type != RealEstate.FLAT_TYPE or real_estate.type != RealEstate.SHARE_TYPE:
+                            raise Exception #TODO: Продумать ошибку.
 
-                        else:
-                            cold_water_norm = ColdWaterNorm.objects.filter(residential=real_estate.residential, region=building.region).get()
-                            total_rooms_volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, real_estate.residential, real_estate.residents)
-                            
-                            # residents - общее количество проживающих в квартире
-                            # В 'volume' будет добавлено суммарное количество объема всех комнат. Значение может отличаться от 'total_rooms_volume'. В этом случае, разница объемов будет учтена и рассчитана в расчет ОДН.
-                            # Вычисляем общее количество проживающих в помещении (блоке, коммунальной квартире и т.д.)
-                            residents = 0
+                        #вычисляем для квартир, комунальных квартир и блоков объем потребления услуги, сохраняем его.
+                        cold_water_norm = ColdWaterNorm.objects.filter(residential=real_estate.residential, region=building.region).get()
+                        volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, real_estate.residential, real_estate.residents)
+                        volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=volume, date=datetime.date.today())
+                        volume_model.save()
+
+                        if real_estate.type == RealEstate.SHARE_TYPE:
+                            total_rooms_volume = 0 #TODO: если total_rooms_volume != volume, то разница объемов будет учтена и рассчитана в расчет ОДН.
+                            residents = 0 #- общее количество проживающих в блоке, коммунальной квартире и т.д.
                             for room in RealEstate.objects.filter(parent=real_estate):
                                 residents = residents + room.residents
 
@@ -134,11 +132,11 @@ def write_off():
                                     #Вычисление доли по площади.
                                     proportion = room.space / real_estate.space
 
-                                room_volume = proportion * total_rooms_volume
-                                volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=room_volume, date=datetime.date.today())
+                                room_volume = proportion * volume
+                                volume_model = ColdWaterVolume(period=periods.last(), real_estate=room, volume=room_volume, date=datetime.date.today())
                                 volume_model.save()
-                                
-                                volume = volume + room_volume;
+
+                                total_rooms_volume = total_rooms_volume + room_volume
 
                         # Суммируем объемы помещений. Если квартира коммунальная (или блок общещия, или блок с офисами), тогда используем сумму объемов всех внутренних помещений клиентов.
                         cold_water_volume_clients_sum = cold_water_volume_clients_sum + volume
