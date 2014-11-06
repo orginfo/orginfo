@@ -6,10 +6,10 @@ from django.db import transaction
 from django.db.models import Q
 
 
-def calculate_share_of_service_usage(client, service, period):
+def calculate_share_of_service_usage(real_estate, service, period):
     #отсечь диапозоны, что за границей периода
     #TODO: плохое название ServiceClient
-    service_usages = list(ServiceClient.objects.filter((Q(end__gte=period.start) | Q(end=None)) & Q(start__lte=period.end) & Q(client=client)).order_by('start').all())
+    service_usages = list(ServiceClient.objects.filter((Q(end__gte=period.start) | Q(end=None)) & Q(start__lte=period.end) & Q(real_estate=real_estate)).order_by('start').all())
 
     if len(service_usages) == 0:
         return 0 #доля равна 0, ведь она не подключена.
@@ -68,7 +68,7 @@ def calculate_individual_cold_water_volume(real_estate, cold_water_norm, residen
             average_volume = last_six_volumes_sum/6
             return average_volume
 
-    share = calculate_share_of_service_usage(real_estate.client_set.last(), ServiceClient.COLD_WATER_SERVICE, Period.objects.all().last())
+    share = calculate_share_of_service_usage(real_estate, ServiceClient.COLD_WATER_SERVICE, Period.objects.all().last())
     if residential: #или счетчик меньше 6 периодов, или без счетчика
         #Формула № 4а
         volume = residents * cold_water_norm
@@ -90,112 +90,127 @@ def write_off():
     """
     try:
         with transaction.atomic():
+            periods = Period.objects.order_by('start')
+
             for building in RealEstate.objects.filter(type=RealEstate.BUILDING_TYPE):
-                periods = Period.objects.order_by('start')
-                cold_water_building_volume = None
-                setup_date = building.cold_water_counter_setup_date
-                if setup_date:
-                    last_period_reading = periods[periods.count()-1].coldwaterreading_set.filter(real_estate=building).get()
-                    next_to_last_period_reading = periods[periods.count()-2].coldwaterreading_set.filter(real_estate=building).get()
-                    if last_period_reading and next_to_last_period_reading:
-                        cold_water_building_volume = last_period_reading.value - next_to_last_period_reading.value
-                #Расчёт по норме.
-                if cold_water_building_volume is None:
-                    residents = 0
-                    for real_estate in RealEstate.objects.filter(parent=building):
-                        if real_estate.type == RealEstate.FLAT_TYPE:
-                            residents = residents + real_estate.client_set.last().residents
-                        if real_estate.type == RealEstate.SHARE_TYPE:
-                            for share in RealEstate.objects.filter(parent=real_estate):
-                                if share.type == RealEstate.ROOM_TYPE:
-                                    residents = residents + share.client_set.last().residents
-
-                    norm = ColdWaterNorm.objects.filter(residential=building.residential, region=building.region).get()
-                    
-                    residential_cold_water_volume = residents * norm
-
-                    #TODO: not_residential_cold_water_volume предоставляется поставщиком услуги
-                    not_residential_cold_water_volume = 0
-                    cold_water_building_volume = residential_cold_water_volume + not_residential_cold_water_volume
-
                 real_estates = []
                 for real_estate in RealEstate.objects.filter(parent=building):
                     real_estates.append(real_estate)
-        
-                cold_water_volume_clients_sum = 0
-                for real_estate in real_estates:
-                    if real_estate.type != RealEstate.SHARE_TYPE:
-                        client = real_estate.client_set.last()
-                        #TODO: как вычислить is_cold_water_service с учетом start/end 
-                        is_cold_water_service = client.serviceclient_set.filter(
-                            service_name=ServiceClient.COLD_WATER_SERVICE).last()
-                        if is_cold_water_service:
+
+                is_cold_water_service = calculate_share_of_service_usage(building, ServiceClient.COLD_WATER_SERVICE, Period.objects.all().last()) > 0
+                if is_cold_water_service:
+                    #{
+                    #{Начало расчета индивидуального потребления:
+                    #{
+                    cold_water_volume_clients_sum = 0
+                    for real_estate in real_estates:
+                        if real_estate.type != RealEstate.SHARE_TYPE:
                             cold_water_norm = ColdWaterNorm.objects.filter(residential=real_estate.residential, region=building.region).get()
                             volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, real_estate.residential, real_estate.residents)
                             volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=volume, date=datetime.date.today())
                             volume_model.save()
-        
-                    else:
-                        cold_water_norm = ColdWaterNorm.objects.filter(residential=real_estate.residential, region=building.region).get()
-                        total_rooms_volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, real_estate.residential, real_estate.residents)
-                        
-                        # residents - общее количество проживающих в квартире
-                        # В 'volume' будет добавлено суммарное количество объема всех комнат. Значение может отличаться от 'total_rooms_volume'. В этом случае, разница объемов будет учтена и рассчитана в расчет ОДН.
-                        # Вычисляем общее количество проживающих в помещении (блоке, коммунальной квартире и т.д.)
-                        residents = 0
-                        for room in RealEstate.objects.filter(parent=real_estate):
-                            residents = residents + room.residents
-        
-                        #Вычисляем необходимые объемы для каждого помещения.
-                        for room in RealEstate.objects.filter(parent=real_estate):
-                            # Вычисляем долю 'комнаты ко всей квартире', в зависимости от типа помещения:
-                            # жилое помещение   - тогда количество проживающих в комнате к общему количеству проживающих в квартире;
-                            # нежилое помещение - тогда площать комнаты к общей площади квартиры.
-                            # proportion - доля комнаты к общей квартире
-                            proportion = 1
-                            if room.residential:
-                                proportion = room.residents / residents
-                            else:
-                                #Вычисление доли по площади.
-                                proportion = room.space / real_estate.space
-        
-                            room_volume = proportion * total_rooms_volume
-                            volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=room_volume, date=datetime.date.today())
-                            volume_model.save()
-                            
-                            volume = volume + room_volume;
-        
-                    # Суммируем объемы помещений. Если квартира коммунальная (или блок общещия, или блок с офисами), тогда используем сумму объемов всех внутренних помещений клиентов.
-                    cold_water_volume_clients_sum = cold_water_volume_clients_sum + volume
-        
-                #расчет общедомовых нужд. Доля объма на помещение определяется от соотношения площади помещения к общей площади всех жилых и нежилых помещений.
-                # building_space - общая площадь всех жилых помещений (квартир) и нежилых помещений в многоквартирном доме.
-                volume = cold_water_building_volume - cold_water_volume_clients_sum
-                if volume != 0:
-                    for real_estate in real_estates:
-                        if real_estate.type != RealEstate.SHARE_TYPE:
-                            real_estate_volume = real_estate.space / building.space * volume
-                            #TODO: Общедомовые нужды(ОДН) должны храниться в отдельной таблице, так как эти данные будут использоваться при перерасчетах.
-                            cold_water_volume = ColdWaterVolume(real_estate=real_estate, volume=volume, date=datetime.date.today())
-                            cold_water_volume.save()
+
                         else:
-                            # Вычисляем объем для всей квартиры/блока/секции
-                            real_estate_volume = real_estate.space / building.space * volume
-                            # Распределяем общий объем между внутренними помещениями клиентов.
-                            # TODO: Необходимо проверить. Полагаю, что для распределения требуется не общая площадь квартиры/блока/секции, а общая площадь помещений клиентов. Либо другой вариант- нужно вычислять отношение суммы площади клиента и занимаемой им площади к общей площади квартиры/блока/секции. Использую 1й вариант.
-                            # Считаем сумму площадей помещений, занимаемыми клиентами, без учета совместно-занимаемой площади.  
-                            rooms_space = 0
+                            cold_water_norm = ColdWaterNorm.objects.filter(residential=real_estate.residential, region=building.region).get()
+                            total_rooms_volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, real_estate.residential, real_estate.residents)
+                            
+                            # residents - общее количество проживающих в квартире
+                            # В 'volume' будет добавлено суммарное количество объема всех комнат. Значение может отличаться от 'total_rooms_volume'. В этом случае, разница объемов будет учтена и рассчитана в расчет ОДН.
+                            # Вычисляем общее количество проживающих в помещении (блоке, коммунальной квартире и т.д.)
+                            residents = 0
                             for room in RealEstate.objects.filter(parent=real_estate):
-                                rooms_space = rooms_space + room.space
+                                residents = residents + room.residents
+
+                            #Вычисляем необходимые объемы для каждого помещения.
                             for room in RealEstate.objects.filter(parent=real_estate):
-                                room_volume = room.space / rooms_space * volume
-                                #TODO: ОДН должны храниться в отдельной таблице, так как эти данные будут использоваться при перерасчетах.
-                                #TODO: Нужно сохранить объем ОДН в отдельную таблицу по ОДН.
-        
-                #TODO: списать средства с лицевого счета.
-        
+                                # Вычисляем долю 'комнаты ко всей квартире', в зависимости от типа помещения:
+                                # жилое помещение   - тогда количество проживающих в комнате к общему количеству проживающих в квартире;
+                                # нежилое помещение - тогда площать комнаты к общей площади квартиры.
+                                # proportion - доля комнаты к общей квартире
+                                proportion = 1
+                                if room.residential:
+                                    proportion = room.residents / residents
+                                else:
+                                    #Вычисление доли по площади.
+                                    proportion = room.space / real_estate.space
+
+                                room_volume = proportion * total_rooms_volume
+                                volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=room_volume, date=datetime.date.today())
+                                volume_model.save()
+                                
+                                volume = volume + room_volume;
+
+                        # Суммируем объемы помещений. Если квартира коммунальная (или блок общещия, или блок с офисами), тогда используем сумму объемов всех внутренних помещений клиентов.
+                        cold_water_volume_clients_sum = cold_water_volume_clients_sum + volume
+                    #}
+                    #}Конец расчета индивидуального потребления
+                    #}
+
+                    #{
+                    #{Начало расчета общедомовых нужд:
+                    #{
+                    #расчет общедомовых нужд. Доля объма на помещение определяется от соотношения площади помещения к общей площади всех жилых и нежилых помещений.
+                    # building_space - общая площадь всех жилых помещений (квартир) и нежилых помещений в многоквартирном доме.
+                    cold_water_building_volume = None
+                    setup_date = building.cold_water_counter_setup_date
+                    if setup_date:
+                        last_period_reading = periods[periods.count()-1].coldwaterreading_set.filter(real_estate=building).get()
+                        next_to_last_period_reading = periods[periods.count()-2].coldwaterreading_set.filter(real_estate=building).get()
+                        if last_period_reading and next_to_last_period_reading:
+                            cold_water_building_volume = last_period_reading.value - next_to_last_period_reading.value
+                    #Расчёт по норме.
+                    if cold_water_building_volume is None:
+                        residents = 0
+                        for real_estate in RealEstate.objects.filter(parent=building):
+                            if real_estate.type == RealEstate.FLAT_TYPE:
+                                residents = residents + real_estate.client_set.last().residents
+                            if real_estate.type == RealEstate.SHARE_TYPE:
+                                for share in RealEstate.objects.filter(parent=real_estate):
+                                    if share.type == RealEstate.ROOM_TYPE:
+                                        residents = residents + share.client_set.last().residents
+
+                        norm = ColdWaterNorm.objects.filter(residential=building.residential, region=building.region).get()
+                        
+                        residential_cold_water_volume = residents * norm
+
+                        #TODO: not_residential_cold_water_volume предоставляется поставщиком услуги
+                        not_residential_cold_water_volume = 0
+                        cold_water_building_volume = residential_cold_water_volume + not_residential_cold_water_volume
+
+                    volume = cold_water_building_volume - cold_water_volume_clients_sum
+                    if volume != 0:
+                        for real_estate in real_estates:
+                            if real_estate.type != RealEstate.SHARE_TYPE:
+                                real_estate_volume = real_estate.space / building.space * volume
+                                #TODO: Общедомовые нужды(ОДН) должны храниться в отдельной таблице, так как эти данные будут использоваться при перерасчетах.
+                                cold_water_volume = ColdWaterVolume(real_estate=real_estate, volume=volume, date=datetime.date.today())
+                                cold_water_volume.save()
+                            else:
+                                # Вычисляем объем для всей квартиры/блока/секции
+                                real_estate_volume = real_estate.space / building.space * volume
+                                # Распределяем общий объем между внутренними помещениями клиентов.
+                                # TODO: Необходимо проверить. Полагаю, что для распределения требуется не общая площадь квартиры/блока/секции, а общая площадь помещений клиентов. Либо другой вариант- нужно вычислять отношение суммы площади клиента и занимаемой им площади к общей площади квартиры/блока/секции. Использую 1й вариант.
+                                # Считаем сумму площадей помещений, занимаемыми клиентами, без учета совместно-занимаемой площади.  
+                                rooms_space = 0
+                                for room in RealEstate.objects.filter(parent=real_estate):
+                                    rooms_space = rooms_space + room.space
+                                for room in RealEstate.objects.filter(parent=real_estate):
+                                    room_volume = room.space / rooms_space * volume
+                                    #TODO: ОДН должны храниться в отдельной таблице, так как эти данные будут использоваться при перерасчетах.
+                                    #TODO: Нужно сохранить объем ОДН в отдельную таблицу по ОДН.
+                    #}
+                    #}Конец расчета индивидуального потребления
+                    #}
+
+                    #{
+                    #{Начало расчета общедомовых нужд:
+                    #{
+                    #TODO: списать средства с лицевого счета.
+                    #}
+                    #}Конец расчета индивидуального потребления
+                    #}
+
             for house in RealEstate.objects.filter(type=RealEstate.HOUSE_TYPE):
-                client = house.client
                 cold_water_norm = ColdWaterNorm.objects.filter(residential=house.residential, region=house.region).get()
                 does_cold_water_counter_exist = False
                 if does_cold_water_counter_exist:

@@ -65,6 +65,8 @@ class RealEstate(models.Model):
     space = models.FloatField()
     residential = models.BooleanField(default=True)
     residents = models.IntegerField(default=-1)
+    organization = models.ForeignKey(Organization)
+    amount = models.DecimalField(max_digits=8, decimal_places=2, default=1)
     def __str__(self):
         return self.address
 
@@ -79,11 +81,9 @@ class Client(models.Model):
     amount - сумма денег на счете клиента
     """
     lfm = models.CharField(max_length=200)
-    organization = models.ForeignKey(Organization)
-    amount = models.DecimalField(max_digits=8, decimal_places=2, default=1)
     real_estate = models.ForeignKey(RealEstate)
     def __str__(self):
-        return self.lfm + "(" + self.organization.__str__() + ")"
+        return self.lfm
     def get_absolute_url(self):
         return reverse('accounting:client_update', kwargs={'pk': self.pk})
 
@@ -110,7 +110,7 @@ class ServiceClient(models.Model):
         (COLD_WATER_SERVICE, 'Cold water'),
         (HOT_WATER_SERVICE, 'Hot water'),
     )
-    client = models.ForeignKey(Client)
+    real_estate = models.ForeignKey(RealEstate)
     service_name = models.CharField(max_length=100, choices=SERVICE_NAMES, default=COLD_WATER_SERVICE)
     start = models.DateField()
     end = models.DateField(blank=True, null=True)
