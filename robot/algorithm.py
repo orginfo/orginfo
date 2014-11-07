@@ -1,4 +1,4 @@
-﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals, ColdWaterNorm
+﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals, ColdWaterNorm, ColdWaterVolumeODN
 import datetime
 from robot.errors import ForgottenInitialReadingError
 from django.db.models import Sum
@@ -181,7 +181,7 @@ def write_off():
                             if real_estate.type != RealEstate.SHARE_TYPE:
                                 real_estate_volume = real_estate.space / building.space * volume
                                 #TODO: Общедомовые нужды(ОДН) должны храниться в отдельной таблице, так как эти данные будут использоваться при перерасчетах.
-                                cold_water_volume = ColdWaterVolume(real_estate=real_estate, volume=volume, date=datetime.date.today())
+                                cold_water_volume = ColdWaterVolumeODN(real_estate=real_estate, volume=real_estate_volume, date=datetime.date.today())
                                 cold_water_volume.save()
                             else:
                                 # Вычисляем объем для всей квартиры/блока/секции
@@ -194,6 +194,8 @@ def write_off():
                                     rooms_space = rooms_space + room.space
                                 for room in RealEstate.objects.filter(parent=real_estate):
                                     room_volume = room.space / rooms_space * volume
+                                    cold_water_volume = ColdWaterVolumeODN(real_estate=real_estate, volume=room_volume, date=datetime.date.today())
+                                    cold_water_volume.save()
                                     #TODO: ОДН должны храниться в отдельной таблице, так как эти данные будут использоваться при перерасчетах.
                                     #TODO: Нужно сохранить объем ОДН в отдельную таблицу по ОДН.
                     #}

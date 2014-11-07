@@ -190,5 +190,16 @@ class Animals(models.Model):
 class ColdWaterNorm(models.Model):
     norm = models.FloatField()
     region = models.ForeignKey(Region)
-    residential = models.BooleanField(default=True) 
-    
+    residential = models.BooleanField(default=True)
+
+class ColdWaterVolumeODN(models.Model):
+    """Вычисления объема потребления холодной для помещения на ОДН.
+
+    """
+    period = models.ForeignKey(Period)
+    volume = models.FloatField()
+    real_estate = models.ForeignKey(RealEstate)
+    date = models.DateField()
+    def __str__(self):
+        return str(self.date)
+
