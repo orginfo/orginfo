@@ -43,6 +43,10 @@ class RealEstate(models.Model):
     потому что как используется помещение зависит больше от клиента, а не от
     помещения.
     residents - количество зарегестированных (проживающих)
+    space_of_joint_estate - Площадь совместного имущества (Площади межквартирных лестничных площадок, лестниц, коридоров, тамбуров, холлов, вестибюлей, колясочных, помещений охраны (консьержа) в этом многоквартирном доме, не принадлежащих отдельным собственникам
+
+http://www.consultant.ru/document/cons_doc_LAW_169249/?frame=6
+© КонсультантПлюс, 1992-2014)
     """
     FLAT_TYPE = 'f'
     ROOM_TYPE = 'r'
@@ -63,6 +67,7 @@ class RealEstate(models.Model):
     cold_water_counter_setup_date = models.DateField(blank=True, null=True)
     type = models.CharField(max_length=1, choices=REAL_ESTATE_TYPES, default=HOUSE_TYPE)
     space = models.FloatField()
+    space_of_joint_estate = models.FloatField()
     residential = models.BooleanField(default=True)
     residents = models.IntegerField(default=-1)
     organization = models.ForeignKey(Organization)
