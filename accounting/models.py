@@ -71,7 +71,7 @@ http://www.consultant.ru/document/cons_doc_LAW_169249/?frame=6
     residential = models.BooleanField(default=True)
     residents = models.IntegerField(default=-1)
     organization = models.ForeignKey(Organization)
-    amount = models.DecimalField(max_digits=8, decimal_places=2, default=1)
+    amount = models.DecimalField(max_digits=8, decimal_places=2, default=-1)
     def __str__(self):
         return self.address
 
