@@ -1,0 +1,73 @@
+from django.core.management.base import BaseCommand
+from accounting.models import Period, Region, RealEstate, ServiceClient, ColdWaterNorm, ColdWaterReading, AnimalType, Animals, ColdWaterVolume, ColdWaterVolumeODN, Organization
+
+import datetime
+
+#MYABE: перенести в отдельный модуль функцию заколнения
+#базы данных.
+def prepare_db_base():
+    Period.objects.all().delete()
+    period1 = Period(serial_number=1, start=datetime.date(2000, 12, 26), end=datetime.date(2001, 1, 25))
+    period1.save()
+    period2 = Period(serial_number=2, start=datetime.date(2001, 1, 26), end=datetime.date(2001, 2, 25))
+    period2.save()
+    period3 = Period(serial_number=3, start=datetime.date(2001, 2, 26), end=datetime.date(2001, 3, 25))
+    period3.save()
+    period4 = Period(serial_number=4, start=datetime.date(2001, 3, 26), end=datetime.date(2001, 4, 25))
+    period4.save()
+    period5 = Period(serial_number=5, start=datetime.date(2001, 4, 26), end=datetime.date(2001, 5, 25))
+    period5.save()
+    period6 = Period(serial_number=6, start=datetime.date(2001, 5, 26), end=datetime.date(2001, 6, 25))
+    period6.save()
+    period7 = Period(serial_number=7, start=datetime.date(2001, 6, 26), end=datetime.date(2001, 7, 25))
+    period7.save()
+
+    Region.objects.all().delete()
+    region = Region(name="Новосибирская область, Тогучинский район")
+    region.save()
+
+    Organization.objects.all().delete()
+    organization = Organization(name="ООО Всем МУП-ам МУП")
+    organization.save()
+
+    RealEstate.objects.all().delete()
+    lenina_d1 = RealEstate(address="ул. Ленина, д. 1", region=region, parent=None, cold_water_counter_setup_date=datetime.date(2001, 1, 1), type=RealEstate.BUILDING_TYPE, space=100, space_of_joint_estate=10, residential=True, residents=-1, organization=organization, amount=-1) #residential=None?
+    lenina_d1.save()
+    lenina_d1_kv1 = RealEstate(address="ул. Ленина, д. 1, кв. 1", region=region, parent=lenina_d1, cold_water_counter_setup_date=datetime.date(2001, 1, 13), type=RealEstate.FLAT_TYPE, space=30, space_of_joint_estate=-1, residential=True, residents=2, organization=organization, amount=0)
+    lenina_d1_kv1.save()
+    lenina_d1_kv2 = RealEstate(address="ул. Ленина, д. 1, кв. 2", region=region, parent=lenina_d1, cold_water_counter_setup_date=datetime.date(2001, 1, 13), type=RealEstate.FLAT_TYPE, space=50, space_of_joint_estate=-1, residential=True, residents=3, organization=organization, amount=0)
+    lenina_d1_kv2.save()
+    lenina_d2 = RealEstate(address="ул. Ленина, д. 2", region=region, parent=None, cold_water_counter_setup_date=datetime.date(2001, 1, 2), type=RealEstate.HOUSE_TYPE, space=110, space_of_joint_estate=-1, residential=True, residents=3, organization=organization, amount=0)
+    lenina_d2.save()
+
+    ServiceClient.objects.all().delete()
+    ServiceClient(real_estate=lenina_d1, service_name=ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 1, 1), end=None).save()
+    ServiceClient(real_estate=lenina_d1_kv1, service_name=ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 1, 1), end=None).save()
+    ServiceClient(real_estate=lenina_d1_kv2, service_name=ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 1, 1), end=None).save()
+    ServiceClient(real_estate=lenina_d2, service_name=ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 1, 1), end=None).save()
+
+    ColdWaterNorm.objects.all().delete()
+    ColdWaterNorm(norm=10.2, region=region, residential=True).save()
+
+    ColdWaterReading.objects.all().delete()
+    ColdWaterReading(period=period7, value=10210, real_estate=lenina_d1, date=datetime.date(2001, 7, 22)).save()
+
+    #Эти таблицы заполняются роботом:
+    ColdWaterVolume.objects.all().delete()
+    ColdWaterVolumeODN.objects.all().delete()
+
+    AnimalType.objects.all().delete()
+    goose = AnimalType(name="Гусь", norm=0.5)
+    goose.save()
+    boar = AnimalType(name="Кабан", norm=12.2)
+    boar.save()
+
+    Animals.objects.all().delete()
+    Animals(count=12, real_estate=lenina_d2, type=goose)
+    Animals(count=2, real_estate=lenina_d2, type=boar)
+
+class Command(BaseCommand):
+    help = 'Runs the evaluation values and prices'
+    def handle(self, *args, **options):
+        prepare_db_base()
+        self.stdout.write('DB has just prepared successfully.')
