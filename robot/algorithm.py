@@ -51,9 +51,10 @@ def calculate_individual_cold_water_volume(real_estate, cold_water_norm, residen
         periods_with_counter = Period.objects.order_by('start').filter(start__gte=setup_date)
 
     if periods_with_counter and periods_with_counter.count() >= 6:
-        last_period_reading = periods_with_counter.last().coldwaterreading_set.filter(real_estate=real_estate).get()
-        was_reading_in_last_period = last_period_reading is not None
-        if was_reading_in_last_period:
+        last_period_reading = periods_with_counter.last().coldwaterreading_set.filter(real_estate=real_estate)
+        reading_in_last_period_amount = last_period_reading.count()
+        if reading_in_last_period_amount == 1:
+            last_period_reading = last_period_reading.get()
             next_to_last_period_reading = None
             i = periods_with_counter.count() - 2
             while 0 <= i:
@@ -67,6 +68,8 @@ def calculate_individual_cold_water_volume(real_estate, cold_water_norm, residen
             unconfirmed_reading_volumes = ColdWaterVolume.objects.filter(real_estate=real_estate, period__serial_number__in=range(last_period_reading.period.serial_number+1, next_to_last_period_reading.period.serial_number)).aggregate(Sum('volume'))['volume__sum'] or 0
             volume = last_period_reading.value - next_to_last_period_reading.value - unconfirmed_reading_volumes
             return IndividualColdWaterVolume(volume, unconfirmed_reading_volumes)
+        elif reading_in_last_period_amount > 1:
+            raise Exception #TODO: Продумать ошибку. Количество показаний счетчика за один период не может быть больше 1.
 
         second_from_the_end_period_reading = ColdWaterReading.objects.filter(real_estate=real_estate, period=periods_with_counter[periods_with_counter.count()-2]).last()
         third_from_the_end_period_reading = ColdWaterReading.objects.filter(real_estate=real_estate, period=periods_with_counter[periods_with_counter.count()-3]).last()
@@ -118,7 +121,7 @@ def write_off():
 
                         #вычисляем для квартир, комунальных квартир и блоков объем потребления услуги, сохраняем его.
                         cold_water_norm = ColdWaterNorm.objects.filter(residential=real_estate.residential, region=building.region).get()
-                        volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, real_estate.residential, real_estate.residents)
+                        volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm.norm, real_estate.residential, real_estate.residents)
                         volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=volume.individual, date=datetime.date.today())
                         volume_model.save()
                         recalculated_volume = recalculated_volume + volume.recalculated
