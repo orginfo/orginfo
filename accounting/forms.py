@@ -72,7 +72,7 @@ class CreateClientForm(ModelForm):
         self.helper.field_class = 'col-sm-6'
         self.helper.layout = Layout(
             'lfm',
-            'amount',
+            'real_estate',
             'parent_street',
             ButtonHolder(
                 Submit('submit', 'Add', css_class='btn-default')
@@ -80,7 +80,7 @@ class CreateClientForm(ModelForm):
         )
     class Meta:
         model = Client
-        fields = ['lfm', 'amount']
+        fields = ['lfm', 'real_estate']
     def clean(self):
         #TODO: добавить проверку на пустоту.
         parent_street = self.cleaned_data['parent_street']
