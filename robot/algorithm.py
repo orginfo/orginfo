@@ -145,14 +145,14 @@ def write_off():
                                     #Вычисление доли по площади.
                                     proportion = room.space / real_estate.space
 
-                                room_volume = proportion * volume
+                                room_volume = proportion * volume.individual
                                 volume_model = ColdWaterVolume(period=periods.last(), real_estate=room, volume=room_volume, date=datetime.date.today())
                                 volume_model.save()
 
                                 total_rooms_volume = total_rooms_volume + room_volume
 
                         # Суммируем объемы помещений. Если квартира коммунальная (или блок общещия, или блок с офисами), тогда используем сумму объемов всех внутренних помещений клиентов.
-                        cold_water_volume_clients_sum = cold_water_volume_clients_sum + volume
+                        cold_water_volume_clients_sum = cold_water_volume_clients_sum + volume.individual
                     #}
                     #}Конец расчета индивидуального потребления
                     #}
