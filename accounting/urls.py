@@ -21,4 +21,7 @@ urlpatterns = patterns('',
     url(r'^clients/(?P<pk>\d+)/services/$', views.ClientServices.as_view(), name='client_services'),
     url(r'^clients/(?P<pk>\d+)/services/create/$', views.CreateClientService.as_view(success_url=None), name='create_client_service'),
     url(r'^clients/(?P<client_id>\d+)/services/(?P<pk>\d+)/$', views.UpdateClientService.as_view(success_url=None), name='client_service'),
+    url(r'^real_estates/(?P<real_estate_id>\d+)/service_usages/$', views.ServiceUsages.as_view(), name='service_usages'),
+    url(r'^real_estates/(?P<real_estate_id>\d+)/service_usage/create/$', views.CreateServiceUsage.as_view(), name='create_service_usage'),
+    url(r'^real_estates/(?P<real_estate_id>\d+)/service_usage/(?P<pk>\d+)/$', views.UpdateServiceUsage.as_view(success_url=None), name='service_usage'),
 )

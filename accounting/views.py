@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm
+from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm
 from accounting.models import Organization, UserOrganization, Client, Payment, RealEstate, ColdWaterReading, ServiceClient
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic import ListView
@@ -245,3 +245,34 @@ class RealEstates(ListView):
     template_name = 'accounting/real_estates.html'
     context_object_name = 'real_estates'
     #TODO: ограничить лишь для конкретного МУП-а.
+
+class ServiceUsages(ListView):
+    model = ServiceClient
+    template_name = 'accounting/service_usages.html'
+    context_object_name = 'services'
+    def get_queryset(self):
+        return ServiceClient.objects.filter(real_estate=self.kwargs['real_estate_id']);
+    def get_context_data(self, **kwargs):
+        context = super(ServiceUsages, self).get_context_data(**kwargs)
+        context['real_estate_id'] = self.kwargs['real_estate_id']
+        return context
+
+class CreateServiceUsage(CreateView):
+    model = ServiceClient
+    template_name = 'accounting/add_client.html'
+    form_class = CreateServiceUsageForm
+    def get_success_url(self):
+        return reverse('accounting:service_usages', kwargs=self.kwargs)
+    def form_valid(self, form):
+        form.instance.real_estate_id = self.kwargs['real_estate_id']
+        return super(CreateServiceUsage, self).form_valid(form)
+
+class UpdateServiceUsage(UpdateView):
+    model = ServiceClient
+    form_class = CreateServiceUsageForm
+    template_name = 'accounting/add_client.html'
+    def get_success_url(self):
+        return reverse('accounting:service_usages', kwargs={'real_estate_id': self.kwargs['real_estate_id']})
+    def form_valid(self, form):
+        form.instance.real_estate_id = self.kwargs['real_estate_id']
+        return super(UpdateServiceUsage, self).form_valid(form)

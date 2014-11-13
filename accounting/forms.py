@@ -155,6 +155,29 @@ class CreateClientServiceForm(ModelForm):
         self.helper.label_class = 'col-sm-2'
         self.helper.field_class = 'col-sm-6'
         self.helper.layout = Layout(
+            'service_name',
+            Field('start', placeholder="ГГГГ-ММ-ДД"),
+            Field('end', placeholder="ГГГГ-ММ-ДД"),
+            ButtonHolder(
+                Submit('submit', 'Create', css_class='btn-default')
+            )
+        )
+    class Meta:
+        model = ServiceClient
+        fields = ['service_name', 'start', 'end']
+
+class CreateServiceUsageForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(CreateServiceUsageForm, self).__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-sm-2'
+        self.helper.field_class = 'col-sm-6'
+        self.fields['service_name'].label = "Услуга"
+        self.fields['start'].label = "Дата подключения"
+        self.fields['end'].label = "Дата отключения"
+        self.helper.layout = Layout(
             Fieldset(
                 'client service',
                 'service_name',
