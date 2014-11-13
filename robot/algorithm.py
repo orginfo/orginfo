@@ -1,4 +1,4 @@
-﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals, ColdWaterNorm, ColdWaterVolumeODN
+﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals, ColdWaterNorm, ColdWaterVolumeODN, ColdWaterNormODN
 import datetime
 from robot.errors import ForgottenInitialReadingError
 from django.db.models import Sum
@@ -186,7 +186,6 @@ def write_off():
                                         residents = residents + share.client_set.last().residents
 
                         norm = ColdWaterNorm.objects.filter(residential=building.residential, region=building.region).get()
-                        
                         residential_cold_water_volume = residents * norm
 
                         #TODO: not_residential_cold_water_volume предоставляется поставщиком услуги
@@ -200,7 +199,7 @@ def write_off():
                             if setup_date:
                                 real_estate_volume = real_estate.space / building.space * volume
                             else:
-                                norm = ColdWaterNorm.objects.filter(residential=building.residential, region=building.region).get()
+                                norm = ColdWaterNormODN.objects.filter(region=building.region).get()
                                 real_estate_volume = norm * real_estate.space_of_joint_estate * real_estate.space / building_space #TODO: Проверить, norm на ОДН равна норме холодного водснабжения на здание?
                                 #TODO: Нужно ли сохранять объем ОДН для помещений с типом SHARE_TYPE?
                                 cold_water_volume = ColdWaterVolumeODN(real_estate=real_estate, volume=real_estate_volume, date=datetime.date.today())

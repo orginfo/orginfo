@@ -208,3 +208,10 @@ class ColdWaterVolumeODN(models.Model):
     def __str__(self):
         return str(self.date)
 
+class ColdWaterNormODN(models.Model):
+    """Норматив потребления холодного водоснабжения на ОДН.
+    TODO: Может добавить поле norm_odn в ColdWaterNorm, а этот класс удалить?
+    """
+    norm = models.FloatField()
+    region = models.ForeignKey(Region)
+
