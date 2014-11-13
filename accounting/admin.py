@@ -25,9 +25,6 @@ class ColdWaterReadingAdmin(admin.ModelAdmin):
 class ColdWaterVolumeAdmin(admin.ModelAdmin):
     list_display = ('period', 'volume', 'real_estate', 'date')
 
-class ColdWaterTariffAdmin(admin.ModelAdmin):
-    list_display = ('client', 'value')
-
 class AnimalsAdmin(admin.ModelAdmin):
     list_display = ('count', 'real_estate', 'type',)
 
@@ -36,9 +33,6 @@ class AnimalTypeAdmin(admin.ModelAdmin):
 
 class RegionAdmin(admin.ModelAdmin):
     list_display = ('name',)
-
-class ColdWaterNormAdmin(admin.ModelAdmin):
-    list_display = ('norm', 'region', 'residential',)
 
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(UserOrganization, UserOrganizationAdmin)
@@ -49,9 +43,9 @@ admin.site.register(ServiceClient)
 admin.site.register(Period, PeriodAdmin)
 admin.site.register(ColdWaterReading, ColdWaterReadingAdmin)
 admin.site.register(ColdWaterVolume, ColdWaterVolumeAdmin)
-admin.site.register(ColdWaterTariff, ColdWaterTariffAdmin)
+admin.site.register(ColdWaterTariff)
 admin.site.register(Animals, AnimalsAdmin)
 admin.site.register(AnimalType, AnimalTypeAdmin)
 admin.site.register(Region, RegionAdmin)
-admin.site.register(ColdWaterNorm, ColdWaterNormAdmin)
+admin.site.register(ColdWaterNorm)
 

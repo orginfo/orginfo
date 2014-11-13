@@ -1,11 +1,15 @@
 from django.core.management.base import BaseCommand
-from accounting.models import Period, Region, RealEstate, ServiceClient, ColdWaterNorm, DegreeOfImprovementsDwelling, ColdWaterReading, AnimalType, Animals, ColdWaterVolume, ColdWaterVolumeODN, Organization, ColdWaterNormODN, NormValidity
-
+from accounting.models import Period, Region, RealEstate, ServiceClient, ColdWaterNorm, DegreeOfImprovementsDwelling, ColdWaterReading, AnimalType, Animals, ColdWaterVolume, ColdWaterVolumeODN, Organization, ColdWaterNormODN, NormValidity, UserOrganization
+from django.contrib.auth.models import User
+from django.db.models import Q
 import datetime
 
 #MYABE: перенести в отдельный модуль функцию заколнения
 #базы данных.
 def prepare_db_base():
+    User.objects.filter(~Q(username="admin")).delete()
+    User.objects.create_user(username="aa", password="aa")
+
     Period.objects.all().delete()
     period1 = Period(serial_number=1, start=datetime.date(2000, 12, 26), end=datetime.date(2001, 1, 25))
     period1.save()
@@ -30,14 +34,22 @@ def prepare_db_base():
     organization = Organization(name="ООО Всем МУП-ам МУП")
     organization.save()
 
+    UserOrganization.objects.all().delete()
+    user_organization = UserOrganization(user=User.objects.filter(username="aa").get(), organization=organization)
+    user_organization.save()
+
+    DegreeOfImprovementsDwelling.objects.all().delete()
+    degree_of_improvements = DegreeOfImprovementsDwelling(name="Максимальная комплектация")
+    degree_of_improvements.save()
+
     RealEstate.objects.all().delete()
-    lenina_d1 = RealEstate(address="ул. Ленина, д. 1", region=region, parent=None, cold_water_counter_setup_date=datetime.date(2001, 1, 1), type=RealEstate.BUILDING_TYPE, space=100, space_of_joint_estate=10, residential=True, residents=-1, organization=organization, amount=-1) #residential=None?
+    lenina_d1 = RealEstate(address="ул. Ленина, д. 1", region=region, parent=None, cold_water_counter_setup_date=datetime.date(2001, 1, 1), type=RealEstate.BUILDING_TYPE, space=100, space_of_joint_estate=10, residential=True, residents=-1, organization=organization, amount=-1, degree_of_improvements=degree_of_improvements) #residential=None?
     lenina_d1.save()
-    lenina_d1_kv1 = RealEstate(address="ул. Ленина, д. 1, кв. 1", region=region, parent=lenina_d1, cold_water_counter_setup_date=datetime.date(2001, 1, 13), type=RealEstate.FLAT_TYPE, space=30, space_of_joint_estate=-1, residential=True, residents=2, organization=organization, amount=0)
+    lenina_d1_kv1 = RealEstate(address="ул. Ленина, д. 1, кв. 1", region=region, parent=lenina_d1, cold_water_counter_setup_date=datetime.date(2001, 1, 13), type=RealEstate.FLAT_TYPE, space=30, space_of_joint_estate=-1, residential=True, residents=2, organization=organization, amount=0, degree_of_improvements=degree_of_improvements)
     lenina_d1_kv1.save()
-    lenina_d1_kv2 = RealEstate(address="ул. Ленина, д. 1, кв. 2", region=region, parent=lenina_d1, cold_water_counter_setup_date=datetime.date(2001, 1, 13), type=RealEstate.FLAT_TYPE, space=50, space_of_joint_estate=-1, residential=True, residents=3, organization=organization, amount=0)
+    lenina_d1_kv2 = RealEstate(address="ул. Ленина, д. 1, кв. 2", region=region, parent=lenina_d1, cold_water_counter_setup_date=datetime.date(2001, 1, 13), type=RealEstate.FLAT_TYPE, space=50, space_of_joint_estate=-1, residential=True, residents=3, organization=organization, amount=0, degree_of_improvements=degree_of_improvements)
     lenina_d1_kv2.save()
-    lenina_d2 = RealEstate(address="ул. Ленина, д. 2", region=region, parent=None, cold_water_counter_setup_date=datetime.date(2001, 1, 2), type=RealEstate.HOUSE_TYPE, space=110, space_of_joint_estate=-1, residential=True, residents=3, organization=organization, amount=0)
+    lenina_d2 = RealEstate(address="ул. Ленина, д. 2", region=region, parent=None, cold_water_counter_setup_date=datetime.date(2001, 1, 2), type=RealEstate.HOUSE_TYPE, space=110, space_of_joint_estate=-1, residential=True, residents=3, organization=organization, amount=0, degree_of_improvements=degree_of_improvements)
     lenina_d2.save()
 
     ServiceClient.objects.all().delete()
@@ -45,10 +57,6 @@ def prepare_db_base():
     ServiceClient(real_estate=lenina_d1_kv1, service_name=ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 1, 1), end=None).save()
     ServiceClient(real_estate=lenina_d1_kv2, service_name=ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 1, 1), end=None).save()
     ServiceClient(real_estate=lenina_d2, service_name=ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 1, 1), end=None).save()
-
-    DegreeOfImprovementsDwelling.objects.all().delete()
-    degree_of_improvements = DegreeOfImprovementsDwelling(name="Максимальная комплектация")
-    degree_of_improvements.save()
 
     NormValidity.objects.all().delete()
     norm_validity = NormValidity(start=datetime.date(2013, 1, 1), end=datetime.date(2014, 12, 31))
