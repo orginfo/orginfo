@@ -3,11 +3,11 @@
 {% block container %}
 <ul class="nav nav-tabs" role="tablist">
   {% url "accounting:readings" real_estate_id as l2readings %}
-  <li{% if request.get_full_path == l2readings %} class="active"{% endif %}><a href="{{ l2readings }}">Readings</a></li>
+  <li{% if request.get_full_path == l2readings %} class="active"{% endif %}><a href="{{ l2readings }}">Счетчики</a></li>
   {% url "accounting:client_update" client_id as l2client %}
   <li{% if request.get_full_path == l2client %} class="active"{% endif %}><a href="{{ l2client }}">Client</a></li>
-  {% url "accounting:client_services" client_id as l2services %}
-  <li{% if request.get_full_path == l2services %} class="active"{% endif %}><a href="{{ l2services }}">Services</a></li>
+  {% url "accounting:service_usages" real_estate_id as l2services %}
+  <li{% if request.get_full_path == l2services %} class="active"{% endif %}><a href="{{ l2services }}">Подключенные услуги</a></li>
   {% url "accounting:take_payment" client_id as l2payment %}
   <li{% if request.get_full_path == l2payment %} class="active"{% endif %}><a href="{{ l2payment }}">Payment</a></li>
 </ul>
@@ -16,10 +16,9 @@
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th>Period</th>
-                <th>Value</th>
-                <th>Real estate</th>
-                <th>Date</th>
+                <th>Период</th>
+                <th>Показание</th>
+                <th>Дата</th>
             </tr>
         </thead>
         <tbody>
@@ -27,14 +26,13 @@
             <tr>
                 <td><a href="{% url "accounting:update_reading" real_estate_id reading.id %}">{{ reading.period }}</a></td>
                 <td>{{ reading.value }}</td>
-                <td>{{ reading.real_estate }}</td>
                 <td>{{ reading.date }}</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
 {% else %}
-    <p>No readings are available.</p>
+    <p>Показания не внесены.</p>
 {% endif %}
-    <a class="btn btn-primary btn-default" role="button" href="{% url "accounting:create_reading" real_estate_id %}">Create</a>
+    <a class="btn btn-primary btn-default" role="button" href="{% url "accounting:create_reading" real_estate_id %}">Внести</a>
 {% endblock %}

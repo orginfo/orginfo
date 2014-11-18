@@ -1,16 +1,6 @@
 {% extends "starter-template.html" %}
 
 {% block container %}
-<ul class="nav nav-tabs" role="tablist">
-  <li class="active"><a href="#">Readings</a></li>
-  {% url "accounting:client_update" client_id as l2client %}
-  <li{% if request.get_full_path == l2client %} class="active"{% endif %}><a href="{{ l2client }}">Client</a></li>
-  {% url "accounting:client_services" client_id as l2services %}
-  <li{% if request.get_full_path == l2services %} class="active"{% endif %}><a href="{{ l2services }}">Services</a></li>
-  {% url "accounting:take_payment" client_id as l2payment %}
-  <li{% if request.get_full_path == l2payment %} class="active"{% endif %}><a href="{{ l2payment }}">Payment</a></li>
-</ul>
-<br />
 {% load crispy_forms_tags %}
 {% crispy form %}
 {% endblock %}

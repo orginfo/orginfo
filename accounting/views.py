@@ -166,10 +166,7 @@ class ColdWaterReadings(ListView):
         return ColdWaterReading.objects.filter(real_estate=self.kwargs['real_estate_id']);
     def get_context_data(self, **kwargs):
         context = super(ColdWaterReadings, self).get_context_data(**kwargs)
-        real_estate_id = self.kwargs['real_estate_id']
-        context['real_estate_id'] = real_estate_id
-        client_id = RealEstate.objects.filter(id=real_estate_id).get().client_set.last().id
-        context['client_id'] = client_id
+        context['real_estate_id'] = self.kwargs['real_estate_id']
         return context
 
 class CreateColdWaterReading(CreateView):
@@ -181,13 +178,6 @@ class CreateColdWaterReading(CreateView):
     def form_valid(self, form):
         form.instance.real_estate_id = self.kwargs['real_estate_id']
         return super(CreateColdWaterReading, self).form_valid(form)
-    def get_context_data(self, **kwargs):
-        context = super(CreateColdWaterReading, self).get_context_data(**kwargs)
-        real_estate_id = self.kwargs['real_estate_id']
-        context['real_estate_id'] = real_estate_id
-        client_id = RealEstate.objects.filter(id=real_estate_id).get().client_set.last().id
-        context['client_id'] = client_id
-        return context
 
 class UpdateColdWaterReading(UpdateView):
     model = ColdWaterReading
@@ -198,13 +188,6 @@ class UpdateColdWaterReading(UpdateView):
     def form_valid(self, form):
         form.instance.real_estate_id = self.kwargs['real_estate_id']
         return super(UpdateColdWaterReading, self).form_valid(form)
-    def get_context_data(self, **kwargs):
-        context = super(UpdateColdWaterReading, self).get_context_data(**kwargs)
-        real_estate_id = self.kwargs['real_estate_id']
-        context['real_estate_id'] = real_estate_id
-        client_id = RealEstate.objects.filter(id=real_estate_id).get().client_set.last().id
-        context['client_id'] = client_id
-        return context
 
 class ClientServices(ListView):
     model = ServiceClient

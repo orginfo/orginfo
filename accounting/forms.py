@@ -134,10 +134,16 @@ class CreateColdWaterReadingForm(ModelForm):
         self.helper.form_class = 'form-horizontal'
         self.helper.label_class = 'col-sm-2'
         self.helper.field_class = 'col-sm-6'
+        self.fields['period'].label = "Период"
+        self.fields['value'].label = "Показание"
+        self.fields['date'].label = "Дата"
         self.helper.layout = Layout(
-            'period',
-            'value',
-            Field('date', placeholder="ГГГГ-ММ-ДД"),
+            Fieldset(
+                'Показание счетчика холодного водоснабжения',
+                'period',
+                'value',
+                Field('date', placeholder="ГГГГ-ММ-ДД"),
+            ),
             ButtonHolder(
                 Submit('submit', 'Create', css_class='btn-default')
             )
