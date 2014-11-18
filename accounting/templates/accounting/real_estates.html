@@ -1,6 +1,8 @@
 {% extends "starter-template.html" %}
 
 {% block container %}
+{% load crispy_forms_tags %}
+{% crispy form %}
 {% if real_estates %}
     <h2>real_estates</h2>
     <table class="table table-bordered">

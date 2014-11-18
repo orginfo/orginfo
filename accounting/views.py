@@ -72,24 +72,24 @@ class TakePayment(CreateView):
         context['real_estate_id'] = real_estate_id
         return context
 
-class Clients(ListView):
+class RealEstates(ListView):
     form_class = LastNameSearchForm
-    context_object_name = 'clients'
-    template_name = 'accounting/clients.html'
+    context_object_name = 'real_estates'
+    template_name = 'accounting/real_estates.html'
     def dispatch(self, *args, **kwargs):
         self.form = self.form_class(self.request.GET)
         self.user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
-        return super(Clients, self).dispatch(*args, **kwargs)
+        return super(RealEstates, self).dispatch(*args, **kwargs)
     def get_context_data(self, **kwargs):
-        context = super(Clients, self).get_context_data(**kwargs)
+        context = super(RealEstates, self).get_context_data(**kwargs)
         context['form'] = self.form
         return context
     def get_queryset(self):
         if self.form.is_valid():
             name = self.form.cleaned_data['name']
-            object_list = self.user_org.organization.client_set.filter(lfm__icontains = name)
+            object_list = RealEstate.objects.filter(address__icontains = name, organization=self.user_org.organization)
         else:
-            object_list = self.user_org.organization.client_set.none()
+            object_list = RealEstate.objects.none()
         return object_list
 
 class CreateClient(CreateView):
@@ -223,7 +223,7 @@ class UpdateClientService(UpdateView):
         form.instance.client_id = self.kwargs['client_id']
         return super(UpdateClientService, self).form_valid(form)
 
-class RealEstates(ListView):
+class Clients(ListView):
     model = RealEstate
     template_name = 'accounting/real_estates.html'
     context_object_name = 'real_estates'
