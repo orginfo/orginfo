@@ -15,6 +15,8 @@ urlpatterns = patterns('',
     url(r'^robot/$', views.robot, name='robot'),
     url(r'^real_estates/$', views.RealEstates.as_view(), name='real_estates'),
     url(r'^real_estates/add/$', views.CreateRealEstate.as_view(success_url="/real_estates/"), name='add_real_estate'),
+    url(r'^real_estates/(?P<pk>\d+)/$', views.UpdateRealEstate.as_view(success_url=""), name='update_real_estate'),
+
     url(r'^real_estates/(?P<real_estate_id>\d+)/readings/$', views.ColdWaterReadings.as_view(), name='readings'),
     url(r'^real_estates/(?P<real_estate_id>\d+)/readings/create/$', views.CreateColdWaterReading.as_view(), name='create_reading'),
     url(r'^real_estates/(?P<real_estate_id>\d+)/readings/(?P<pk>\d+)/$', views.UpdateColdWaterReading.as_view(), name='update_reading'),

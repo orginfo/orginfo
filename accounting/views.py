@@ -141,6 +141,39 @@ class UpdateClient(UpdateView):
         context['real_estate_id'] = real_estate_id
         return context
 
+class UpdateRealEstate(UpdateView):
+    form_class = CreateRealEstateForm
+    model = RealEstate
+    template_name = 'accounting/update_client.html'
+    exclude = ('organization', 'parent')
+    fields = ['amount']
+    def dispatch(self, *args, **kwargs):
+        user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
+        if not user_org.organization:
+            raise Http404
+        self.organization = user_org.organization
+        return super(UpdateRealEstate, self).dispatch(*args, **kwargs)
+    def form_valid(self, form):
+        form.instance.organization = self.organization
+        parent_street = form.cleaned_data['parent_street']
+        if parent_street is '':
+            form.instance.parent = None
+        else:
+            form.instance.parent = RealEstate.objects.filter(address=parent_street, organization=self.organization).get()
+        return super(UpdateRealEstate, self).form_valid(form)
+    def get_initial(self):
+        initial = super(UpdateRealEstate, self).get_initial()
+        # Copy the dictionary so we don't accidentally change a mutable dict
+        initial = initial.copy()
+        initial['parent_street'] = ''
+        if self.object.parent is not None:
+            initial['parent_street'] = self.object.parent.address
+        return initial
+    def get_context_data(self, **kwargs):
+        context = super(UpdateRealEstate, self).get_context_data(**kwargs)
+        context['real_estate_id'] = self.kwargs['pk']
+        return context
+
 def report(request):
     "the last payment in the organization"
     user_org = get_object_or_404(UserOrganization, user=request.user.id)

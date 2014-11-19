@@ -98,6 +98,7 @@ class CreateClientForm(ModelForm):
         return self.cleaned_data
 
 class CreateRealEstateForm(ModelForm):
+    parent_street = forms.CharField(required=False)
     def __init__(self, *args, **kwargs):
         super(CreateRealEstateForm, self).__init__(*args, **kwargs)
 
@@ -105,15 +106,29 @@ class CreateRealEstateForm(ModelForm):
         self.helper.form_class = 'form-horizontal'
         self.helper.label_class = 'col-sm-2'
         self.helper.field_class = 'col-sm-6'
+        self.fields['address'].label = "Адрес"
+        self.fields['region'].label = "Регион"
+        self.fields['parent_street'].label = "parent_street"
+        self.fields['cold_water_counter_setup_date'].label = "Дата установки счетчика холодного водоснабжения"
+        self.fields['type'].label = "Тип"
+        self.fields['space'].label = "Площадь"
+        self.fields['space_of_joint_estate'].label = "Присоединенная площадь"
+        self.fields['residential'].label = "Жилое помещение"
+        self.fields['residents'].label = "Количество проживающих"
+        self.fields['amount'].label = "Сумма на лицевом счете"
         self.helper.layout = Layout(
             Fieldset(
                 'Real estate',
                 'address',
-                'parent',
+                'region',
+                'parent_street',
                 Field('cold_water_counter_setup_date', placeholder="ГГГГ-ММ-ДД"),
                 'type',
+                'space',
+                'space_of_joint_estate',
                 'residential',
                 'residents',
+                'amount'
             ),
             ButtonHolder(
                 Submit('submit', 'Take', css_class='btn-default')
@@ -121,10 +136,24 @@ class CreateRealEstateForm(ModelForm):
         )
     class Meta:
         model = RealEstate
-        fields = ['address', 'parent', 'cold_water_counter_setup_date', 'type', 'residential', 'residents']
+        fields = ['address', 'region', 'cold_water_counter_setup_date', 'type', 'space', 'space_of_joint_estate', 'residential', 'residents', 'amount']
         widgets = {
 #            'parent': TextInput(),
         }
+    def clean(self):
+        error_messages = []
+
+        # validate piece
+        if self.cleaned_data['parent_street'] is not '':
+            parent_street = self.cleaned_data['parent_street']
+            if RealEstate.objects.filter(address=parent_street).count() is not 1:
+                #self._errors["parent_street"] = self.error_class(["Please enter a valid model"])
+                error_messages.append('Illegal Piece selected')
+
+        if len(error_messages):
+            raise forms.ValidationError(' & '.join(error_messages))
+
+        return self.cleaned_data
 
 class CreateColdWaterReadingForm(ModelForm):
     def __init__(self, *args, **kwargs):

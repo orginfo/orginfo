@@ -99,6 +99,8 @@ class RealEstate(models.Model):
     degree_of_improvements = models.ForeignKey(DegreeOfImprovementsDwelling)
     def __str__(self):
         return self.address
+    def get_absolute_url(self):
+        return reverse('accounting:update_real_estate', kwargs={'pk': self.pk})
 
 class Client(models.Model):
     """Клиент.
