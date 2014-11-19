@@ -1,0 +1,17 @@
+{% extends "starter-template.html" %}
+
+{% block container %}
+<ul class="nav nav-tabs" role="tablist">
+  {% url "accounting:readings" real_estate_id as l2readings %}
+  <li{% if request.get_full_path == l2readings %} class="active"{% endif %}><a href="{{ l2readings }}">Счетчики</a></li>
+  {% url "accounting:update_real_estate" real_estate_id as l2real_estate %}
+  <li{% if request.get_full_path == l2real_estate %} class="active"{% endif %}><a href="{{ l2real_estate }}">Недвижимость</a></li>
+  {% url "accounting:service_usages" real_estate_id as l2services %}
+  <li{% if request.get_full_path == l2services %} class="active"{% endif %}><a href="{{ l2services }}">Подключенные услуги</a></li>
+  {% url "accounting:take_payment" client_id as l2payment %}
+  <li{% if request.get_full_path == l2payment %} class="active"{% endif %}><a href="{{ l2payment }}">Payment</a></li>
+</ul>
+<br />
+{% block real_estate_tab_content %}
+{% endblock %}
+{% endblock %}

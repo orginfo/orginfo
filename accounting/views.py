@@ -165,7 +165,7 @@ class CreateRealEstate(CreateView):
 class UpdateRealEstate(UpdateView):
     form_class = CreateRealEstateForm
     model = RealEstate
-    template_name = 'accounting/update_client.html'
+    template_name = 'accounting/update_real_estate.html'
     exclude = ('organization', 'parent')
     fields = ['amount']
     def dispatch(self, *args, **kwargs):
