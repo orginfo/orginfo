@@ -17,7 +17,7 @@
         <tbody>
         {% for real_estate in real_estates %}
             <tr>
-                <td>{{ real_estate.address }}</td>
+                <td><a href="{% url "accounting:update_real_estate" real_estate.id %}">{{ real_estate.address }}</a></td>
                 <td>{{ real_estate.parent|default:"-" }}</a></td>
                 <td>{{ real_estate.cold_water_counter_setup_date|default:"-" }}</td>
                 <td>{{ real_estate.get_type_display }}</td>
@@ -28,5 +28,5 @@
 {% else %}
     <p>No real estates are available.</p>
 {% endif %}
-<a class="btn btn-primary btn-default" role="button" href="{% url "accounting:add_real_estate" %}">Create</a>
+<a class="btn btn-primary btn-default" role="button" href="{% url "accounting:create_real_estate" %}">Create</a>
 {% endblock %}

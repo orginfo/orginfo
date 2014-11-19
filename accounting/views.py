@@ -141,6 +141,27 @@ class UpdateClient(UpdateView):
         context['real_estate_id'] = real_estate_id
         return context
 
+class CreateRealEstate(CreateView):
+    form_class = CreateRealEstateForm
+    model = RealEstate
+    template_name = 'accounting/add_client.html'
+    exclude = ('organization', 'parent')
+    fields = ['amount']
+    def dispatch(self, *args, **kwargs):
+        user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
+        if not user_org.organization:
+            raise Http404
+        self.organization = user_org.organization
+        return super(CreateRealEstate, self).dispatch(*args, **kwargs)
+    def form_valid(self, form):
+        form.instance.organization = self.organization
+        parent_street = form.cleaned_data['parent_street']
+        if parent_street is '':
+            form.instance.parent = None
+        else:
+            form.instance.parent = RealEstate.objects.filter(address=parent_street, organization=self.organization).get()
+        return super(CreateRealEstate, self).form_valid(form)
+
 class UpdateRealEstate(UpdateView):
     form_class = CreateRealEstateForm
     model = RealEstate
@@ -185,11 +206,6 @@ def report(request):
         'period': '2014-06-01 (TODO)'
     }
     return render(request, 'accounting/report.html', context)
-
-class CreateRealEstate(CreateView):
-    model = RealEstate
-    template_name = 'accounting/add_client.html'
-    form_class = CreateRealEstateForm
 
 class ColdWaterReadings(ListView):
     model = ColdWaterReading
