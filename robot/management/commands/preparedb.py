@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from accounting.models import Period, Region, RealEstate, ServiceClient, ColdWaterNorm, ColdWaterReading, AnimalType, Animals, ColdWaterVolume, ColdWaterVolumeODN, Organization
+from accounting.models import Period, Region, RealEstate, ServiceClient, ColdWaterNorm, DegreeOfImprovementsDwelling, ColdWaterReading, AnimalType, Animals, ColdWaterVolume, ColdWaterVolumeODN, Organization, ColdWaterNormODN, NormValidity
 
 import datetime
 
@@ -46,11 +46,22 @@ def prepare_db_base():
     ServiceClient(real_estate=lenina_d1_kv2, service_name=ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 1, 1), end=None).save()
     ServiceClient(real_estate=lenina_d2, service_name=ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 1, 1), end=None).save()
 
+    DegreeOfImprovementsDwelling.objects.all().delete()
+    degree_of_improvements = DegreeOfImprovementsDwelling(name="Максимальная комплектация")
+    degree_of_improvements.save()
+
+    NormValidity.objects.all().delete()
+    norm_validity = NormValidity(start=datetime.date(2013, 1, 1), end=datetime.date(2014, 12, 31))
+    norm_validity.save()
+
     ColdWaterNorm.objects.all().delete()
-    ColdWaterNorm(norm=10.2, region=region, residential=True).save()
+    ColdWaterNorm(region=region, degree_of_improvements=degree_of_improvements, validity=norm_validity, norm=10.2).save()
 
     ColdWaterReading.objects.all().delete()
     ColdWaterReading(period=period7, value=10210, real_estate=lenina_d1, date=datetime.date(2001, 7, 22)).save()
+
+    ColdWaterNormODN.objects.all().delete()
+    ColdWaterNormODN(region=region, validity=norm_validity, norm=1.2)
 
     #Эти таблицы заполняются роботом:
     ColdWaterVolume.objects.all().delete()

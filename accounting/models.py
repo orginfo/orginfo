@@ -24,6 +24,30 @@ class UserOrganization(models.Model):
 class Region(models.Model):
     name = models.CharField(max_length=200)
 
+class DegreeOfImprovementsDwelling(models.Model):
+    """степень благоустройства жилого помещения"""
+    name = models.CharField(max_length=500)
+
+class NormValidity(models.Model):
+    """ Период действия норматива
+    start - дата, с которой начинает действовать норматив
+    end - дата окончания действия норматива
+    """
+    start = models.DateField()
+    end = models.DateField()
+
+class ColdWaterNorm(models.Model):
+    """ Нормаив по холодному водоснабжению.
+    region - ссылка на регион
+    degree_of_improvements - ссылка на степень благоустроенности жилого помещения
+    validity - ссылка на период действия норматива
+    norm - норматив
+    """
+    region = models.ForeignKey(Region)
+    degree_of_improvements = models.ForeignKey(DegreeOfImprovementsDwelling)
+    validity = models.ForeignKey(NormValidity)
+    norm = models.FloatField()
+
 class RealEstate(models.Model):
     """Объект недвижимости.
 
@@ -44,9 +68,8 @@ class RealEstate(models.Model):
     помещения.
     residents - количество зарегестированных (проживающих)
     space_of_joint_estate - Площадь совместного имущества (Площади межквартирных лестничных площадок, лестниц, коридоров, тамбуров, холлов, вестибюлей, колясочных, помещений охраны (консьержа) в этом многоквартирном доме, не принадлежащих отдельным собственникам
+    degree_of_improvements - Степень благоустройтва жилого жилого помещения (Ссылка).
 
-http://www.consultant.ru/document/cons_doc_LAW_169249/?frame=6
-© КонсультантПлюс, 1992-2014)
     """
     FLAT_TYPE = 'f'
     ROOM_TYPE = 'r'
@@ -72,6 +95,8 @@ http://www.consultant.ru/document/cons_doc_LAW_169249/?frame=6
     residents = models.IntegerField(default=-1)
     organization = models.ForeignKey(Organization)
     amount = models.DecimalField(max_digits=8, decimal_places=2, default=-1)
+    
+    degree_of_improvements = models.ForeignKey(DegreeOfImprovementsDwelling)
     def __str__(self):
         return self.address
 
@@ -174,7 +199,7 @@ class ColdWaterVolume(models.Model):
 
 class ColdWaterTariff(models.Model):
     """Тариф по услуге холодного водоснабжения для конкретного клиента."""
-    client = models.ForeignKey(Client)
+    real_estate = models.ForeignKey(RealEstate)
     value = models.IntegerField()
     def __str__(self):
         return "%s %s" % (str(self.client), self.value)
@@ -192,15 +217,8 @@ class Animals(models.Model):
     real_estate = models.ForeignKey(RealEstate)
     type = models.ForeignKey(AnimalType)
 
-class ColdWaterNorm(models.Model):
-    norm = models.FloatField()
-    region = models.ForeignKey(Region)
-    residential = models.BooleanField(default=True)
-
 class ColdWaterVolumeODN(models.Model):
-    """Вычисления объема потребления холодной для помещения на ОДН.
-
-    """
+    """Вычисления объема потребления холодной для помещения на ОДН."""
     period = models.ForeignKey(Period)
     volume = models.FloatField()
     real_estate = models.ForeignKey(RealEstate)
@@ -209,9 +227,7 @@ class ColdWaterVolumeODN(models.Model):
         return str(self.date)
 
 class ColdWaterNormODN(models.Model):
-    """Норматив потребления холодного водоснабжения на ОДН.
-    TODO: Может добавить поле norm_odn в ColdWaterNorm, а этот класс удалить?
-    """
-    norm = models.FloatField()
+    """Норматив потребления холодного водоснабжения на ОДН."""
     region = models.ForeignKey(Region)
-
+    validity = models.ForeignKey(NormValidity)
+    norm = models.FloatField()

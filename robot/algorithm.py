@@ -1,4 +1,4 @@
-﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals, ColdWaterNorm, ColdWaterVolumeODN, ColdWaterNormODN
+﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals, ColdWaterNorm, ColdWaterVolumeODN, ColdWaterNormODN, Region
 import datetime
 from robot.errors import ForgottenInitialReadingError
 from django.db.models import Sum
@@ -94,6 +94,17 @@ def calculate_individual_cold_water_volume(real_estate, cold_water_norm, residen
 
     return None #TODO: нужен флаг -- manual
 
+def get_cold_water_norm(region, degree_of_improvements):
+    
+    """ Получение норматива холодного водоснабжения"""
+    cold_water_norm = ColdWaterNorm.objects.filter(region=region, degree_of_improvements=degree_of_improvements)
+    #TODO: Необходимо проверять, чтобы текущая дата (либо текущий период, тогда в функцию нужно передавать период) находился в диапазоне действия норматива. Возвращать норму согласно периоду действия норматива.
+    if cold_water_norm.count() != 1:
+        raise Exception #TODO: Продумать ошибку. 
+    
+    cold_water_norm.get()
+    return cold_water_norm.norm
+
 def write_off():
     """Списание средств с клиентских счетов.
 
@@ -102,6 +113,14 @@ def write_off():
     try:
         with transaction.atomic():
             periods = Period.objects.order_by('start')
+            
+            region = Region.objects.filter(name="Новосибирская область, Тогучинский район")
+            if region.count() != 1:
+                raise Exception #TODO: Продумать ошибку.
+            region = region.get()
+            
+            #TODO: Необходимо получить норматив с учетом срока действия норматива. 
+            cold_water_norm_ODN = ColdWaterNormODN.objects.filter(region=region)
 
             for building in RealEstate.objects.filter(type=RealEstate.BUILDING_TYPE):
                 real_estates = []
@@ -120,8 +139,9 @@ def write_off():
                             raise Exception #TODO: Продумать ошибку.
 
                         #вычисляем для квартир, комунальных квартир и блоков объем потребления услуги, сохраняем его.
-                        cold_water_norm = ColdWaterNorm.objects.filter(residential=real_estate.residential, region=building.region).get()
-                        volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm.norm, real_estate.residential, real_estate.residents)
+                        cold_water_norm = get_cold_water_norm(region, real_estate.degree_of_improvements)
+                        
+                        volume = calculate_individual_cold_water_volume(real_estate, cold_water_norm, real_estate.residential, real_estate.residents)
                         volume_model = ColdWaterVolume(period=periods.last(), real_estate=real_estate, volume=volume.individual, date=datetime.date.today())
                         volume_model.save()
                         recalculated_volume = recalculated_volume + volume.recalculated
@@ -160,7 +180,7 @@ def write_off():
                     #{
                     #{Начало расчета общедомовых нужд:
                     #{
-                    #расчет общедомовых нужд. Доля объма на помещение определяется от соотношения площади помещения к общей площади всех жилых и нежилых помещений.
+                    #расчет общедомовых нужд. Доля объёма на помещение определяется от соотношения площади помещения к общей площади всех жилых и нежилых помещений.
                     # building_space - общая площадь всех жилых помещений (квартир) и нежилых помещений в многоквартирном доме.
                     cold_water_building_volume = None
                     building_space = 0
@@ -199,8 +219,7 @@ def write_off():
                             if setup_date:
                                 real_estate_volume = real_estate.space / building.space * volume
                             else:
-                                norm = ColdWaterNormODN.objects.filter(region=building.region).get()
-                                real_estate_volume = norm * real_estate.space_of_joint_estate * real_estate.space / building_space #TODO: Проверить, norm на ОДН равна норме холодного водснабжения на здание?
+                                real_estate_volume = cold_water_norm_ODN * real_estate.space_of_joint_estate * real_estate.space / building_space #TODO: Проверить, norm на ОДН равна норме холодного водснабжения на здание?
                                 #TODO: Нужно ли сохранять объем ОДН для помещений с типом SHARE_TYPE?
                                 cold_water_volume = ColdWaterVolumeODN(real_estate=real_estate, volume=real_estate_volume, date=datetime.date.today())
                                 cold_water_volume.save()
@@ -220,7 +239,7 @@ def write_off():
                     #}
 
             for house in RealEstate.objects.filter(type=RealEstate.HOUSE_TYPE):
-                cold_water_norm = ColdWaterNorm.objects.filter(residential=house.residential, region=house.region).get()
+                cold_water_norm = get_cold_water_norm(region, house.degree_of_improvements)
                 does_cold_water_counter_exist = False
                 if does_cold_water_counter_exist:
                     volume = calculate_individual_cold_water_volume(house, cold_water_norm, house.residential, house.residents)
@@ -241,7 +260,7 @@ def write_off():
                     
                     # Вычисляем общий объем для направления использования
                     use_case_volume = 0
-                        
+
                     total_volume = animals_volume + use_case_volume
                     period = Period.objects.last()
                     cold_water_volume = ColdWaterVolume(period=period, real_estate=house, volume=total_volume, date=datetime.date.today())
