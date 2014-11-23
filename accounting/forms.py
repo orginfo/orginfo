@@ -3,7 +3,7 @@ from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder, Field
 from crispy_forms.bootstrap import StrictButton
-from accounting.models import Payment, Client, RealEstate, ColdWaterReading, ServiceClient
+from accounting.models import Payment, Client, RealEstate, ColdWaterReading, ServiceClient, Account
 from django.forms.widgets import TextInput
 
 class OrganizationForm(forms.Form):
@@ -115,7 +115,6 @@ class CreateRealEstateForm(ModelForm):
         self.fields['space_of_joint_estate'].label = "Присоединенная площадь"
         self.fields['residential'].label = "Жилое помещение"
         self.fields['residents'].label = "Количество проживающих"
-        self.fields['amount'].label = "Сумма на лицевом счете"
         self.helper.layout = Layout(
             Fieldset(
                 'Real estate',
@@ -128,7 +127,6 @@ class CreateRealEstateForm(ModelForm):
                 'space_of_joint_estate',
                 'residential',
                 'residents',
-                'amount'
             ),
             ButtonHolder(
                 Submit('submit', 'Take', css_class='btn-default')
@@ -136,7 +134,7 @@ class CreateRealEstateForm(ModelForm):
         )
     class Meta:
         model = RealEstate
-        fields = ['address', 'region', 'cold_water_counter_setup_date', 'type', 'space', 'space_of_joint_estate', 'residential', 'residents', 'amount']
+        fields = ['address', 'region', 'cold_water_counter_setup_date', 'type', 'space', 'space_of_joint_estate', 'residential', 'residents']
         widgets = {
 #            'parent': TextInput(),
         }
@@ -226,3 +224,27 @@ class CreateServiceUsageForm(ModelForm):
     class Meta:
         model = ServiceClient
         fields = ['service_name', 'start', 'end']
+
+class CreateAccountForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(CreateAccountForm, self).__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-sm-2'
+        self.helper.field_class = 'col-sm-6'
+        self.fields['owners'].label = "Владельцы"
+        self.fields['balance'].label = "Баланс"
+        self.helper.layout = Layout(
+            Fieldset(
+                'Лицевой счёт',
+                'owners',
+                'balance'
+            ),
+            ButtonHolder(
+                Submit('submit', 'Create', css_class='btn-default')
+            )
+        )
+    class Meta:
+        model = Account
+        fields = ['balance', 'owners']

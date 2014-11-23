@@ -2,8 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm
-from accounting.models import Organization, UserOrganization, Client, Payment, RealEstate, ColdWaterReading, ServiceClient
+from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm, CreateAccountForm
+from accounting.models import Organization, UserOrganization, Client, Payment, RealEstate, ColdWaterReading, ServiceClient, Account
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic import ListView
 from robot.algorithm import write_off
@@ -146,7 +146,6 @@ class CreateRealEstate(CreateView):
     model = RealEstate
     template_name = 'accounting/add_client.html'
     exclude = ('organization', 'parent')
-    fields = ['amount']
     def dispatch(self, *args, **kwargs):
         user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
         if not user_org.organization:
@@ -167,7 +166,6 @@ class UpdateRealEstate(UpdateView):
     model = RealEstate
     template_name = 'accounting/update_real_estate.html'
     exclude = ('organization', 'parent')
-    fields = ['amount']
     def dispatch(self, *args, **kwargs):
         user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
         if not user_org.organization:
@@ -308,3 +306,34 @@ class UpdateServiceUsage(UpdateView):
     def form_valid(self, form):
         form.instance.real_estate_id = self.kwargs['real_estate_id']
         return super(UpdateServiceUsage, self).form_valid(form)
+
+class Accounts(ListView):
+    model = Account
+    template_name = 'accounting/accounts.html'
+    context_object_name = 'accounts'
+    def get_queryset(self):
+        return Account.objects.filter(real_estate=self.kwargs['real_estate_id']);
+    def get_context_data(self, **kwargs):
+        context = super(Accounts, self).get_context_data(**kwargs)
+        context['real_estate_id'] = self.kwargs['real_estate_id']
+        return context
+
+class CreateAccount(CreateView):
+    model = Account
+    template_name = 'accounting/add_client.html'
+    form_class = CreateAccountForm
+    def get_success_url(self):
+        return reverse('accounting:accounts', kwargs=self.kwargs)
+    def form_valid(self, form):
+        form.instance.real_estate_id = self.kwargs['real_estate_id']
+        return super(CreateAccount, self).form_valid(form)
+
+class UpdateAccount(UpdateView):
+    model = Account
+    form_class = CreateAccountForm
+    template_name = 'accounting/add_client.html'
+    def get_success_url(self):
+        return reverse('accounting:accounts', kwargs={'real_estate_id': self.kwargs['real_estate_id']})
+    def form_valid(self, form):
+        form.instance.real_estate_id = self.kwargs['real_estate_id']
+        return super(UpdateAccount, self).form_valid(form)

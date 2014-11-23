@@ -94,13 +94,19 @@ class RealEstate(models.Model):
     residential = models.BooleanField(default=True)
     residents = models.IntegerField(default=-1)
     organization = models.ForeignKey(Organization)
-    amount = models.DecimalField(max_digits=8, decimal_places=2, default=-1)
     
     degree_of_improvements = models.ForeignKey(DegreeOfImprovementsDwelling)
     def __str__(self):
         return self.address
     def get_absolute_url(self):
         return reverse('accounting:update_real_estate', kwargs={'pk': self.pk})
+
+class Account(models.Model):
+    real_estate = models.ForeignKey(RealEstate)
+    balance = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    owners = models.TextField()
+    def __str__(self):
+        return "(%s: %s {%.2f})" % (str(self.real_estate), self.owners, self.balance)
 
 class Client(models.Model):
     """Клиент.
