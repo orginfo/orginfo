@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from accounting.models import Period, Region, RealEstate, ServiceClient, ColdWaterNorm, DegreeOfImprovementsDwelling, ColdWaterReading, AnimalType, Animals, ColdWaterVolume, ColdWaterVolumeODN, Organization, ColdWaterNormODN, NormValidity, UserOrganization, Account
+from accounting.models import Period, Region, RealEstate, ServiceClient, ColdWaterNorm, DegreeOfImprovementsDwelling, ColdWaterReading, AnimalType, Animals, ColdWaterVolume, ColdWaterVolumeODN, Organization, ColdWaterNormODN, NormValidity, UserOrganization, Account, Payment
 from django.contrib.auth.models import User
 from django.db.models import Q
 import datetime
@@ -54,8 +54,12 @@ def prepare_db_base():
 
     Account.objects.all().delete()
     Account(real_estate=lenina_d1_kv1, balance=0, owners="Андреев А.А.").save()
-    Account(real_estate=lenina_d1_kv2, balance=1000.01, owners="Баранов Б.Б. Баранова Б.Б.").save()
+    lenina_d1_kv2_account = Account(real_estate=lenina_d1_kv2, balance=1000.01, owners="Баранов Б.Б. Баранова Б.Б.")
+    lenina_d1_kv2_account.save()
     Account(real_estate=lenina_d2, balance=0, owners="Воробьев В.В.").save()
+
+    Payment.objects.all().delete()
+    Payment(amount=100, account=lenina_d1_kv2_account, date=datetime.date(2014, 12, 31)).save()
 
     ServiceClient.objects.all().delete()
     ServiceClient(real_estate=lenina_d1, service_name=ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 1, 1), end=None).save()

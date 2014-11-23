@@ -337,3 +337,21 @@ class UpdateAccount(UpdateView):
     def form_valid(self, form):
         form.instance.real_estate_id = self.kwargs['real_estate_id']
         return super(UpdateAccount, self).form_valid(form)
+
+class Payments(ListView):
+    model = Payment
+    template_name = 'accounting/payments.html'
+    context_object_name = 'payments'
+    def dispatch(self, *args, **kwargs):
+        user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
+        if not user_org.organization:
+            raise Http404
+        self.organization = user_org.organization
+        return super(Payments, self).dispatch(*args, **kwargs)
+    def get_queryset(self):
+        account_id = self.kwargs['account_id']
+        return RealEstate.objects.filter(id=self.kwargs['real_estate_id'], organization=self.organization).get().account_set.filter(id=account_id).get().payment_set.all()
+    def get_context_data(self, **kwargs):
+        context = super(Payments, self).get_context_data(**kwargs)
+        context['real_estate_id'] = self.kwargs['real_estate_id']
+        return context

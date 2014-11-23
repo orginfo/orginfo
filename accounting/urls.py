@@ -29,4 +29,5 @@ urlpatterns = patterns('',
     url(r'^real_estates/(?P<real_estate_id>\d+)/accounts/$', views.Accounts.as_view(), name='accounts'),
     url(r'^real_estates/(?P<real_estate_id>\d+)/accounts/create/$', views.CreateAccount.as_view(), name='create_account'),
     url(r'^real_estates/(?P<real_estate_id>\d+)/accounts/(?P<pk>\d+)/$', views.UpdateAccount.as_view(success_url=None), name='account'),
+    url(r'^real_estates/(?P<real_estate_id>\d+)/accounts/(?P<account_id>\d+)/payments/$', views.Payments.as_view(), name='payments'),
 )

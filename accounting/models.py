@@ -129,11 +129,10 @@ class Payment(models.Model):
     """Платеж.
 
     Платеж увеличивает сумму на лицевом счете клиента.
-    TODO: Текущая модель рабочая, но не актуальная.
     """
     amount = models.DecimalField(max_digits=8, decimal_places=2)
-    client = models.ForeignKey(Client)
-    real_estate = models.ForeignKey(RealEstate, null=True, blank=True, default = None)
+    account = models.ForeignKey(Account)
+    date = models.DateField()
 
 class ServiceClient(models.Model):
     """Связь услуга-клиент.
