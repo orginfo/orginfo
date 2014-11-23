@@ -13,9 +13,6 @@ class UserOrganizationAdmin(admin.ModelAdmin):
 class RealEstateAdmin(admin.ModelAdmin):
     list_display = ('address', 'parent')
 
-class PaymentAdmin(admin.ModelAdmin):
-    list_display = ('amount', 'client', 'real_estate')
-
 class PeriodAdmin(admin.ModelAdmin):
     list_display = ('serial_number', 'start', 'end')
 
@@ -38,7 +35,7 @@ admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(UserOrganization, UserOrganizationAdmin)
 admin.site.register(Client, ClientAdmin)
 admin.site.register(RealEstate, RealEstateAdmin)
-admin.site.register(Payment, PaymentAdmin)
+admin.site.register(Payment)
 admin.site.register(ServiceClient)
 admin.site.register(Period, PeriodAdmin)
 admin.site.register(ColdWaterReading, ColdWaterReadingAdmin)

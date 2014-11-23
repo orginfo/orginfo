@@ -248,3 +248,46 @@ class CreateAccountForm(ModelForm):
     class Meta:
         model = Account
         fields = ['balance', 'owners']
+
+class WhatAccountForm(forms.Form):
+    name = forms.ChoiceField(choices=(), required=False, widget=forms.Select(attrs={"onChange":'document.getElementsByTagName("form")[0].submit();'}))
+    def __init__(self, name_choices, *args, **kwargs):
+        super(WhatAccountForm, self).__init__(*args, **kwargs)
+
+        self.fields['name'].choices = name_choices
+        self.fields['name'].label = "Лицевой счёт"
+
+        self.helper = FormHelper()
+        self.helper.form_method = 'get'
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-sm-3'
+        self.helper.field_class = 'col-sm-6'
+        self.helper.layout = Layout(
+            'name',
+        )
+
+class CreatePaymentForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(CreatePaymentForm, self).__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-sm-2'
+        self.helper.field_class = 'col-sm-6'
+        self.fields['amount'].label = "Сумма"
+        self.fields['date'].label = "Дата"
+        self.fields['comment'].label = "Примечание"
+        self.helper.layout = Layout(
+            Fieldset(
+                'Лицевой счёт',
+                'amount',
+                Field('date', placeholder="ГГГГ-ММ-ДД"),
+                'comment'
+            ),
+            ButtonHolder(
+                Submit('submit', 'Create', css_class='btn-default')
+            )
+        )
+    class Meta:
+        model = Payment
+        fields = ['amount', 'date', 'comment']

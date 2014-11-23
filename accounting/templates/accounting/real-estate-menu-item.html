@@ -10,8 +10,8 @@
   <li{% if request.get_full_path == l2services %} class="active"{% endif %}><a href="{{ l2services }}">Подключенные услуги</a></li>
   {% url "accounting:accounts" real_estate_id as l2accounts %}
   <li{% if request.get_full_path == l2accounts %} class="active"{% endif %}><a href="{{ l2accounts }}">Лицевые счета</a></li>
-  {% url "accounting:take_payment" client_id as l2payment %}
-  <li{% if request.get_full_path == l2payment %} class="active"{% endif %}><a href="{{ l2payment }}">Payment</a></li>
+  {% url "accounting:payments" real_estate_id as l2payment %}
+  <li{% if request.path == l2payment %} class="active"{% endif %}><a href="{{ l2payment }}">Платежи</a></li>
 </ul>
 <br />
 {% block real_estate_tab_content %}

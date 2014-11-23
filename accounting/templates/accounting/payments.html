@@ -1,0 +1,36 @@
+{% extends "accounting/real-estate-menu-item.html" %}
+
+{% block real_estate_tab_content %}
+{% if account_id %}
+{% load crispy_forms_tags %}
+{% crispy form %}
+{% if payments %}
+    <h2>Платежи</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Сумма</th>
+                <th>Сумма до операции</th>
+                <th>Дата</th>
+                <th>Примечание</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for payment in payments %}
+            <tr>
+                <td>{{ payment.amount }}</td>
+                <td>{{ payment.balance_before_payment }}</td>
+                <td>{{ payment.date }}</td>
+                <td>{{ payment.comment|default:"" }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Ни один платеж не поступил на лицевой счёт.</p>
+{% endif %}
+<a class="btn btn-primary btn-default" role="button" href="{% url "accounting:create_payment" real_estate_id account_id %}">Create</a>
+{% else %}
+<p>Ни один лицевой счёт ни связан с недвижимостью.</p>
+{% endif %}
+{% endblock %}

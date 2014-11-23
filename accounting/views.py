@@ -2,9 +2,9 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm, CreateAccountForm
+from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm, CreateAccountForm, CreatePaymentForm, WhatAccountForm
 from accounting.models import Organization, UserOrganization, Client, Payment, RealEstate, ColdWaterReading, ServiceClient, Account
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, FormView
 from django.views.generic import ListView
 from robot.algorithm import write_off
 
@@ -337,3 +337,67 @@ class UpdateAccount(UpdateView):
     def form_valid(self, form):
         form.instance.real_estate_id = self.kwargs['real_estate_id']
         return super(UpdateAccount, self).form_valid(form)
+
+class Payments(ListView):
+    model = Payment
+    template_name = 'accounting/payments.html'
+    context_object_name = 'payments'
+    def dispatch(self, *args, **kwargs):
+        user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
+        if not user_org.organization:
+            raise Http404
+        real_estate = get_object_or_404(RealEstate, id=self.kwargs['real_estate_id'], organization=user_org.organization)
+        real_estate_accounts = real_estate.account_set.all()
+        account_choices = []
+        last_account_id = None
+        for account in real_estate_accounts:
+            account_choices.append((account.id, account.owners),)
+            last_account_id = account.id
+
+        account_id = None
+        form = WhatAccountForm(account_choices, self.request.GET) #TODO: if empty choices
+        if form.is_valid():
+            account_id = last_account_id
+            if form.cleaned_data['name'] is not '':
+                account_id = form.cleaned_data['name']
+        else:
+            raise Http404
+        self.account_id = account_id
+
+        self.form = WhatAccountForm(account_choices, {'name': account_id}) #TODO: account_id instead of GET
+        return super(Payments, self).dispatch(*args, **kwargs)
+    def get_queryset(self):
+        if self.account_id:
+            payments = Payment.objects.filter(account_id=self.account_id)
+        else:
+            payments = Payment.objects.none()
+        return payments
+    def get_context_data(self, **kwargs):
+        context = super(Payments, self).get_context_data(**kwargs)
+        context['real_estate_id'] = self.kwargs['real_estate_id']
+        context['account_id'] = self.account_id
+        context['form'] = self.form
+        return context
+
+class CreatePayment(FormView):
+    template_name = 'accounting/add_client.html'
+    form_class = CreatePaymentForm
+    def get_success_url(self):
+        return "%s?name=%s" % (reverse('accounting:payments', kwargs={'real_estate_id': self.kwargs['real_estate_id']}), self.kwargs['account_id'])
+    def form_valid(self, form):
+        #TODO: нет защиты от не своего.
+        #TODO: не в транзакции.
+        account = get_object_or_404(Account, id=self.kwargs['account_id'])
+
+        payment = Payment(
+                amount=form.cleaned_data['amount'],
+                balance_before_payment = account.balance,
+                account=account,
+                date=form.cleaned_data['date'],
+                comment=form.cleaned_data['comment'])
+        payment.save()
+
+        account.balance = account.balance + form.cleaned_data['amount']
+        account.save()
+
+        return super(CreatePayment, self).form_valid(form)
