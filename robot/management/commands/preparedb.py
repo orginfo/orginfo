@@ -59,7 +59,7 @@ def prepare_db_base():
     Account(real_estate=lenina_d2, balance=0, owners="Воробьев В.В.").save()
 
     Payment.objects.all().delete()
-    Payment(amount=100, account=lenina_d1_kv2_account, date=datetime.date(2014, 12, 31), canceled=False).save()
+    Payment(amount=100, balance_before_payment=1000.01, account=lenina_d1_kv2_account, date=datetime.date(2014, 12, 31), comment=None).save()
 
     ServiceClient.objects.all().delete()
     ServiceClient(real_estate=lenina_d1, service_name=ServiceClient.COLD_WATER_SERVICE, start=datetime.date(2000, 1, 1), end=None).save()

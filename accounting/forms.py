@@ -259,11 +259,13 @@ class CreatePaymentForm(ModelForm):
         self.helper.field_class = 'col-sm-6'
         self.fields['amount'].label = "Сумма"
         self.fields['date'].label = "Дата"
+        self.fields['comment'].label = "Примечание"
         self.helper.layout = Layout(
             Fieldset(
                 'Лицевой счёт',
                 'amount',
-                Field('date', placeholder="ГГГГ-ММ-ДД")
+                Field('date', placeholder="ГГГГ-ММ-ДД"),
+                'comment'
             ),
             ButtonHolder(
                 Submit('submit', 'Create', css_class='btn-default')
@@ -271,4 +273,4 @@ class CreatePaymentForm(ModelForm):
         )
     class Meta:
         model = Payment
-        fields = ['amount', 'date']
+        fields = ['amount', 'date', 'comment']

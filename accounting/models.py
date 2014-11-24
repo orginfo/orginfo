@@ -131,9 +131,10 @@ class Payment(models.Model):
     Платеж увеличивает сумму на лицевом счете клиента.
     """
     amount = models.DecimalField(max_digits=8, decimal_places=2)
+    balance_before_payment = models.DecimalField(max_digits=8, decimal_places=2)
     account = models.ForeignKey(Account)
     date = models.DateField()
-    canceled = models.BooleanField(default=False)
+    comment = models.TextField(null=True, blank=True, default = None)
 
 class ServiceClient(models.Model):
     """Связь услуга-клиент.
