@@ -1,10 +1,10 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm, CreateAccountForm
+from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm, CreateAccountForm, CreatePaymentForm
 from accounting.models import Organization, UserOrganization, Client, Payment, RealEstate, ColdWaterReading, ServiceClient, Account
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic import ListView
 from robot.algorithm import write_off
 
@@ -355,3 +355,36 @@ class Payments(ListView):
         context = super(Payments, self).get_context_data(**kwargs)
         context['real_estate_id'] = self.kwargs['real_estate_id']
         return context
+
+class CreatePayment(CreateView):
+    """
+    #MYABE: создание отрицательного платежа с сообщением об отмене, является
+    альтернативой cancel_payment. В этом случае становится ясно какое значение
+    брать за old_balance (balance_before_operation)
+    """
+    model = Payment
+    template_name = 'accounting/add_client.html'
+    form_class = CreatePaymentForm
+    def get_success_url(self):
+        return reverse('accounting:payments', kwargs=self.kwargs)
+    def form_valid(self, form):
+        #TODO: нет защиты от не своего.
+        account = get_object_or_404(Account, id=self.kwargs['account_id'])
+        account.balance = account.balance + form.instance.amount
+        account.save()
+        #TODO: не в транзакции.
+        form.instance.account = account
+        form.instance.canceled = False
+        return super(CreatePayment, self).form_valid(form)
+
+@login_required(login_url="/login/")
+def cancel_payment(request, real_estate_id, account_id, payment_id):
+    payment = get_object_or_404(Payment, id=payment_id)
+    payment.canceled = True
+    payment.save()
+
+    account = get_object_or_404(Account, id=account_id)
+    account.balance = account.balance - payment.amount
+    account.save()
+
+    return redirect(reverse('accounting:payments', kwargs={'real_estate_id': real_estate_id, 'account_id': account_id}))

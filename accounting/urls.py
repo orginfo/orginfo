@@ -30,4 +30,6 @@ urlpatterns = patterns('',
     url(r'^real_estates/(?P<real_estate_id>\d+)/accounts/create/$', views.CreateAccount.as_view(), name='create_account'),
     url(r'^real_estates/(?P<real_estate_id>\d+)/accounts/(?P<pk>\d+)/$', views.UpdateAccount.as_view(success_url=None), name='account'),
     url(r'^real_estates/(?P<real_estate_id>\d+)/accounts/(?P<account_id>\d+)/payments/$', views.Payments.as_view(), name='payments'),
+    url(r'^real_estates/(?P<real_estate_id>\d+)/accounts/(?P<account_id>\d+)/payments/create/$', views.CreatePayment.as_view(), name='create_payment'),
+    url(r'^real_estates/(?P<real_estate_id>\d+)/accounts/(?P<account_id>\d+)/payments/(?P<payment_id>\d+)/cancel/$', views.cancel_payment, name='cancel_payment'),
 )

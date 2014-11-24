@@ -133,6 +133,7 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     account = models.ForeignKey(Account)
     date = models.DateField()
+    canceled = models.BooleanField(default=False)
 
 class ServiceClient(models.Model):
     """Связь услуга-клиент.

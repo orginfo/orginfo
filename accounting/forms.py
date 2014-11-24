@@ -248,3 +248,27 @@ class CreateAccountForm(ModelForm):
     class Meta:
         model = Account
         fields = ['balance', 'owners']
+
+class CreatePaymentForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(CreatePaymentForm, self).__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-sm-2'
+        self.helper.field_class = 'col-sm-6'
+        self.fields['amount'].label = "Сумма"
+        self.fields['date'].label = "Дата"
+        self.helper.layout = Layout(
+            Fieldset(
+                'Лицевой счёт',
+                'amount',
+                Field('date', placeholder="ГГГГ-ММ-ДД")
+            ),
+            ButtonHolder(
+                Submit('submit', 'Create', css_class='btn-default')
+            )
+        )
+    class Meta:
+        model = Payment
+        fields = ['amount', 'date']
