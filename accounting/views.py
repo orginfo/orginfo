@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm, CreateAccountForm, CreatePaymentForm
+from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm, CreateAccountForm, CreatePaymentForm, WhatAccountForm
 from accounting.models import Organization, UserOrganization, Client, Payment, RealEstate, ColdWaterReading, ServiceClient, Account
 from django.views.generic.edit import CreateView, UpdateView, FormView
 from django.views.generic import ListView
@@ -342,26 +342,40 @@ class Payments(ListView):
     model = Payment
     template_name = 'accounting/payments.html'
     context_object_name = 'payments'
+    form_class = WhatAccountForm
     def dispatch(self, *args, **kwargs):
+        self.form = self.form_class(self.request.GET)
         user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
         if not user_org.organization:
             raise Http404
         self.organization = user_org.organization
         return super(Payments, self).dispatch(*args, **kwargs)
     def get_queryset(self):
-        account_id = self.kwargs['account_id']
-        return RealEstate.objects.filter(id=self.kwargs['real_estate_id'], organization=self.organization).get().account_set.filter(id=account_id).get().payment_set.all()
+        object_list = Payment.objects.none()
+        if self.form.is_valid():
+            account_id = self.form.cleaned_data['name']
+            if account_id is '':
+                account_id = RealEstate.objects.filter(id=self.kwargs['real_estate_id'], organization=self.organization).get().account_set.last().id
+                object_list = RealEstate.objects.filter(id=self.kwargs['real_estate_id'], organization=self.organization).get().account_set.last().payment_set.all()
+            else:
+                object_list = RealEstate.objects.filter(id=self.kwargs['real_estate_id'], organization=self.organization).get().account_set.filter(id=account_id).get().payment_set.all()
+            self.account_id = account_id
+        else:
+            raise Http404
+
+        return object_list
     def get_context_data(self, **kwargs):
         context = super(Payments, self).get_context_data(**kwargs)
         context['real_estate_id'] = self.kwargs['real_estate_id']
-        context['account_id'] = self.kwargs['account_id']
+        context['account_id'] = self.account_id
+        context['form'] = self.form
         return context
 
 class CreatePayment(FormView):
     template_name = 'accounting/add_client.html'
     form_class = CreatePaymentForm
     def get_success_url(self):
-        return reverse('accounting:payments', kwargs=self.kwargs)
+        return "%s?name=%s" % (reverse('accounting:payments', kwargs={'real_estate_id': self.kwargs['real_estate_id']}), self.kwargs['account_id'])
     def form_valid(self, form):
         #TODO: нет защиты от не своего.
         #TODO: не в транзакции.

@@ -249,6 +249,20 @@ class CreateAccountForm(ModelForm):
         model = Account
         fields = ['balance', 'owners']
 
+class WhatAccountForm(forms.Form):
+    name = forms.CharField(max_length=10, required=False)
+    def __init__(self, *args, **kwargs):
+        super(WhatAccountForm, self).__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_method = 'get'
+        self.helper.form_class = 'form-inline'
+        self.helper.field_template = 'bootstrap3/layout/inline_field.html'
+        self.helper.layout = Layout(
+            'name',
+            StrictButton('Find', css_class='btn-default', type='submit'),
+        )
+
 class CreatePaymentForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(CreatePaymentForm, self).__init__(*args, **kwargs)

@@ -1,6 +1,8 @@
 {% extends "accounting/real-estate-menu-item.html" %}
 
 {% block real_estate_tab_content %}
+{% load crispy_forms_tags %}
+{% crispy form %}
 {% if payments %}
     <h2>Платежи</h2>
     <table class="table table-bordered">
