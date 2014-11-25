@@ -250,17 +250,20 @@ class CreateAccountForm(ModelForm):
         fields = ['balance', 'owners']
 
 class WhatAccountForm(forms.Form):
-    name = forms.CharField(max_length=10, required=False)
-    def __init__(self, *args, **kwargs):
+    name = forms.ChoiceField(choices=(), required=False, widget=forms.Select(attrs={"onChange":'document.getElementsByTagName("form")[0].submit();'}))
+    def __init__(self, name_choices, *args, **kwargs):
         super(WhatAccountForm, self).__init__(*args, **kwargs)
+
+        self.fields['name'].choices = name_choices
+        self.fields['name'].label = "Лицевой счёт"
 
         self.helper = FormHelper()
         self.helper.form_method = 'get'
-        self.helper.form_class = 'form-inline'
-        self.helper.field_template = 'bootstrap3/layout/inline_field.html'
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-sm-3'
+        self.helper.field_class = 'col-sm-6'
         self.helper.layout = Layout(
             'name',
-            StrictButton('Find', css_class='btn-default', type='submit'),
         )
 
 class CreatePaymentForm(ModelForm):

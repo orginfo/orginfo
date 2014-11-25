@@ -1,6 +1,7 @@
 {% extends "accounting/real-estate-menu-item.html" %}
 
 {% block real_estate_tab_content %}
+{% if account_id %}
 {% load crispy_forms_tags %}
 {% crispy form %}
 {% if payments %}
@@ -29,4 +30,7 @@
     <p>Ни один платеж не поступил на лицевой счёт.</p>
 {% endif %}
 <a class="btn btn-primary btn-default" role="button" href="{% url "accounting:create_payment" real_estate_id account_id %}">Create</a>
+{% else %}
+<p>Ни один лицевой счёт ни связан с недвижимостью.</p>
+{% endif %}
 {% endblock %}

@@ -342,28 +342,36 @@ class Payments(ListView):
     model = Payment
     template_name = 'accounting/payments.html'
     context_object_name = 'payments'
-    form_class = WhatAccountForm
     def dispatch(self, *args, **kwargs):
-        self.form = self.form_class(self.request.GET)
         user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
         if not user_org.organization:
             raise Http404
-        self.organization = user_org.organization
-        return super(Payments, self).dispatch(*args, **kwargs)
-    def get_queryset(self):
-        object_list = Payment.objects.none()
-        if self.form.is_valid():
-            account_id = self.form.cleaned_data['name']
-            if account_id is '':
-                account_id = RealEstate.objects.filter(id=self.kwargs['real_estate_id'], organization=self.organization).get().account_set.last().id
-                object_list = RealEstate.objects.filter(id=self.kwargs['real_estate_id'], organization=self.organization).get().account_set.last().payment_set.all()
-            else:
-                object_list = RealEstate.objects.filter(id=self.kwargs['real_estate_id'], organization=self.organization).get().account_set.filter(id=account_id).get().payment_set.all()
-            self.account_id = account_id
+        real_estate = get_object_or_404(RealEstate, id=self.kwargs['real_estate_id'], organization=user_org.organization)
+        real_estate_accounts = real_estate.account_set.all()
+        account_choices = []
+        last_account_id = None
+        for account in real_estate_accounts:
+            account_choices.append((account.id, account.owners),)
+            last_account_id = account.id
+
+        account_id = None
+        form = WhatAccountForm(account_choices, self.request.GET) #TODO: if empty choices
+        if form.is_valid():
+            account_id = last_account_id
+            if form.cleaned_data['name'] is not '':
+                account_id = form.cleaned_data['name']
         else:
             raise Http404
+        self.account_id = account_id
 
-        return object_list
+        self.form = WhatAccountForm(account_choices, {'name': account_id}) #TODO: account_id instead of GET
+        return super(Payments, self).dispatch(*args, **kwargs)
+    def get_queryset(self):
+        if self.account_id:
+            payments = Payment.objects.filter(account_id=self.account_id)
+        else:
+            payments = Payment.objects.none()
+        return payments
     def get_context_data(self, **kwargs):
         context = super(Payments, self).get_context_data(**kwargs)
         context['real_estate_id'] = self.kwargs['real_estate_id']
