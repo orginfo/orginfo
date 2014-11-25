@@ -48,6 +48,24 @@ class ColdWaterNorm(models.Model):
     validity = models.ForeignKey(NormValidity)
     norm = models.FloatField()
 
+class ResourceSupplyOrganization(models.Model):
+    """Ресурсно-снабжающая организация
+    TODO: Добавить ссылку на населенный пункт.
+    """
+    name = models.CharField(max_length=200)
+    OGRN = models.CharField(max_length=20)
+    INN = models.CharField(max_length=20)
+
+class TariffType(models.Model):
+    """Тип тарифа: Население либо бюджетные организации"""
+    name = models.CharField(max_length=50)
+
+class ColdWaterTariff(models.Model):
+    """Тариф по услуге холодного водоснабжения для конкретного клиента."""
+    type = models.ForeignKey(TariffType)
+    resource_supply_org = models.ForeignKey(ResourceSupplyOrganization)
+    value = models.FloatField()
+
 class RealEstate(models.Model):
     """Объект недвижимости.
 
@@ -96,6 +114,7 @@ class RealEstate(models.Model):
     organization = models.ForeignKey(Organization)
     
     degree_of_improvements = models.ForeignKey(DegreeOfImprovementsDwelling)
+    cold_water_tariff = models.ForeignKey(ColdWaterTariff, null=True, blank=True, default = None)
     def __str__(self):
         return self.address
     def get_absolute_url(self):
@@ -205,13 +224,6 @@ class ColdWaterVolume(models.Model):
     date = models.DateField()
     def __str__(self):
         return str(self.date)
-
-class ColdWaterTariff(models.Model):
-    """Тариф по услуге холодного водоснабжения для конкретного клиента."""
-    real_estate = models.ForeignKey(RealEstate)
-    value = models.IntegerField()
-    def __str__(self):
-        return "%s %s" % (str(self.client), self.value)
 
 class AnimalType(models.Model):
     """Тип сельскохозяйственных животных."""
