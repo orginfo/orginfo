@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from accounting.models import Period, Region, RealEstate, ServiceClient, ColdWaterNorm, DegreeOfImprovementsDwelling, ColdWaterReading, AnimalType, Animals, ColdWaterVolume, ColdWaterVolumeODN, Organization, ColdWaterNormODN, NormValidity, UserOrganization, Account, Payment, ResourceSupplyOrganization, TariffType, ColdWaterTariff 
+from accounting.models import Period, Region, RealEstate, ServiceClient, ColdWaterNorm, DegreeOfImprovementsDwelling, ColdWaterReading, AnimalType, Animals, ColdWaterVolume, ColdWaterVolumeODN, Organization, ColdWaterNormODN, NormValidity, UserOrganization, Account, Payment, ResourceSupplyOrganization, TariffType, TariffValidity, ColdWaterTariff 
 from django.contrib.auth.models import User
 from django.db.models import Q
 import datetime
@@ -50,8 +50,12 @@ def prepare_db_base():
     tariff_type = TariffType(name="Население")
     tariff_type.save()
 
+    TariffValidity.objects.all().delete()
+    tariff_validity = TariffValidity(start=datetime.date(2014, 6, 1), end=datetime.date(2014, 12, 31))
+    tariff_validity.save()
+
     ColdWaterTariff.objects.all().delete()
-    cold_water_tariff = ColdWaterTariff(type=tariff_type, resource_supply_org=resource_supply_org, value=1.2)
+    cold_water_tariff = ColdWaterTariff(type=tariff_type, resource_apply_org=resource_supply_org, validity=tariff_validity, value=1.2)
     cold_water_tariff.save()
 
     RealEstate.objects.all().delete()

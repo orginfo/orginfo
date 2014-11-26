@@ -60,10 +60,19 @@ class TariffType(models.Model):
     """Тип тарифа: Население либо бюджетные организации"""
     name = models.CharField(max_length=50)
 
+class TariffValidity(models.Model):
+    """ Период действия тарифа
+    start - дата, с которой начинает действовать тариф
+    end - дата окончания действия тарифа
+    """
+    start = models.DateField()
+    end = models.DateField()
+
 class ColdWaterTariff(models.Model):
     """Тариф по услуге холодного водоснабжения для конкретного клиента."""
     type = models.ForeignKey(TariffType)
     resource_supply_org = models.ForeignKey(ResourceSupplyOrganization)
+    validity = models.ForeignKey(TariffValidity)
     value = models.FloatField()
 
 class RealEstate(models.Model):
