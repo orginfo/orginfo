@@ -234,19 +234,6 @@ class ColdWaterVolume(models.Model):
     def __str__(self):
         return str(self.date)
 
-class AnimalType(models.Model):
-    """Тип сельскохозяйственных животных."""
-    name = models.CharField(max_length=200)
-    norm = models.FloatField();
-    def __str__(self):
-        return "%s %s" % (self.name, str(self.norm))
-
-class Animals(models.Model):
-    """Сельскохозяйственные животные для всех домовладений."""
-    count = models.IntegerField(default=-1)
-    real_estate = models.ForeignKey(RealEstate)
-    type = models.ForeignKey(AnimalType)
-
 class ColdWaterVolumeODN(models.Model):
     """Вычисления объема потребления холодной для помещения на ОДН."""
     period = models.ForeignKey(Period)
@@ -261,3 +248,20 @@ class ColdWaterNormODN(models.Model):
     region = models.ForeignKey(Region)
     validity = models.ForeignKey(NormValidity)
     norm = models.FloatField()
+    
+class DirectionUsing(models.Model):
+    """Направление использования"""
+    name = models.CharField(max_length=200)
+
+class DirectionUsingNorm(models.Model):
+    """TODO: Необходимо добавить регион (ссылку на субъект РФ)"""
+    direction_using = models.ForeignKey(DirectionUsing)
+    validity = models.ForeignKey(NormValidity)
+    value = models.FloatField()
+
+class LandPlotAndOutbuilding(models.Model):
+    """Земельный участкок и надворные постройки
+    count - количество единиц направлений использования"""
+    count = models.IntegerField()
+    real_estate = models.ForeignKey(RealEstate)
+    direction_using_norm = models.FloatField(DirectionUsingNorm)

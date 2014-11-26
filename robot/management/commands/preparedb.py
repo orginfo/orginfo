@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from accounting.models import Period, Region, RealEstate, ServiceClient, ColdWaterNorm, DegreeOfImprovementsDwelling, ColdWaterReading, AnimalType, Animals, ColdWaterVolume, ColdWaterVolumeODN, Organization, ColdWaterNormODN, NormValidity, UserOrganization, Account, Payment, ResourceSupplyOrganization, TariffType, TariffValidity, ColdWaterTariff 
+from accounting.models import Period, Region, RealEstate, ServiceClient, ColdWaterNorm, DegreeOfImprovementsDwelling, ColdWaterReading, ColdWaterVolume, ColdWaterVolumeODN, Organization, ColdWaterNormODN, NormValidity, UserOrganization, Account, Payment, ResourceSupplyOrganization, TariffType, TariffValidity, ColdWaterTariff, DirectionUsing, DirectionUsingNorm, LandPlotAndOutbuilding 
 from django.contrib.auth.models import User
 from django.db.models import Q
 import datetime
@@ -96,19 +96,27 @@ def prepare_db_base():
     ColdWaterNormODN.objects.all().delete()
     ColdWaterNormODN(region=region, validity=norm_validity, norm=1.2)
 
+    DirectionUsing.objects.all().delete()
+    goose = DirectionUsing(name="Гусь")
+    goose.save()
+    boar = DirectionUsing(name="Кабан")
+    boar.save()
+
+    DirectionUsingNorm.objects.all().delete()
+    direction_using_goose = DirectionUsingNorm(direction_using=goose, validity=norm_validity, value=1.2);
+    direction_using_goose.save()
+    direction_using_boar = DirectionUsingNorm(direction_using=boar, validity=norm_validity, value=2.5);
+    direction_using_boar.save()
+
+    LandPlotAndOutbuilding.objects.all().delete()
+    land_plot_raw1 = LandPlotAndOutbuilding(count=10, real_estate=lenina_d2, direction_using_norm=direction_using_goose)
+    land_plot_raw1.save()
+    land_plot_raw2 = LandPlotAndOutbuilding(count=2, real_estate=lenina_d2, direction_using_norm=direction_using_boar)
+    land_plot_raw2.save()
+
     #Эти таблицы заполняются роботом:
     ColdWaterVolume.objects.all().delete()
     ColdWaterVolumeODN.objects.all().delete()
-
-    AnimalType.objects.all().delete()
-    goose = AnimalType(name="Гусь", norm=0.5)
-    goose.save()
-    boar = AnimalType(name="Кабан", norm=12.2)
-    boar.save()
-
-    Animals.objects.all().delete()
-    Animals(count=12, real_estate=lenina_d2, type=goose)
-    Animals(count=2, real_estate=lenina_d2, type=boar)
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'

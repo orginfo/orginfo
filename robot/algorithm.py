@@ -1,4 +1,4 @@
-﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, Animals, ColdWaterNorm, ColdWaterVolumeODN, ColdWaterNormODN, Region
+﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, ColdWaterNorm, ColdWaterVolumeODN, ColdWaterNormODN, Region, LandPlotAndOutbuilding
 import datetime
 from robot.errors import ForgottenInitialReadingError
 from django.db.models import Sum
@@ -253,17 +253,13 @@ def write_off():
                     #TODO: Вычислить объем для земельного участка и расположенных на нем надворных построек
                     # У клиента могут быть виды сельскохозяйственных животных, направления использования
                     # Вычисляем общий оъбем для видов сельскохозяйственных животных
-                    animals_volume = 0
-                    animals_for_house = Animals.objects.filter(real_estate=house)
-                    for animals in animals_for_house:
-                        animals_volume = animals_volume + (animals.count * animals.type.norm)
+                    land_plot_and_outbuilding_volume = 0
+                    directions_using_for_house = LandPlotAndOutbuilding.objects.filter(real_estate=house)
+                    for direction in directions_using_for_house:
+                        land_plot_and_outbuilding_volume = land_plot_and_outbuilding_volume + (direction.count * direction.direction_using_norm.value)
                     
-                    # Вычисляем общий объем для направления использования
-                    use_case_volume = 0
-
-                    total_volume = animals_volume + use_case_volume
                     period = Period.objects.last()
-                    cold_water_volume = ColdWaterVolume(period=period, real_estate=house, volume=total_volume, date=datetime.date.today())
+                    cold_water_volume = ColdWaterVolume(period=period, real_estate=house, volume=land_plot_and_outbuilding_volume, date=datetime.date.today())
                     cold_water_volume.save()
                     
                     #TODO: списать средства с лицевого счета.
