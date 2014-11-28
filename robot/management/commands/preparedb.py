@@ -55,7 +55,7 @@ def prepare_db_base():
     tariff_validity.save()
 
     ColdWaterTariff.objects.all().delete()
-    cold_water_tariff = ColdWaterTariff(type=tariff_type, resource_apply_org=resource_supply_org, validity=tariff_validity, value=1.2)
+    cold_water_tariff = ColdWaterTariff(type=tariff_type, resource_supply_org=resource_supply_org, validity=tariff_validity, value=1.2)
     cold_water_tariff.save()
 
     RealEstate.objects.all().delete()

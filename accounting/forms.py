@@ -3,7 +3,7 @@ from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder, Field
 from crispy_forms.bootstrap import StrictButton
-from accounting.models import Payment, Client, RealEstate, ColdWaterReading, ServiceClient, Account
+from accounting.models import Payment, RealEstate, ColdWaterReading, ServiceClient, Account
 from django.forms.widgets import TextInput
 
 class OrganizationForm(forms.Form):
@@ -60,42 +60,6 @@ class LastNameSearchForm(forms.Form):
             'name',
             StrictButton('Find', css_class='btn-default', type='submit'),
         )
-
-class CreateClientForm(ModelForm):
-    parent_street = forms.CharField()
-    def __init__(self, *args, **kwargs):
-        super(CreateClientForm, self).__init__(*args, **kwargs)
-
-        self.helper = FormHelper()
-        self.helper.form_class = 'form-horizontal'
-        self.helper.label_class = 'col-sm-2'
-        self.helper.field_class = 'col-sm-6'
-        self.helper.layout = Layout(
-            'lfm',
-            'real_estate',
-            'parent_street',
-            ButtonHolder(
-                Submit('submit', 'Add', css_class='btn-default')
-            )
-        )
-    class Meta:
-        model = Client
-        fields = ['lfm', 'real_estate']
-    def clean(self):
-        #TODO: добавить проверку на пустоту.
-        parent_street = self.cleaned_data['parent_street']
-        error_messages = []
-
-        # validate piece
-        if RealEstate.objects.filter(address__contains=parent_street).count() is not 1:
-            error_messages.append('Illegal Piece selected')
-            #self._errors["parent_street"] = self.error_class(["Please enter a valid model"])
-            pass
-
-        if len(error_messages):
-            raise forms.ValidationError(' & '.join(error_messages))
-
-        return self.cleaned_data
 
 class CreateRealEstateForm(ModelForm):
     parent_street = forms.CharField(required=False)

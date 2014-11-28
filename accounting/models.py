@@ -136,23 +136,6 @@ class Account(models.Model):
     def __str__(self):
         return "(%s: %s {%.2f})" % (str(self.real_estate), self.owners, self.balance)
 
-class Client(models.Model):
-    """Клиент.
-
-    Клиент принадлежит организации, которая предоставляет ему услуги.
-    У клиента есть свой лицевой счет, который характеризуется его номером,
-    сейчас это ID клиента, и суммой на лицевом счете. Лицевой счет
-    инкапсулирован в понятие клиента.
-
-    amount - сумма денег на счете клиента
-    """
-    lfm = models.CharField(max_length=200)
-    real_estate = models.ForeignKey(RealEstate)
-    def __str__(self):
-        return self.lfm
-    def get_absolute_url(self):
-        return reverse('accounting:client_update', kwargs={'pk': self.pk})
-
 class Payment(models.Model):
     """Платеж.
 
@@ -264,4 +247,4 @@ class LandPlotAndOutbuilding(models.Model):
     count - количество единиц направлений использования"""
     count = models.IntegerField()
     real_estate = models.ForeignKey(RealEstate)
-    direction_using_norm = models.FloatField(DirectionUsingNorm)
+    direction_using_norm = models.ForeignKey(DirectionUsingNorm)

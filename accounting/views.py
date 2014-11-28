@@ -2,8 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateClientForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm, CreateAccountForm, CreatePaymentForm, WhatAccountForm
-from accounting.models import Organization, UserOrganization, Client, Payment, RealEstate, ColdWaterReading, ServiceClient, Account
+from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm, CreateAccountForm, CreatePaymentForm, WhatAccountForm
+from accounting.models import Organization, UserOrganization, Payment, RealEstate, ColdWaterReading, ServiceClient, Account
 from django.views.generic.edit import CreateView, UpdateView, FormView
 from django.views.generic import ListView
 from robot.algorithm import write_off
@@ -46,32 +46,6 @@ def organization_details(request):
         'form': form,
     })
 
-class TakePayment(CreateView):
-    form_class = ExampleForm
-    model = Payment
-    template_name = 'accounting/take_payment.html'
-    fields = ['amount']
-    exclude = ('client',)
-    def dispatch(self, *args, **kwargs):
-        user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
-        clients = user_org.organization.client_set.all()
-        client_id = int(kwargs['client_id'])
-        self.client = next((client for client in clients if client.id==client_id), None)
-        if not self.client:
-            raise Http404
-        return super(TakePayment, self).dispatch(*args, **kwargs)
-    def form_valid(self, form):
-        form.instance.client = self.client
-        return super(TakePayment, self).form_valid(form)
-    def get_context_data(self, **kwargs):
-        context = super(TakePayment, self).get_context_data(**kwargs)
-        context['client'] = self.client
-        client_id = self.kwargs['client_id']
-        context['client_id'] = client_id
-        real_estate_id = Client.objects.filter(id=client_id).get().id
-        context['real_estate_id'] = real_estate_id
-        return context
-
 class RealEstates(ListView):
     form_class = LastNameSearchForm
     context_object_name = 'real_estates'
@@ -91,55 +65,6 @@ class RealEstates(ListView):
         else:
             object_list = RealEstate.objects.none()
         return object_list
-
-class CreateClient(CreateView):
-    form_class = CreateClientForm
-    model = Client
-    template_name = 'accounting/add_client.html'
-    exclude = ('organization', 'real_estate',)
-    fields = ['lfm', 'amount']
-    def dispatch(self, *args, **kwargs):
-        user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
-        if not user_org.organization:
-            raise Http404
-        self.organization = user_org.organization
-        return super(CreateClient, self).dispatch(*args, **kwargs)
-    def form_valid(self, form):
-        form.instance.organization = self.organization
-        parent_street = form.cleaned_data['parent_street']
-        form.instance.real_estate = RealEstate.objects.filter(address=parent_street).get()
-        return super(CreateClient, self).form_valid(form)
-
-class UpdateClient(UpdateView):
-    form_class = CreateClientForm
-    model = Client
-    template_name = 'accounting/update_client.html'
-    exclude = ('organization', 'real_estate')
-    fields = ['lfm', 'amount']
-    def dispatch(self, *args, **kwargs):
-        user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
-        if not user_org.organization:
-            raise Http404
-        self.organization = user_org.organization
-        return super(UpdateClient, self).dispatch(*args, **kwargs)
-    def form_valid(self, form):
-        form.instance.organization = self.organization
-        parent_street = form.cleaned_data['parent_street']
-        form.instance.real_estate = RealEstate.objects.filter(address=parent_street).get()
-        return super(UpdateClient, self).form_valid(form)
-    def get_initial(self):
-        initial = super(UpdateClient, self).get_initial()
-        # Copy the dictionary so we don't accidentally change a mutable dict
-        initial = initial.copy()
-        initial['parent_street'] = self.object.real_estate.address
-        return initial
-    def get_context_data(self, **kwargs):
-        context = super(UpdateClient, self).get_context_data(**kwargs)
-        client_id = self.kwargs['pk']
-        context['client_id'] = client_id
-        real_estate_id = Client.objects.filter(id=client_id).get().id
-        context['real_estate_id'] = real_estate_id
-        return context
 
 class CreateRealEstate(CreateView):
     form_class = CreateRealEstateForm
@@ -235,46 +160,6 @@ class UpdateColdWaterReading(UpdateView):
     def form_valid(self, form):
         form.instance.real_estate_id = self.kwargs['real_estate_id']
         return super(UpdateColdWaterReading, self).form_valid(form)
-
-class ClientServices(ListView):
-    model = ServiceClient
-    template_name = 'accounting/client_services.html'
-    context_object_name = 'services'
-    def get_queryset(self):
-        return ServiceClient.objects.filter(client=self.kwargs['pk']);
-    def get_context_data(self, **kwargs):
-        context = super(ClientServices, self).get_context_data(**kwargs)
-        client_id = self.kwargs['pk']
-        context['client_id'] = client_id
-        real_estate_id = Client.objects.filter(id=client_id).get().id
-        context['real_estate_id'] = real_estate_id
-        return context
-
-class CreateClientService(CreateView):
-    model = ServiceClient
-    template_name = 'accounting/add_client.html'
-    form_class = CreateClientServiceForm
-    def get_success_url(self):
-        return reverse('accounting:client_services', kwargs=self.kwargs)
-    def form_valid(self, form):
-        form.instance.client_id = self.kwargs['pk']
-        return super(CreateClientService, self).form_valid(form)
-
-class UpdateClientService(UpdateView):
-    model = ServiceClient
-    form_class = CreateClientServiceForm
-    template_name = 'accounting/add_client.html'
-    def get_success_url(self):
-        return reverse('accounting:client_services', kwargs={'pk': self.kwargs['client_id']})
-    def form_valid(self, form):
-        form.instance.client_id = self.kwargs['client_id']
-        return super(UpdateClientService, self).form_valid(form)
-
-class Clients(ListView):
-    model = RealEstate
-    template_name = 'accounting/real_estates.html'
-    context_object_name = 'real_estates'
-    #TODO: ограничить лишь для конкретного МУП-а.
 
 class ServiceUsages(ListView):
     model = ServiceClient

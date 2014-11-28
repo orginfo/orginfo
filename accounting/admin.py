@@ -1,5 +1,5 @@
 from django.contrib import admin
-from accounting.models import Organization, UserOrganization, Client, RealEstate, Payment, ServiceClient, ColdWaterReading, ColdWaterVolume, ColdWaterTariff, Period, Region, ColdWaterNorm, Account
+from accounting.models import Organization, UserOrganization, RealEstate, Payment, ServiceClient, ColdWaterReading, ColdWaterVolume, ColdWaterTariff, Period, Region, ColdWaterNorm, Account
 
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('name',)
@@ -27,7 +27,6 @@ class RegionAdmin(admin.ModelAdmin):
 
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(UserOrganization, UserOrganizationAdmin)
-admin.site.register(Client, ClientAdmin)
 admin.site.register(RealEstate, RealEstateAdmin)
 admin.site.register(Payment)
 admin.site.register(ServiceClient)
