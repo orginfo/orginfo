@@ -49,14 +49,14 @@ body {
     <div class="container">
       <form method="post" action="{% url 'accounting:login' %}" class="form-signin" role="form">
       {% csrf_token %}
-        <h2 class="form-signin-heading">Please sign in</h2>
+        <h2 class="form-signin-heading">Вход в личный кабинет</h2>
         {% if form.errors %}
-        <p>Your username and password didn't match. Please try again.</p>
+        <p>Логин и пароль не соответствуют. Пожалуйста, попробуйте еще.</p>
         {% endif %}
-        <input type="text" class="form-control" placeholder="Login" required autofocus name="{{ form.username.html_name }}" {% if form.username.value %}value="{{ form.username.value }}"{% endif %}>
-        <input type="password" class="form-control" placeholder="Password" required name="{{ form.password.html_name }}">
+        <input type="text" class="form-control" placeholder="Логин" required autofocus name="{{ form.username.html_name }}" {% if form.username.value %}value="{{ form.username.value }}"{% endif %}>
+        <input type="password" class="form-control" placeholder="Пароль" required name="{{ form.password.html_name }}">
         <input type="hidden" name="next" value="{{ next }}" />
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Войти</button>
       </form>
     </div> <!-- /container -->
 {% endblock %}

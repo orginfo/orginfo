@@ -25,16 +25,14 @@ body {
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="{% url 'accounting:index' %}">Orginfo</a>
+          <a class="navbar-brand" href="{% url 'accounting:index' %}">Оргинфо</a>
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            {% url 'accounting:index' as l2home %}
-            <li{% if request.get_full_path == l2home %} class="active"{% endif %}><a href="{% url 'accounting:index' %}">Home</a></li>
             {% url 'accounting:organization_details' as l2about %}
-            <li{% if request.get_full_path == l2about %} class="active"{% endif %}><a href="{% url 'accounting:organization_details' %}">About</a></li>
+            <li{% if request.get_full_path == l2about %} class="active"{% endif %}><a href="{% url 'accounting:organization_details' %}">Организация</a></li>
             {% url 'accounting:real_estates' as l2realestates %}
-            <li{% if request.get_full_path == l2realestates %} class="active"{% endif %}><a href="{{ l2realestates }}">RealEstates</a></li>
+            <li{% if request.get_full_path == l2realestates %} class="active"{% endif %}><a href="{{ l2realestates }}">Недвижимость</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>

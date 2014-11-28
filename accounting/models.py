@@ -118,11 +118,11 @@ class RealEstate(models.Model):
     BUILDING_TYPE = 'b'
     SHARE_TYPE = 's'
     REAL_ESTATE_TYPES = (
-        (FLAT_TYPE, 'Flat'),
-        (ROOM_TYPE, 'Room'),
-        (HOUSE_TYPE, 'House'),
-        (BUILDING_TYPE, 'Building'),
-        (SHARE_TYPE, 'Share'),
+        (FLAT_TYPE, 'Квартира'),
+        (ROOM_TYPE, 'Комната'),
+        (HOUSE_TYPE, 'Дом'),
+        (BUILDING_TYPE, 'Здание'),
+        (SHARE_TYPE, 'Общий блок'),
     )
 
     address = models.CharField(max_length=200)
@@ -170,9 +170,11 @@ class ServiceClient(models.Model):
     """
     COLD_WATER_SERVICE = 'COLD_WATER_SERVICE'
     HOT_WATER_SERVICE = 'HOT_WATER_SERVICE'
+    HEATING_SERVICE = 'HEATING_SERVICE'
     SERVICE_NAMES = (
-        (COLD_WATER_SERVICE, 'Cold water'),
-        (HOT_WATER_SERVICE, 'Hot water'),
+        (COLD_WATER_SERVICE, 'Холодное водоснабжение'),
+        (HOT_WATER_SERVICE, 'Горячее водоснабжение'),
+        (HEATING_SERVICE, 'Отопление'),
     )
     real_estate = models.ForeignKey(RealEstate)
     service_name = models.CharField(max_length=100, choices=SERVICE_NAMES, default=COLD_WATER_SERVICE)
