@@ -3,11 +3,10 @@ from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder, Field
 from crispy_forms.bootstrap import StrictButton
-from accounting.models import Payment, RealEstate, ColdWaterReading, ServiceClient, Account
+from accounting.models import Payment, RealEstate, ColdWaterReading, ServiceClient, Account, Organization
 from django.forms.widgets import TextInput
 
-class OrganizationForm(forms.Form):
-    name = forms.CharField()
+class OrganizationForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(OrganizationForm, self).__init__(*args, **kwargs)
 
@@ -15,15 +14,34 @@ class OrganizationForm(forms.Form):
         self.helper.form_class = 'form-horizontal'
         self.helper.label_class = 'col-sm-2'
         self.helper.field_class = 'col-sm-6'
+        self.fields['name'].label = "Название"
+        self.fields['address'].label = "Адрес"
+        self.fields['rs'].label = "р/с"
+        self.fields['ks'].label = "к/с"
+        self.fields['bik'].label = "БИК"
+        self.fields['inn'].label = "ИНН"
+        self.fields['phone'].label = "Телефон"
+        self.fields['fax'].label = "Факс"
+        self.fields['email'].label = "Электронная почта"
+        self.fields['operation_mode'].label = "Время работы"
         self.helper.layout = Layout(
-            Fieldset(
-                'Organization settings',
-                'name',
-            ),
+            'name',
+            'address',
+            'rs',
+            'ks',
+            'bik',
+            'inn',
+            'phone',
+            'fax',
+            'email',
+            'operation_mode',
             ButtonHolder(
                 Submit('submit', 'Save', css_class='btn-default')
             )
         )
+    class Meta:
+        model = Organization
+        fields = ['name', 'address', 'rs', 'ks', 'bik', 'inn', 'phone', 'fax', 'email', 'operation_mode']
 
 
 class ExampleForm(ModelForm):

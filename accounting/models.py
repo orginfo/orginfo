@@ -6,8 +6,22 @@ class Organization(models.Model):
     """Организация.
 
     МУП - это частный случай организации, поэтому МУП находится в этой модели.
+    Адрес
+    Банковские реквезиты (р/с, к/с, БИК)
+    ИНН
+    Телефон, факс, адрес электронной почты
+    Режим работы
     """
     name = models.CharField(max_length=200)
+    address = models.CharField(max_length=200)
+    rs = models.CharField(max_length=200)
+    ks = models.CharField(max_length=200)
+    bik = models.CharField(max_length=200)
+    inn = models.CharField(max_length=200)
+    phone = models.CharField(max_length=200)
+    fax = models.CharField(max_length=200)
+    email = models.EmailField()
+    operation_mode = models.TextField()
     def __str__(self):
         return self.name
 

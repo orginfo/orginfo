@@ -31,7 +31,18 @@ def prepare_db_base():
     region.save()
 
     Organization.objects.all().delete()
-    organization = Organization(name="ООО Всем МУП-ам МУП")
+    organization = Organization(
+        name="Муниципальное унитарное предприятие «Нечаевское»",
+        address="633422 Новосибирская область, Тогучинский район, п. Нечаевский, улица Весенняя, дом № 11",
+        rs="40702810525170000045",
+        ks="30101810700000000784",
+        bik="045004784",
+        inn="5438315941",
+        phone="8 (38340)32413",
+        fax="8 (38340)32242",
+        email = "mupnechaevskoe@yandex.ru",
+        operation_mode="Пн.-Чт. 9.00-17.00, Пт. 9.00-16.00, Обед: 13.00-14.00;"
+    )
     organization.save()
 
     UserOrganization.objects.all().delete()

@@ -26,6 +26,15 @@ def organization_details(request):
         if form.is_valid():
             if user_org.organization:
                 user_org.organization.name = form.cleaned_data['name']
+                user_org.organization.address = form.cleaned_data['address']
+                user_org.organization.rs = form.cleaned_data['rs']
+                user_org.organization.ks = form.cleaned_data['ks']
+                user_org.organization.bik = form.cleaned_data['bik']
+                user_org.organization.inn = form.cleaned_data['inn']
+                user_org.organization.phone = form.cleaned_data['phone']
+                user_org.organization.fax = form.cleaned_data['fax']
+                user_org.organization.email = form.cleaned_data['email']
+                user_org.organization.operation_mode = form.cleaned_data['operation_mode']
                 user_org.organization.save()
             else:
                 organization = Organization.objects.create(name=form.cleaned_data['name'])
@@ -38,6 +47,15 @@ def organization_details(request):
             data = {}
             org = user_org.organization
             data['name'] = org.name
+            data['address'] = org.address
+            data['rs'] = org.rs
+            data['ks'] = org.ks
+            data['bik'] = org.bik
+            data['inn'] = org.inn
+            data['phone'] = org.phone
+            data['fax'] = org.fax
+            data['email'] = org.email
+            data['operation_mode'] = org.operation_mode
             form = OrganizationForm(data)
         else:
             form = OrganizationForm()
