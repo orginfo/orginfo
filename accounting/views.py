@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm, ExampleForm, LastNameSearchForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm, CreateAccountForm, CreatePaymentForm, WhatAccountForm
+from accounting.forms import OrganizationForm, ExampleForm, AddressSearchForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm, CreateAccountForm, CreatePaymentForm, WhatAccountForm
 from accounting.models import Organization, UserOrganization, Payment, RealEstate, ColdWaterReading, ServiceClient, Account
 from django.views.generic.edit import CreateView, UpdateView, FormView
 from django.views.generic import ListView
@@ -65,7 +65,7 @@ def organization_details(request):
     })
 
 class RealEstates(ListView):
-    form_class = LastNameSearchForm
+    form_class = AddressSearchForm
     context_object_name = 'real_estates'
     template_name = 'accounting/real_estates.html'
     def dispatch(self, *args, **kwargs):

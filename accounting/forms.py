@@ -65,18 +65,19 @@ class ExampleForm(ModelForm):
         model = Payment
         fields = ['amount']
 
-class LastNameSearchForm(forms.Form):
-    name = forms.CharField(max_length=10, required=False)
+class AddressSearchForm(forms.Form):
+    name = forms.CharField(max_length=100, required=False)
     def __init__(self, *args, **kwargs):
-        super(LastNameSearchForm, self).__init__(*args, **kwargs)
+        super(AddressSearchForm, self).__init__(*args, **kwargs)
 
         self.helper = FormHelper()
         self.helper.form_method = 'get'
         self.helper.form_class = 'form-inline'
         self.helper.field_template = 'bootstrap3/layout/inline_field.html'
+        self.fields['name'].label = ""
         self.helper.layout = Layout(
-            'name',
-            StrictButton('Find', css_class='btn-default', type='submit'),
+            Field('name', placeholder="Адрес"),
+            StrictButton('Найти', css_class='btn-default', type='submit'),
         )
 
 class CreateRealEstateForm(ModelForm):
@@ -90,7 +91,7 @@ class CreateRealEstateForm(ModelForm):
         self.helper.field_class = 'col-sm-6'
         self.fields['address'].label = "Адрес"
         self.fields['region'].label = "Регион"
-        self.fields['parent_street'].label = "parent_street"
+        self.fields['parent_street'].label = "Адрес родительской недвижимости"
         self.fields['cold_water_counter_setup_date'].label = "Дата установки счетчика холодного водоснабжения"
         self.fields['type'].label = "Тип"
         self.fields['space'].label = "Площадь"
@@ -99,7 +100,7 @@ class CreateRealEstateForm(ModelForm):
         self.fields['residents'].label = "Количество проживающих"
         self.helper.layout = Layout(
             Fieldset(
-                'Real estate',
+                'Недвижимость',
                 'address',
                 'region',
                 'parent_street',
@@ -111,7 +112,7 @@ class CreateRealEstateForm(ModelForm):
                 'residents',
             ),
             ButtonHolder(
-                Submit('submit', 'Take', css_class='btn-default')
+                Submit('submit', 'Сохранить', css_class='btn-default')
             )
         )
     class Meta:
@@ -154,7 +155,7 @@ class CreateColdWaterReadingForm(ModelForm):
                 Field('date', placeholder="ГГГГ-ММ-ДД"),
             ),
             ButtonHolder(
-                Submit('submit', 'Create', css_class='btn-default')
+                Submit('submit', 'Сохранить', css_class='btn-default')
             )
         )
     class Meta:
@@ -174,7 +175,7 @@ class CreateClientServiceForm(ModelForm):
             Field('start', placeholder="ГГГГ-ММ-ДД"),
             Field('end', placeholder="ГГГГ-ММ-ДД"),
             ButtonHolder(
-                Submit('submit', 'Create', css_class='btn-default')
+                Submit('submit', 'Сохранить', css_class='btn-default')
             )
         )
     class Meta:
@@ -194,13 +195,13 @@ class CreateServiceUsageForm(ModelForm):
         self.fields['end'].label = "Дата отключения"
         self.helper.layout = Layout(
             Fieldset(
-                'client service',
+                'Услуга',
                 'service_name',
                 Field('start', placeholder="ГГГГ-ММ-ДД"),
                 Field('end', placeholder="ГГГГ-ММ-ДД"),
             ),
             ButtonHolder(
-                Submit('submit', 'Create', css_class='btn-default')
+                Submit('submit', 'Сохранить', css_class='btn-default')
             )
         )
     class Meta:
@@ -224,7 +225,7 @@ class CreateAccountForm(ModelForm):
                 'balance'
             ),
             ButtonHolder(
-                Submit('submit', 'Create', css_class='btn-default')
+                Submit('submit', 'Сохранить', css_class='btn-default')
             )
         )
     class Meta:
@@ -267,7 +268,7 @@ class CreatePaymentForm(ModelForm):
                 'comment'
             ),
             ButtonHolder(
-                Submit('submit', 'Create', css_class='btn-default')
+                Submit('submit', 'Сохранить', css_class='btn-default')
             )
         )
     class Meta:
