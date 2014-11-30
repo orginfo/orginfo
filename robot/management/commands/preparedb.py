@@ -70,13 +70,13 @@ def prepare_db_base():
     cold_water_tariff.save()
 
     RealEstate.objects.all().delete()
-    lenina_d1 = RealEstate(address="ул. Ленина, д. 1", region=region, parent=None, cold_water_counter_setup_date=datetime.date(2001, 1, 1), type=RealEstate.BUILDING_TYPE, space=100, space_of_joint_estate=10, residential=True, residents=-1, organization=organization, degree_of_improvements=degree_of_improvements, cold_water_tariff=cold_water_tariff) #residential=None?
+    lenina_d1 = RealEstate(address="ул. Ленина, д. 1", region=region, parent=None, cold_water_counter_setup_date=datetime.date(2001, 1, 1), type=RealEstate.BUILDING_TYPE, space=100, space_of_joint_estate=10, residential=True, residents=-1, organization=organization, degree_of_improvements=degree_of_improvements, cold_water_tariff=cold_water_tariff, floor_amount=2, commissioning_date=datetime.date(1985, 1, 1)) #residential=None?
     lenina_d1.save()
-    lenina_d1_kv1 = RealEstate(address="ул. Ленина, д. 1, кв. 1", region=region, parent=lenina_d1, cold_water_counter_setup_date=datetime.date(2001, 1, 13), type=RealEstate.FLAT_TYPE, space=30, space_of_joint_estate=-1, residential=True, residents=2, organization=organization, degree_of_improvements=degree_of_improvements, cold_water_tariff=None)
+    lenina_d1_kv1 = RealEstate(address="ул. Ленина, д. 1, кв. 1", region=region, parent=lenina_d1, cold_water_counter_setup_date=datetime.date(2001, 1, 13), type=RealEstate.FLAT_TYPE, space=30, space_of_joint_estate=-1, residential=True, residents=2, organization=organization, degree_of_improvements=degree_of_improvements, cold_water_tariff=None, floor_amount=None, commissioning_date=None)
     lenina_d1_kv1.save()
-    lenina_d1_kv2 = RealEstate(address="ул. Ленина, д. 1, кв. 2", region=region, parent=lenina_d1, cold_water_counter_setup_date=datetime.date(2001, 1, 13), type=RealEstate.FLAT_TYPE, space=50, space_of_joint_estate=-1, residential=True, residents=3, organization=organization, degree_of_improvements=degree_of_improvements, cold_water_tariff=None)
+    lenina_d1_kv2 = RealEstate(address="ул. Ленина, д. 1, кв. 2", region=region, parent=lenina_d1, cold_water_counter_setup_date=datetime.date(2001, 1, 13), type=RealEstate.FLAT_TYPE, space=50, space_of_joint_estate=-1, residential=True, residents=3, organization=organization, degree_of_improvements=degree_of_improvements, cold_water_tariff=None, floor_amount=None, commissioning_date=None)
     lenina_d1_kv2.save()
-    lenina_d2 = RealEstate(address="ул. Ленина, д. 2", region=region, parent=None, cold_water_counter_setup_date=datetime.date(2001, 1, 2), type=RealEstate.HOUSE_TYPE, space=110, space_of_joint_estate=-1, residential=True, residents=3, organization=organization, degree_of_improvements=degree_of_improvements, cold_water_tariff=cold_water_tariff)
+    lenina_d2 = RealEstate(address="ул. Ленина, д. 2", region=region, parent=None, cold_water_counter_setup_date=datetime.date(2001, 1, 2), type=RealEstate.HOUSE_TYPE, space=110, space_of_joint_estate=-1, residential=True, residents=3, organization=organization, degree_of_improvements=degree_of_improvements, cold_water_tariff=cold_water_tariff, floor_amount=1, commissioning_date=datetime.date(2000, 1, 1))
     lenina_d2.save()
 
     Account.objects.all().delete()

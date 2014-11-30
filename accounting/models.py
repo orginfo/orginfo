@@ -37,10 +37,14 @@ class UserOrganization(models.Model):
 
 class Region(models.Model):
     name = models.CharField(max_length=200)
+    def __str__(self):
+        return self.name
 
 class DegreeOfImprovementsDwelling(models.Model):
     """степень благоустройства жилого помещения"""
     name = models.CharField(max_length=500)
+    def __str__(self):
+        return self.name
 
 class NormValidity(models.Model):
     """ Период действия норматива
@@ -118,7 +122,7 @@ class RealEstate(models.Model):
     помещения.
     residents - количество зарегестированных (проживающих)
     space_of_joint_estate - Площадь совместного имущества (Площади межквартирных лестничных площадок, лестниц, коридоров, тамбуров, холлов, вестибюлей, колясочных, помещений охраны (консьержа) в этом многоквартирном доме, не принадлежащих отдельным собственникам
-    degree_of_improvements - Степень благоустройтва жилого жилого помещения (Ссылка).
+    degree_of_improvements - Степень благоустройтва жилого помещения (Ссылка).
 
     """
     FLAT_TYPE = 'f'
@@ -149,8 +153,8 @@ class RealEstate(models.Model):
     degree_of_improvements = models.ForeignKey(DegreeOfImprovementsDwelling)
     cold_water_tariff = models.ForeignKey(ColdWaterTariff, null=True, blank=True, default = None)
     
-    floor_amount = models.IntegerField()
-    commissioning_date = models.DateField()
+    floor_amount = models.IntegerField(blank=True, null=True)
+    commissioning_date = models.DateField(blank=True, null=True)
     def __str__(self):
         return self.address
     def get_absolute_url(self):

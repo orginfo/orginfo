@@ -269,7 +269,7 @@ def get_heating_norm(building):
         commissioning_type = HeatingNorm.COMMISIONING_BEFORE
         
     #TODO: Сделать с учетом времени действия норматива
-    norm = HeatingNorm.objects.filter(commissioning_type=commissioning_type, building.region, floor_amount=floor_amount).last()
+    norm = HeatingNorm.objects.filter(commissioning_type=commissioning_type, region=building.region, floor_amount=floor_amount).last()
     return norm.value
 
 def calculate_heating_individual(real_estate, heating_norm, building_volume):

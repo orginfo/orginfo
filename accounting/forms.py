@@ -95,9 +95,12 @@ class CreateRealEstateForm(ModelForm):
         self.fields['cold_water_counter_setup_date'].label = "Дата установки счетчика холодного водоснабжения"
         self.fields['type'].label = "Тип"
         self.fields['space'].label = "Площадь"
-        self.fields['space_of_joint_estate'].label = "Присоединенная площадь"
+        self.fields['space_of_joint_estate'].label = "Площадь помещений общего пользования"
         self.fields['residential'].label = "Жилое помещение"
         self.fields['residents'].label = "Количество проживающих"
+        self.fields['degree_of_improvements'].label = "Степень благоустройтва жилого помещения"
+        self.fields['floor_amount'].label = "Количество этажей"
+        self.fields['commissioning_date'].label = "Дата ввода здания в эксплуатацию"
         self.helper.layout = Layout(
             Fieldset(
                 'Недвижимость',
@@ -110,6 +113,9 @@ class CreateRealEstateForm(ModelForm):
                 'space_of_joint_estate',
                 'residential',
                 'residents',
+                'degree_of_improvements',
+                'floor_amount',
+                'commissioning_date',
             ),
             ButtonHolder(
                 Submit('submit', 'Сохранить', css_class='btn-default')
@@ -117,7 +123,7 @@ class CreateRealEstateForm(ModelForm):
         )
     class Meta:
         model = RealEstate
-        fields = ['address', 'region', 'cold_water_counter_setup_date', 'type', 'space', 'space_of_joint_estate', 'residential', 'residents']
+        fields = ['address', 'region', 'cold_water_counter_setup_date', 'type', 'space', 'space_of_joint_estate', 'residential', 'residents', 'degree_of_improvements', 'floor_amount', 'commissioning_date']
         widgets = {
 #            'parent': TextInput(),
         }
