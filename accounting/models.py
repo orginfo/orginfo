@@ -49,6 +49,8 @@ class NormValidity(models.Model):
     """
     start = models.DateField()
     end = models.DateField()
+    def __str__(self):
+        return "%s->%s" % (str(self.start), str(self.end))
 
 class ColdWaterNorm(models.Model):
     """ Нормаив по холодному водоснабжению.
@@ -268,9 +270,11 @@ class DirectionUsingNorm(models.Model):
     direction_using = models.ForeignKey(DirectionUsing)
     validity = models.ForeignKey(NormValidity)
     value = models.FloatField()
+    def __str__(self):
+        return "%s %f с %s по %s" % (self.direction_using.name, self.value, self.validity.start, str(self.validity.end))
 
 class LandPlotAndOutbuilding(models.Model):
-    """Земельный участкок и надворные постройки
+    """Земельный участок и надворные постройки
     count - количество единиц направлений использования"""
     count = models.IntegerField()
     real_estate = models.ForeignKey(RealEstate)

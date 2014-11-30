@@ -23,4 +23,7 @@ urlpatterns = patterns('',
     url(r'^real_estates/(?P<real_estate_id>\d+)/accounts/(?P<pk>\d+)/$', views.UpdateAccount.as_view(success_url=None), name='account'),
     url(r'^real_estates/(?P<real_estate_id>\d+)/payments/$', views.Payments.as_view(), name='payments'),
     url(r'^real_estates/(?P<real_estate_id>\d+)/accounts/(?P<account_id>\d+)/payments/create/$', views.CreatePayment.as_view(), name='create_payment'),
+    url(r'^real_estates/(?P<real_estate_id>\d+)/land_plots_and_outbuildings/$', views.LandPlotsAndOutbuildings.as_view(), name='land_plots_and_outbuildings'),
+    url(r'^real_estates/(?P<real_estate_id>\d+)/land_plots_and_outbuildings/create/$', views.CreateLandPlotAndOutbuilding.as_view(), name='create_land_plot_and_outbuilding'),
+    url(r'^real_estates/(?P<real_estate_id>\d+)/land_plots_and_outbuilding/(?P<pk>\d+)/$', views.UpdateLandPlotAndOutbuilding.as_view(success_url=None), name='land_plot_and_outbuilding'),
 )

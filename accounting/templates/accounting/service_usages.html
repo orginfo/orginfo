@@ -21,7 +21,7 @@
         </tbody>
     </table>
 {% else %}
-    <p>No services are available.</p>
+    <p>Ни одна услуга не подключена.</p>
 {% endif %}
 <a class="btn btn-primary btn-default" role="button" href="{% url "accounting:create_service_usage" real_estate_id %}">Создать</a>
 {% endblock %}

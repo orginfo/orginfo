@@ -3,7 +3,7 @@ from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder, Field
 from crispy_forms.bootstrap import StrictButton
-from accounting.models import Payment, RealEstate, ColdWaterReading, ServiceClient, Account, Organization
+from accounting.models import Payment, RealEstate, ColdWaterReading, ServiceClient, Account, Organization, LandPlotAndOutbuilding
 from django.forms.widgets import TextInput
 
 class OrganizationForm(ModelForm):
@@ -274,3 +274,27 @@ class CreatePaymentForm(ModelForm):
     class Meta:
         model = Payment
         fields = ['amount', 'date', 'comment']
+
+class CreateLandPlotAndOutbuildingForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(CreateLandPlotAndOutbuildingForm, self).__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-sm-2'
+        self.helper.field_class = 'col-sm-6'
+        self.fields['count'].label = "Количество"
+        self.fields['direction_using_norm'].label = "Норма направления использования"
+        self.helper.layout = Layout(
+            Fieldset(
+                'Направление использования',
+                'count',
+                'direction_using_norm'
+            ),
+            ButtonHolder(
+                Submit('submit', 'Сохранить', css_class='btn-default')
+            )
+        )
+    class Meta:
+        model = LandPlotAndOutbuilding
+        fields = ['count', 'direction_using_norm']

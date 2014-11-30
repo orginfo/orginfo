@@ -1,0 +1,25 @@
+{% extends "accounting/real-estate-menu-item.html" %}
+
+{% block real_estate_tab_content %}
+{% if services %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Норма направления использования</th>
+                <th>Количество</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for service in services %}
+            <tr>
+                <td><a href="{% url "accounting:land_plot_and_outbuilding" real_estate_id service.id %}">{{ service.direction_using_norm }}</a></td>
+                <td>{{ service.count }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Ни указаны ни земельный участок ни надворные постройки.</p>
+{% endif %}
+<a class="btn btn-primary btn-default" role="button" href="{% url "accounting:create_land_plot_and_outbuilding" real_estate_id %}">Создать</a>
+{% endblock %}

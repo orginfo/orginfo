@@ -2,8 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm, ExampleForm, AddressSearchForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm, CreateAccountForm, CreatePaymentForm, WhatAccountForm
-from accounting.models import Organization, UserOrganization, Payment, RealEstate, ColdWaterReading, ServiceClient, Account
+from accounting.forms import OrganizationForm, ExampleForm, AddressSearchForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm, CreateAccountForm, CreatePaymentForm, WhatAccountForm, CreateLandPlotAndOutbuildingForm
+from accounting.models import Organization, UserOrganization, Payment, RealEstate, ColdWaterReading, ServiceClient, Account, LandPlotAndOutbuilding
 from django.views.generic.edit import CreateView, UpdateView, FormView
 from django.views.generic import ListView
 from robot.algorithm import write_off
@@ -304,3 +304,34 @@ class CreatePayment(FormView):
         account.save()
 
         return super(CreatePayment, self).form_valid(form)
+
+class LandPlotsAndOutbuildings(ListView):
+    model = LandPlotAndOutbuilding
+    template_name = 'accounting/land_plots_and_outbuildings.html'
+    context_object_name = 'services'
+    def get_queryset(self):
+        return LandPlotAndOutbuilding.objects.filter(real_estate=self.kwargs['real_estate_id']);
+    def get_context_data(self, **kwargs):
+        context = super(LandPlotsAndOutbuildings, self).get_context_data(**kwargs)
+        context['real_estate_id'] = self.kwargs['real_estate_id']
+        return context
+
+class CreateLandPlotAndOutbuilding(CreateView):
+    model = LandPlotAndOutbuilding
+    template_name = 'accounting/add_client.html'
+    form_class = CreateLandPlotAndOutbuildingForm
+    def get_success_url(self):
+        return reverse('accounting:land_plots_and_outbuildings', kwargs=self.kwargs)
+    def form_valid(self, form):
+        form.instance.real_estate_id = self.kwargs['real_estate_id']
+        return super(CreateLandPlotAndOutbuilding, self).form_valid(form)
+
+class UpdateLandPlotAndOutbuilding(UpdateView):
+    model = LandPlotAndOutbuilding
+    form_class = CreateLandPlotAndOutbuildingForm
+    template_name = 'accounting/add_client.html'
+    def get_success_url(self):
+        return reverse('accounting:land_plots_and_outbuildings', kwargs={'real_estate_id': self.kwargs['real_estate_id']})
+    def form_valid(self, form):
+        form.instance.real_estate_id = self.kwargs['real_estate_id']
+        return super(UpdateLandPlotAndOutbuilding, self).form_valid(form)
