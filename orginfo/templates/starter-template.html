@@ -34,6 +34,13 @@ body {
             {% url 'accounting:real_estates' as l2realestates %}
             <li{% if request.get_full_path == l2realestates %} class="active"{% endif %}><a href="{{ l2realestates }}">Недвижимость</a></li>
           </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+                <a href="{% url 'accounting:logout' %}"><button type="button" class="btn btn-default btn-xs">
+                  <span class="glyphicon glyphicon-log-out"></span> Выйти
+                </button></a>
+            </li>
+          </ul>
         </div><!--/.nav-collapse -->
       </div>
     </div>
