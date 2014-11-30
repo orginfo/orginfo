@@ -9,17 +9,13 @@
         <thead>
             <tr>
                 <th>Адрес</th>
-                <th>Адрес родительской недвижимости</th>
-                <th>Дата установки счетчика холодного водоснабжения</th>
-                <th>Тип</th>
+                <th>Тип помещения</th>
             </tr>
         </thead>
         <tbody>
         {% for real_estate in real_estates %}
             <tr>
                 <td><a href="{% url "accounting:update_real_estate" real_estate.id %}">{{ real_estate.address }}</a></td>
-                <td>{{ real_estate.parent|default:"-" }}</a></td>
-                <td>{{ real_estate.cold_water_counter_setup_date|default:"-" }}</td>
                 <td>{{ real_estate.get_type_display }}</td>
             </tr>
         {% endfor %}
