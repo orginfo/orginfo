@@ -88,6 +88,13 @@ class ColdWaterTariff(models.Model):
     resource_supply_org = models.ForeignKey(ResourceSupplyOrganization)
     validity = models.ForeignKey(TariffValidity)
     value = models.FloatField()
+    
+class HeatingTariff(models.Model):
+    """Тариф по услуге холодного водоснабжения для конкретного клиента."""
+    type = models.ForeignKey(TariffType)
+    resource_supply_org = models.ForeignKey(ResourceSupplyOrganization)
+    validity = models.ForeignKey(TariffValidity)
+    value = models.FloatField()
 
 class RealEstate(models.Model):
     """Объект недвижимости.
@@ -129,6 +136,7 @@ class RealEstate(models.Model):
     region = models.ForeignKey(Region)
     parent = models.ForeignKey('self', null=True, blank=True, default = None)
     cold_water_counter_setup_date = models.DateField(blank=True, null=True)
+    heating_counter_setup_date = models.DateField(blank=True, null=True)
     type = models.CharField(max_length=1, choices=REAL_ESTATE_TYPES, default=HOUSE_TYPE)
     space = models.FloatField()
     space_of_joint_estate = models.FloatField()
@@ -138,6 +146,9 @@ class RealEstate(models.Model):
     
     degree_of_improvements = models.ForeignKey(DegreeOfImprovementsDwelling)
     cold_water_tariff = models.ForeignKey(ColdWaterTariff, null=True, blank=True, default = None)
+    
+    floor_amount = models.IntegerField()
+    commissioning_date = models.DateField()
     def __str__(self):
         return self.address
     def get_absolute_url(self):
@@ -264,3 +275,49 @@ class LandPlotAndOutbuilding(models.Model):
     count = models.IntegerField()
     real_estate = models.ForeignKey(RealEstate)
     direction_using_norm = models.ForeignKey(DirectionUsingNorm)
+
+class HeatingReading(models.Model):
+    """Показания приборов учета отопления"""
+    period = models.ForeignKey(Period)
+    value = models.FloatField()
+    real_estate = models.ForeignKey(RealEstate)
+    date = models.DateField()
+    def __str__(self):
+        return "%s: %s" % (str(self.period), str(self.value))
+
+class HeatingVolume(models.Model):
+    """Вычисления объема потребления услуги по отоплению"""
+    period = models.ForeignKey(Period)
+    volume = models.FloatField()
+    real_estate = models.ForeignKey(RealEstate)
+    date = models.DateField()
+    def __str__(self):
+        return str(self.date)
+
+class HeatingVolumeODN(models.Model):
+    """Вычисления объема потребления услуги по отоплению на ОДН."""
+    period = models.ForeignKey(Period)
+    volume = models.FloatField()
+    real_estate = models.ForeignKey(RealEstate)
+    date = models.DateField()
+    def __str__(self):
+        return str(self.date)
+
+class HeatingNorm(models.Model):
+    """Норматив потребления услуги по отоплению.
+    commissioning_type - Тип ввода в эксплуатацию. Используется 2 типа: до 2000 года и начиная с 2000 года.
+    floor_amount - Максимальное количество этажей - 9
+    """
+
+    COMMISIONING_BEFORE = 'COMMISIONING_BEFORE'
+    COMMISIONING_AFTER = 'COMMISIONING_AFTER'
+    COMMISIONING_TYPES = (
+        (COMMISIONING_BEFORE, 'Здание введено в эксплуатацию до 1999 года включительно'),
+        (COMMISIONING_AFTER, 'Здание введено в эксплуатацию начиная с 2000 года'),
+    )
+
+    commissioning_type = models.CharField(max_length=100, choices=COMMISIONING_TYPES, default=COMMISIONING_BEFORE)
+    region = models.ForeignKey(Region)
+    validity = models.ForeignKey(NormValidity)
+    floor_amount = models.IntegerField()
+    value = models.FloatField()
