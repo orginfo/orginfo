@@ -36,7 +36,7 @@ class OrganizationForm(ModelForm):
             'email',
             'operation_mode',
             ButtonHolder(
-                Submit('submit', 'Save', css_class='btn-default')
+                Submit('submit', 'Сохранить', css_class='btn-default')
             )
         )
     class Meta:
