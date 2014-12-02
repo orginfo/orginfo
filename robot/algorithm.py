@@ -1,4 +1,4 @@
-﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, ColdWaterNorm, ColdWaterVolumeODN, ColdWaterNormODN, Region, LandPlotAndOutbuilding, HeatingNorm, HeatingVolume
+﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, ColdWaterNorm, ColdWaterVolumeODN, ColdWaterNormODN, Region, LandPlotAndOutbuilding, HeatingNorm, HeatingVolume, TariffType, ColdWaterTariff
 import datetime
 from robot.errors import ForgottenInitialReadingError
 from django.db.models import Sum
@@ -159,6 +159,14 @@ def get_building_space(building):
             building_space = building_space + real_estate.space
 
     return building_space
+
+"""
+# TODO: Так нужно использовать тириф. Добавить обработку в робота
+def get_cold_water_tariff(building):
+    tariff_type = TariffType.POPULATION
+    tariff = ColdWaterTariff(type=tariff_type, resource_supply_org=building.resource_supply_organization, )
+    
+"""
 
 def calculate_cold_water_ODN(building, cold_water_norm_ODN, cold_water_volume_clients_sum, recalculated_volume):
     real_estates = []

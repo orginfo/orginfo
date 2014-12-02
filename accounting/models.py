@@ -78,7 +78,12 @@ class ResourceSupplyOrganization(models.Model):
 
 class TariffType(models.Model):
     """Тип тарифа: Население либо бюджетные организации"""
-    name = models.CharField(max_length=50)
+    BUDGETARY_CONSUMERS = 'BUDGETARY_CONSUMERS'
+    POPULATION = 'POPULATION'
+    TARIFF_TYPES = (
+        (BUDGETARY_CONSUMERS, 'Бюджетные потребители'),
+        (POPULATION, 'Население'),
+    )
 
 class TariffValidity(models.Model):
     """ Период действия тарифа
@@ -151,7 +156,7 @@ class RealEstate(models.Model):
     organization = models.ForeignKey(Organization)
     
     degree_of_improvements = models.ForeignKey(DegreeOfImprovementsDwelling)
-    cold_water_tariff = models.ForeignKey(ColdWaterTariff, null=True, blank=True, default = None)
+    resource_supply_organization = models.ForeignKey(ResourceSupplyOrganization, null=True, blank=True, default = None)
     
     floor_amount = models.IntegerField(blank=True, null=True)
     commissioning_date = models.DateField(blank=True, null=True)
