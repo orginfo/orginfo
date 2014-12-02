@@ -3,7 +3,7 @@ from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder, Field
 from crispy_forms.bootstrap import StrictButton
-from accounting.models import Payment, RealEstate, ColdWaterReading, ServiceClient, Account, Organization, LandPlotAndOutbuilding
+from accounting.models import Payment, RealEstate, ColdWaterReading, ServiceClient, Account, Organization, LandPlotAndOutbuilding, HeatingReading
 from django.forms.widgets import TextInput
 
 class OrganizationForm(ModelForm):
@@ -166,6 +166,32 @@ class CreateColdWaterReadingForm(ModelForm):
         )
     class Meta:
         model = ColdWaterReading
+        fields = ['period', 'value', 'date']
+
+class CreateHeatingReadingForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(CreateHeatingReadingForm, self).__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-sm-2'
+        self.helper.field_class = 'col-sm-6'
+        self.fields['period'].label = "Период"
+        self.fields['value'].label = "Показание"
+        self.fields['date'].label = "Дата"
+        self.helper.layout = Layout(
+            Fieldset(
+                'Показание счетчика отопления',
+                'period',
+                'value',
+                Field('date', placeholder="ДД.ММ.ГГГГ"),
+            ),
+            ButtonHolder(
+                Submit('submit', 'Сохранить', css_class='btn-default')
+            )
+        )
+    class Meta:
+        model = HeatingReading
         fields = ['period', 'value', 'date']
 
 class CreateClientServiceForm(ModelForm):

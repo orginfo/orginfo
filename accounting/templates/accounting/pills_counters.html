@@ -1,0 +1,13 @@
+{% extends "accounting/real-estate-menu-item.html" %}
+
+{% block real_estate_tab_content %}
+<ul class="nav nav-pills">
+  {% url "accounting:cold_water_readings" real_estate_id as l2cwreadings %}
+  <li{% if request.get_full_path == l2cwreadings%} role="presentation" class="active"{% endif %}><a href="{{ l2cwreadings }}">Холодное водоснабжение</a></li>
+  {% url "accounting:heating_readings" real_estate_id as l2hreadings %}
+  <li{% if request.get_full_path == l2hreadings%} role="presentation" class="active"{% endif %}><a href="{{ l2hreadings }}">Отопление</a></li>
+</ul>
+<br>
+{% block real_estate_tab_content_concrete_service_readings %}
+{% endblock %}
+{% endblock %}

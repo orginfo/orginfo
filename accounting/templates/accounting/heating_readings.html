@@ -13,7 +13,7 @@
         <tbody>
         {% for reading in readings %}
             <tr>
-                <td><a href="{% url "accounting:update_cold_water_reading" real_estate_id reading.id %}">{{ reading.period }}</a></td>
+                <td><a href="{% url "accounting:update_heating_reading" real_estate_id reading.id %}">{{ reading.period }}</a></td>
                 <td>{{ reading.value }}</td>
                 <td>{{ reading.date }}</td>
             </tr>
@@ -23,5 +23,5 @@
 {% else %}
     <p>Показания не внесены.</p>
 {% endif %}
-    <a class="btn btn-primary btn-default" role="button" href="{% url "accounting:create_cold_water_reading" real_estate_id %}">Создать</a>
+    <a class="btn btn-primary btn-default" role="button" href="{% url "accounting:create_heating_reading" real_estate_id %}">Создать</a>
 {% endblock %}

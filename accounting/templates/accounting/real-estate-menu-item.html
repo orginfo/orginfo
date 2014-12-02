@@ -3,7 +3,9 @@
 {% block container %}
 <ul class="nav nav-tabs" role="tablist">
   {% url "accounting:readings" real_estate_id as l2readings %}
-  <li{% if request.get_full_path == l2readings %} class="active"{% endif %}><a href="{{ l2readings }}">Счетчики</a></li>
+  {% url "accounting:cold_water_readings" real_estate_id as l2cwreadings %}
+  {% url "accounting:heating_readings" real_estate_id as l2hreadings %}
+  <li{% if request.get_full_path == l2readings or request.get_full_path == l2cwreadings or request.get_full_path == l2hreadings %} class="active"{% endif %}><a href="{{ l2readings }}">Счетчики</a></li>
   {% url "accounting:update_real_estate" real_estate_id as l2real_estate %}
   <li{% if request.get_full_path == l2real_estate %} class="active"{% endif %}><a href="{{ l2real_estate }}">Недвижимость</a></li>
   {% url "accounting:service_usages" real_estate_id as l2services %}

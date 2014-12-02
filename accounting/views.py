@@ -2,10 +2,11 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
-from accounting.forms import OrganizationForm, ExampleForm, AddressSearchForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm, CreateAccountForm, CreatePaymentForm, WhatAccountForm, CreateLandPlotAndOutbuildingForm
-from accounting.models import Organization, UserOrganization, Payment, RealEstate, ColdWaterReading, ServiceClient, Account, LandPlotAndOutbuilding
+from accounting.forms import OrganizationForm, ExampleForm, AddressSearchForm, CreateRealEstateForm, CreateColdWaterReadingForm, CreateClientServiceForm, CreateServiceUsageForm, CreateAccountForm, CreatePaymentForm, WhatAccountForm, CreateLandPlotAndOutbuildingForm, CreateHeatingReadingForm
+from accounting.models import Organization, UserOrganization, Payment, RealEstate, ColdWaterReading, ServiceClient, Account, LandPlotAndOutbuilding, HeatingReading
 from django.views.generic.edit import CreateView, UpdateView, FormView
 from django.views.generic import ListView
+from django.views.generic.base import RedirectView
 from robot.algorithm import write_off
 
 
@@ -148,6 +149,13 @@ def report(request):
     }
     return render(request, 'accounting/report.html', context)
 
+class ConcreteServiceReadingsRedirectView(RedirectView):
+    permanent = False
+    query_string = True
+    pattern_name = 'accounting:cold_water_readings'
+    def get_redirect_url(self, *args, **kwargs):
+        return super(ConcreteServiceReadingsRedirectView, self).get_redirect_url(*args, **kwargs)
+
 class ColdWaterReadings(ListView):
     model = ColdWaterReading
     template_name = 'accounting/cold_water_readings.html'
@@ -164,7 +172,7 @@ class CreateColdWaterReading(CreateView):
     form_class = CreateColdWaterReadingForm
     template_name = 'accounting/cold_water_reading.html'
     def get_success_url(self):
-        return reverse('accounting:readings', kwargs=self.kwargs)
+        return reverse('accounting:cold_water_readings', kwargs=self.kwargs)
     def form_valid(self, form):
         form.instance.real_estate_id = self.kwargs['real_estate_id']
         return super(CreateColdWaterReading, self).form_valid(form)
@@ -174,10 +182,41 @@ class UpdateColdWaterReading(UpdateView):
     form_class = CreateColdWaterReadingForm
     template_name = 'accounting/cold_water_reading.html'
     def get_success_url(self):
-        return reverse('accounting:readings', kwargs={'real_estate_id': self.kwargs['real_estate_id']})
+        return reverse('accounting:cold_water_readings', kwargs={'real_estate_id': self.kwargs['real_estate_id']})
     def form_valid(self, form):
         form.instance.real_estate_id = self.kwargs['real_estate_id']
         return super(UpdateColdWaterReading, self).form_valid(form)
+
+class HeatingReadings(ListView):
+    model = HeatingReading
+    template_name = 'accounting/heating_readings.html'
+    context_object_name = 'readings'
+    def get_queryset(self):
+        return HeatingReading.objects.filter(real_estate=self.kwargs['real_estate_id']);
+    def get_context_data(self, **kwargs):
+        context = super(HeatingReadings, self).get_context_data(**kwargs)
+        context['real_estate_id'] = self.kwargs['real_estate_id']
+        return context
+
+class CreateHeatingReading(CreateView):
+    model = HeatingReading
+    form_class = CreateHeatingReadingForm
+    template_name = 'accounting/cold_water_reading.html'
+    def get_success_url(self):
+        return reverse('accounting:heating_readings', kwargs=self.kwargs)
+    def form_valid(self, form):
+        form.instance.real_estate_id = self.kwargs['real_estate_id']
+        return super(CreateHeatingReading, self).form_valid(form)
+
+class UpdateHeatingReading(UpdateView):
+    model = HeatingReading
+    form_class = CreateHeatingReadingForm
+    template_name = 'accounting/cold_water_reading.html'
+    def get_success_url(self):
+        return reverse('accounting:heating_readings', kwargs={'real_estate_id': self.kwargs['real_estate_id']})
+    def form_valid(self, form):
+        form.instance.real_estate_id = self.kwargs['real_estate_id']
+        return super(UpdateHeatingReading, self).form_valid(form)
 
 class ServiceUsages(ListView):
     model = ServiceClient
