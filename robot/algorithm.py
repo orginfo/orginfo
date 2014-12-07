@@ -1,4 +1,4 @@
-﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, ColdWaterNorm, ColdWaterVolumeODN, ColdWaterNormODN, Region, LandPlotAndOutbuilding, HeatingNorm, HeatingVolume, TariffType, ColdWaterTariff
+﻿from accounting.models import ColdWaterReading, ColdWaterVolume, RealEstate, Period, ServiceClient, ColdWaterNorm, ColdWaterVolumeODN, ColdWaterNormODN, Region, LandPlotAndOutbuilding, HeatingNorm, HeatingVolume, TariffType, ColdWaterTariff, HeatingReading
 import datetime
 from robot.errors import ForgottenInitialReadingError
 from django.db.models import Sum
@@ -281,72 +281,120 @@ def get_heating_norm(building):
     norm = HeatingNorm.objects.filter(commissioning_type=commissioning_type, region=building.region, floor_amount=floor_amount).last()
     return norm.value
 
-def calculate_heating_individual(real_estate, heating_norm, building_volume):
-    if real_estate.type != RealEstate.FLAT_TYPE and real_estate.type != RealEstate.SHARE_TYPE and real_estate.type != RealEstate.HOUSE_TYPE:
+def calculate_heating_individual(real_estate, building_volume, period):
+    """
+    Функция распределяет объем 'building_volume' на помещение 'real_estate' пропорцианально их площадям.
+    """
+    if real_estate.type == RealEstate.FLAT_TYPE and real_estate.type != RealEstate.SHARE_TYPE:
         raise Exception #TODO: Продумать ошибку.
 
-    period = Period.objects.all().last()
-
+    #TODO: Нужно ли проверять подключена ли услуга для внутренних помещений здания?
     is_cold_water_service = calculate_share_of_service_usage(real_estate, ServiceClient.HEATING_SERVICE, period) > 0
-    if is_cold_water_service is None:
-        return # Услуга холодного водоснабжения в здании не активна.
-    
-    #вычисляем для квартир, комунальных квартир и блоков объем потребления услуги, сохраняем его.
-    #TODO: вычисляем объем
-    volume = 100
-    volume_model = HeatingVolume(period=period, volume=volume.individual, real_estate=real_estate, date=datetime.date.today())
-    volume_model.save()
-    
-    if real_estate.type == RealEstate.SHARE_TYPE:
-        total_rooms_volume = 0 #TODO: если total_rooms_volume != volume, то разница объемов будет учтена и рассчитана в расчет ОДН.
-        #Вычисляем необходимые объемы для каждого помещения.
-        for room in RealEstate.objects.filter(parent=real_estate):
-            # Вычисляем долю 'комнаты ко всей квартире'
-            # нежилое помещение - тогда площать комнаты к общей площади квартиры.
-            # proportion - доля комнаты к общей квартире
-            #Вычисление доли по площади.
-            proportion = room.space / real_estate.space
+    if is_cold_water_service:
+        #вычисляем для квартир, комунальных квартир и блоков объем потребления услуги, сохраняем его.
+        #TODO: необходимо проверять, чтобы был real_estate.parent и чтобы был real_estate.parent.space
+        volume = building_volume * real_estate.space / real_estate.parent.space
+        volume_model = HeatingVolume(period=period, volume=volume.individual, real_estate=real_estate, date=datetime.date.today())
+        volume_model.save()
+        
+        # Если тип конструкции SHARE_TYPE, тогда распределяем объем на внутренние помещения
+        if real_estate.type == RealEstate.SHARE_TYPE:
+            total_rooms_volume = 0 #TODO: если total_rooms_volume != volume, то разница объемов будет учтена и рассчитана в расчет ОДН.
+            #Вычисляем необходимые объемы для каждого помещения.
+            for room in RealEstate.objects.filter(parent=real_estate):
+                # Вычисляем объем по отоплению для комнаты
+                room_volume = volume * room.space / real_estate.space
+                volume_model = HeatingVolume(period=period, volume=room_volume, real_estate=room, date=datetime.date.today())
+                volume_model.save()
 
-            room_volume = proportion * volume
-            volume_model = HeatingVolume(period=period, volume=room_volume, real_estate=room, date=datetime.date.today())
-            volume_model.save()
-            
-        #TODO: total_rooms_volume может различаться с volume.volume.individual ? Если может, тогда нужно подумать, какое значение возвращать
-            
+                #TODO: total_rooms_volume может различаться с volume.volume.individual ? Если может, тогда нужно подумать, какое значение возвращать
+                total_rooms_volume = total_rooms_volume + room_volume
+
+            if volume != total_rooms_volume:
+                volume = total_rooms_volume
+
     return volume
         
-def calculate_heating_ODN(building):
+def calculate_heating_ODN(building, volume):
     pass
     
-def calculate_heating_service(building):
+def calculate_construction_heating_volume(building, period):
+    """
+    Функция используется для вычисления объема по отоплению по методике до 1 января 2015 года.
+    
+    Алгоритм:
+    1. Выполняется для сооружений, не имеющих парентов (Т.е. не для вложенных помещений)
+    2. Если установлен общедомовой счетчик(для многоквартирного дома) либо индивидуальный счетчик (для частного дома), тогда берутся показания счетчика за предыдущий год.
+    3. Если показания существуют, тогда вычисляется годовой объем. Он делится на 12 месяцев и получаем объем за месяц. 
+    4. Иначе вычисляется месячный объем по нормативу.
+    """
+    if building.type == RealEstate.SHARE_TYPE and building.type == RealEstate.FLAT_TYPE:
+        raise Exception #TODO: Метод вызван не для того типа здания
+
+    #TODO: construction_volume - Рассчитанный объем по отоплению для сооружения за период 'period'.
+    construction_volume = 0
+    """
+    Счетчик должен быть установлен не позднее 25.01.2012 года, иначе будет исользоваться расчет объема по нормативу.
+    """
+    
+    #TODO: Получаем годовой объем (пункт 2 и 3)
+    # Если установлен общедомовой счетчик(для многоквартирного дома) либо индивидуальный счетчик (для частного дома), тогда берутся показания счетчика за предыдущий год.
+    # В нашем случае при расчете за декабрь 2014 года должны быть показания за 25.01.2013 и показания за 25.01.2014 год. Если этих показаний нет, тогда расчет выполнятся по нормативу.  
+    setup_date = building.heating_counter_setup_date
+    # Дата установки счетчика должна быть не позже 25 янаваря 2012 года.
+    if setup_date and setup_date <= datetime.date(2012, 1, 25):
+        period_2012 = Period.objects.filter(start=datetime.date(2012, 1, 20), end=datetime.date(2012, 1, 25)).get() #TODO: Не должно быть больше одной записи. Обработать get()
+        period_2013 = Period.objects.filter(start=datetime.date(2013, 1, 20), end=datetime.date(2013, 1, 25)).get() #TODO: Не должно быть больше одной записи. Обработать get()
+        if period_2012 and period_2013:
+            readings_2012 = HeatingReading.objects.filter(period=period_2012, real_estate=building).get() #TODO: Не должно быть больше одной записи. Обработать get()
+            readings_2013 = HeatingReading.objects.filter(period=period_2013, real_estate=building).get() #TODO: Не должно быть больше одной записи. Обработать get()
+            if readings_2012 and readings_2013:
+                annual_volume = readings_2013 - readings_2012
+                construction_volume = annual_volume / 12 
+
+    if construction_volume == 0:
+        #Объем не был определен по показаниям счетчика, тогда вычисление объема для здания вычисляются согласно нормативу. В этом случае объем будет не годовой, а за месяц.
+        #TODO: Вычислить норматив для здания.
+        heating_norm = 10.2
+        #TODO: building.place может быть не рассчита. В этом случае нужно получить объем здания по площадям квартир
+        construction_volume = heating_norm * building.place
+    
+    # Заносим объем в таблицу HeatingVolume. Сохраняем результат.
+    HeatingVolume(period=period, volume=construction_volume, real_estate=building, date=datetime.date.today())
+    HeatingVolume.save()
+    
+    return construction_volume
+
+def calculate_heating_service(building, period):
+    """
+    Функция производит рассчеты по отоплению за период до 1 января 2015 года
+    Алгоритм:
+    1. Дата выполнения работа по данной методике должна быть строго равна date(2014, 12, 26)
+    2. Расчитать объем для здания за текущий месяц.
+    3. Если тип здания BUILDING_TYPE, тогда распределяем объем на внутренние помещения.
+    4. Если требуется, выполняем рассчет ОДН 
+    """
     # Данный метод используется до 01.01.2015. Т.е. последний расчет по этому методу будет выполнен 26.12.2014
     # Получаем текущую дату. Она должна быть равна 26.12.2014 (выполнение робота выполняется в этот день)
     run_date = datetime.date(2014, 12, 26) # Дата выполнения робота
     if run_date == datetime.date.today():
-        # Если установлен общедомовой счетчик, либо счетчик на частном доме, 
-        building_volume = 0
-        setup_date = building.heating_counter_setup_date
-        if setup_date:
-            #today = datetime.date.today()
-            # Получаем объем за предыдущий год.
-            volume = HeatingVolume.objects.filter(real_estate=building).last()
-            if volume.period.start.year == 2013:
-                building_volume = volume.volume
+        #TODO: Реализовать метод calculate_construction_heating_volume. building_volume содержит объем по отоплению за текущий месяц.
+        building_volume = calculate_construction_heating_volume(building, period)
 
-        # Вычисляем индивидуальное потребление
-        real_estates = []
+        # Если используется тип BUILDING_TYPE, тогда распределяем объем здания на внутренние помещения
         if building.type == RealEstate.BUILDING_TYPE:
+            real_estates = []
             for real_estate in RealEstate.objects.filter(parent=building):
                 real_estates.append(real_estate)
-        elif building.type == RealEstate.HOUSE_TYPE:
-            real_estates.append(building)
+                
+            total_volume = 0;
+            for real_estate in real_estates:
+                #TODO: Получить норматив для здания. Предполагаею, что все все помещения в здании используют этот норматив. Может быть ситуация, когда в одном здании есть бюджетные организации и население?
+                volume = calculate_heating_individual(real_estate, building_volume)
+                total_volume = total_volume + volume
 
-        heating_norm = get_heating_norm(building)
-        for real_estate in real_estates:
-            calculate_heating_individual(real_estate, heating_norm, building_volume)
-
-        if building.type == RealEstate.BUILDING_TYPE:
-            calculate_heating_ODN()
+            #TODO: ОДН вычислять, если оно используется для здания.
+            calculate_heating_ODN(building, building_volume - total_volume)
     else:
         pass
 
@@ -374,7 +422,9 @@ def write_off():
 
                 is_heating_service = calculate_share_of_service_usage(building, ServiceClient.HEATING_SERVICE, Period.objects.all().last()) > 0
                 if is_heating_service:
-                    calculate_heating_service(building)
+                    #TODO: Необходимо передавать в метод текущий период.
+                    current_period = periods.last() #TODO: Это не верно. Требуется доработать
+                    calculate_heating_service(building, current_period)
 
     except ForgottenInitialReadingError:
         pass
