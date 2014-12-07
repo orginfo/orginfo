@@ -271,6 +271,7 @@ def get_heating_norm(building):
         raise Exception #TODO: ошибка
     
     floor_amount = building.floor_amount
+    # Используется только год ввода в эксплуатацию
     commissioning_type = HeatingNorm.COMMISIONING_AFTER
     commissioning_year = building.commissioning_date.year
     if commissioning_year > 1999:
@@ -318,30 +319,36 @@ def calculate_heating_ODN(building):
     pass
     
 def calculate_heating_service(building):
-    # Если установлен общедомовой счетчик, либо счетчик на частном доме, 
-    building_volume = 0
-    setup_date = building.heating_counter_setup_date
-    if setup_date:
-        #today = datetime.date.today()
-        # Получаем объем за предыдущий год.
-        volume = HeatingVolume.objects.filter(real_estate=building).last()
-        if volume.period.start.year == 2013:
-            building_volume = volume.volume
+    # Данный метод используется до 01.01.2015. Т.е. последний расчет по этому методу будет выполнен 26.12.2014
+    # Получаем текущую дату. Она должна быть равна 26.12.2014 (выполнение робота выполняется в этот день)
+    run_date = datetime.date(2014, 12, 26) # Дата выполнения робота
+    if run_date == datetime.date.today():
+        # Если установлен общедомовой счетчик, либо счетчик на частном доме, 
+        building_volume = 0
+        setup_date = building.heating_counter_setup_date
+        if setup_date:
+            #today = datetime.date.today()
+            # Получаем объем за предыдущий год.
+            volume = HeatingVolume.objects.filter(real_estate=building).last()
+            if volume.period.start.year == 2013:
+                building_volume = volume.volume
 
-    # Вычисляем индивидуальное потребление
-    real_estates = []
-    if building.type == RealEstate.BUILDING_TYPE:
-        for real_estate in RealEstate.objects.filter(parent=building):
-            real_estates.append(real_estate)
-    elif building.type == RealEstate.HOUSE_TYPE:
-        real_estates.append(building)
-    
-    heating_norm = get_heating_norm(building)
-    for real_estate in real_estates:
-        calculate_heating_individual(real_estate, heating_norm, building_volume)
+        # Вычисляем индивидуальное потребление
+        real_estates = []
+        if building.type == RealEstate.BUILDING_TYPE:
+            for real_estate in RealEstate.objects.filter(parent=building):
+                real_estates.append(real_estate)
+        elif building.type == RealEstate.HOUSE_TYPE:
+            real_estates.append(building)
 
-    if building.type == RealEstate.BUILDING_TYPE:
-        calculate_heating_ODN()
+        heating_norm = get_heating_norm(building)
+        for real_estate in real_estates:
+            calculate_heating_individual(real_estate, heating_norm, building_volume)
+
+        if building.type == RealEstate.BUILDING_TYPE:
+            calculate_heating_ODN()
+    else:
+        pass
 
 def write_off():
     """Списание средств с клиентских счетов.
