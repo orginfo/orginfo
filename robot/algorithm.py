@@ -405,7 +405,8 @@ def write_off():
     """
     try:
         with transaction.atomic():
-            periods = Period.objects.order_by('start')
+            #TODO: Получение рассчетного пеирода. Он не обязательно last. 
+            calculation_period = Period.objects.order_by('start').last()
             
             region = Region.objects.filter(name="Новосибирская область, Тогучинский район")
             if region.count() != 1:
@@ -416,15 +417,13 @@ def write_off():
             cold_water_norm_ODN = ColdWaterNormODN.objects.filter(region=region)
             for building in RealEstate.objects.filter(Q(type=RealEstate.BUILDING_TYPE) or Q(type=RealEstate.HOUSE_TYPE)):
                 #TODO: Может сделать по выборке услуг в таблице ServiceClient?
-                is_cold_water_service = calculate_share_of_service_usage(building, ServiceClient.COLD_WATER_SERVICE, Period.objects.all().last()) > 0
+                is_cold_water_service = calculate_share_of_service_usage(building, ServiceClient.COLD_WATER_SERVICE, calculation_period) > 0
                 if is_cold_water_service: 
                     calculate_cold_water_service(building, cold_water_norm_ODN)
 
-                is_heating_service = calculate_share_of_service_usage(building, ServiceClient.HEATING_SERVICE, Period.objects.all().last()) > 0
+                is_heating_service = calculate_share_of_service_usage(building, ServiceClient.HEATING_SERVICE, calculation_period) > 0
                 if is_heating_service:
-                    #TODO: Необходимо передавать в метод текущий период.
-                    current_period = periods.last() #TODO: Это не верно. Требуется доработать
-                    calculate_heating_service(building, current_period)
+                    calculate_heating_service(building, calculation_period)
 
     except ForgottenInitialReadingError:
         pass
