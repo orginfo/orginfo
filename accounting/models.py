@@ -49,3 +49,19 @@ class Locality(models.Model):
     municipal_union = models.ForeignKey(MunicipalUnion)
     def __str__(self):
         return "%s, %s, %s %s" % (self.municipal_area.subject_rf.name, self.municipal_area.name, self.get_type_display(), self.name)
+
+class Street(models.Model):
+    """ Улица """
+    
+    STREET = '1'
+    SIDE_STREET = '2'
+    TYPE = (
+        (STREET, 'улица'),
+        (SIDE_STREET, 'переулок'),
+    )
+    
+    name = models.CharField(max_length=20)
+    type = models.CharField(max_length=1, choices=TYPE, default=STREET)
+    locality = models.ForeignKey(Locality)
+    def __str__(self):
+        return "%s %s" % (self.get_type_display(), self.name)
