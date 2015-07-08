@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality, Street, WaterNormDescription
+from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality, Street, WaterNormDescription, WaterNormValidity
 
 def prepare_db_base():
     # Субъект РФ
@@ -159,6 +159,21 @@ def prepare_db_base():
     water_desc30.save()
     water_desc31 = WaterNormDescription(description="Полив земельного участка при водоснабжении из уличной колонки <*>", type=WaterNormDescription.DIRECTION_USING)
     water_desc31.save()
+    
+    # Скор действия норматива по воде 
+    WaterNormValidity.objects.all().delete()
+    water_norm_val1 = WaterNormValidity(start='2015-01-01', end='2015-03-31')
+    water_norm_val1.save()
+    water_norm_val2 = WaterNormValidity(start='2015-04-01', end='2015-06-30')
+    water_norm_val2.save()
+    water_norm_val3 = WaterNormValidity(start='2015-07-01', end='2015-12-31')
+    water_norm_val3.save()
+    water_norm_val4 = WaterNormValidity(start='2016-01-01', end='2016-06-30')
+    water_norm_val4.save()
+    water_norm_val5 = WaterNormValidity(start='2016-07-01', end='2016-12-31')
+    water_norm_val5.save()
+    water_norm_val6 = WaterNormValidity(start='2017-01-01', end='2017-12-31')
+    water_norm_val6.save()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'

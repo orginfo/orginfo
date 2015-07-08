@@ -1,11 +1,13 @@
 from django.http import HttpResponse
-from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality, Street, WaterNormDescription
+from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality, Street, WaterNormDescription, WaterNormValidity
 
 def test_norm():
     for water_norm_desc in WaterNormDescription.objects.all():
         desc = water_norm_desc.description
         type = water_norm_desc.type
 
+    for water_norm_validity in WaterNormValidity.objects.all().order_by('start'):
+        pass
     """
     for subjectRF in SubjectRF.objects.all():
         for municipal_area in MunicipalArea.objects.all():

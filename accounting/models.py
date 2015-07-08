@@ -88,4 +88,14 @@ class WaterNormDescription(models.Model):
     
     def __str__(self):
         return "%s: %s" % (self.get_type_display(), self.description)
+    
+class WaterNormValidity(models.Model):
+    """ Период действия норматива
+    start - дата, с которой начинает действовать норматив
+    end - дата окончания действия норматива
+    """
+    start = models.DateField()
+    end = models.DateField()
+    def __str__(self):
+        return "%s->%s" % (str(self.start), str(self.end))
 """\Данные для норматива по воде"""
