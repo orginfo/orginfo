@@ -65,3 +65,27 @@ class Street(models.Model):
     locality = models.ForeignKey(Locality)
     def __str__(self):
         return "%s %s" % (self.get_type_display(), self.name)
+
+"""Данные для норматива по воде"""
+class WaterNormDescription(models.Model):
+    """Описание названий видов нормативов для воды (холодная, горячая, водоотведение)"""
+    
+    DEGREE_OF_IMPROVEMENT_DWELLING = '1'
+    COMMON_PROPERTY = '2'
+    AGRICULTURAL_ANIMALS = '3'
+    DIRECTION_USING = '4'
+    
+    
+    DESCRIPTION_TYPES = (
+        (DEGREE_OF_IMPROVEMENT_DWELLING, 'Степень благоустройства жилых помещений'),
+        (COMMON_PROPERTY, 'Общее имущество'),
+        (AGRICULTURAL_ANIMALS, 'Виды сельскохозяйственных животных'),
+        (DIRECTION_USING, 'Направления использования'),
+    )
+    
+    description = models.TextField()
+    type = models.CharField(max_length=1, choices=DESCRIPTION_TYPES, default=DEGREE_OF_IMPROVEMENT_DWELLING)
+    
+    def __str__(self):
+        return "%s %s" % (self.get_type_display(), self.description)
+"""\Данные для норматива по воде"""

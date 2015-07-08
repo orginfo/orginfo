@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality, Street
+from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality, Street, WaterNormDescription
 
 def prepare_db_base():
     # Субъект РФ
@@ -82,6 +82,83 @@ def prepare_db_base():
     street22.save()
     street23 = Street(name="Солнечная", locality=loc6)
     street23.save()
+    
+    """
+    ОБ УТВЕРЖДЕНИИ НОРМАТИВОВ ПОТРЕБЛЕНИЯ КОММУНАЛЬНЫХ УСЛУГ
+    ПО ХОЛОДНОМУ ВОДОСНАБЖЕНИЮ, ГОРЯЧЕМУ ВОДОСНАБЖЕНИЮ
+    И ВОДООТВЕДЕНИЮ НА ТЕРРИТОРИИ НОВОСИБИРСКОЙ ОБЛАСТИ
+    """
+    # 
+    WaterNormDescription.objects.all().delete()
+    # 1. Степень благоустройства жилых помещений
+    water_desc1 = WaterNormDescription(description="Жилые помещения (в том числе общежития квартирного типа) с холодным и горячим водоснабжением, канализованием, оборудованные ваннами длиной 1500 - 1700 мм, душами, раковинами, кухонными мойками и унитазами")
+    water_desc1.save()
+    water_desc2 = WaterNormDescription(description="Жилые помещения (в том числе общежития квартирного типа) с холодным водоснабжением, водонагревателями, канализованием, оборудованные ваннами длиной 1500 - 1700 мм, душами, раковинами, кухонными мойками и унитазами")
+    water_desc2.save()
+    water_desc3 = WaterNormDescription(description="Жилые помещения (в том числе общежития квартирного типа) с холодным и горячим водоснабжением, канализованием, оборудованные сидячими ваннами длиной 1200 мм, душами, раковинами, кухонными мойками и унитазами")
+    water_desc3.save()
+    water_desc4 = WaterNormDescription(description="Жилые помещения (в том числе общежития квартирного типа) с холодным водоснабжением, водонагревателями, канализованием, оборудованные сидячими ваннами длиной 1200 мм, душами, раковинами, кухонными мойками и унитазами")
+    water_desc4.save()
+    water_desc5 = WaterNormDescription(description="Жилые помещения (в том числе общежития квартирного и секционного типа) с холодным и горячим водоснабжением, канализованием, оборудованные душами, раковинами, кухонными мойками и унитазами")
+    water_desc5.save()
+    water_desc6 = WaterNormDescription(description="Жилые помещения (в том числе общежития) с холодным водоснабжением, водонагревателями, канализованием, оборудованные ваннами, душами, раковинами, кухонными мойками и унитазами")
+    water_desc6.save()
+    water_desc7 = WaterNormDescription(description="Общежития коридорного типа с холодным и горячим водоснабжением, канализованием, оборудованные душами, раковинами, кухонными мойками и унитазами")
+    water_desc7.save()
+    water_desc8 = WaterNormDescription(description="Общежития коридорного типа с холодным водоснабжением, водонагревателями, канализованием, оборудованные душами, раковинами, кухонными мойками и унитазами")
+    water_desc8.save()
+    water_desc9 = WaterNormDescription(description="Жилые помещения (в том числе общежития) с холодным и горячим водоснабжением, канализованием, оборудованные раковинами, кухонными мойками и унитазами")
+    water_desc9.save()
+    water_desc10 = WaterNormDescription(description="Жилые помещения (в том числе общежития) с холодным водоснабжением, канализованием, оборудованные раковинами, кухонными мойками и унитазами")
+    water_desc10.save()
+    water_desc11 = WaterNormDescription(description="Жилые помещения (в том числе общежития) с холодным водоснабжением, канализованием, оборудованные раковинами, кухонными мойками")
+    water_desc11.save()
+    water_desc12 = WaterNormDescription(description="Жилые помещения (в том числе общежития) с холодным водоснабжением (в том числе от уличных колонок), оборудованные кухонными мойками")
+    water_desc12.save()
+    water_desc13 = WaterNormDescription(description="Жилые помещения (в том числе общежития) с холодным водоснабжением, оборудованные раковинами, кухонными мойками")
+    water_desc13.save()
+
+    # 2. Общее имущество
+    water_desc14 = WaterNormDescription(description="ОДН", type=WaterNormDescription.COMMON_PROPERTY)
+    water_desc14.save()
+
+    # 3. Виды сельскохозяйственных животных
+    water_desc15 = WaterNormDescription(description="Крупный рогатый скот", type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+    water_desc15.save()
+    water_desc16 = WaterNormDescription(description="Крупный рогатый скот, молодняк", type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+    water_desc16.save()
+    water_desc17 = WaterNormDescription(description="Лошади", type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+    water_desc17.save()
+    water_desc18 = WaterNormDescription(description="Свиньи", type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+    water_desc18.save()
+    water_desc19 = WaterNormDescription(description="Овцы", type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+    water_desc19.save()
+    water_desc20 = WaterNormDescription(description="Козы", type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+    water_desc20.save()
+    water_desc21 = WaterNormDescription(description="Куры, индейки", type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+    water_desc21.save()
+    water_desc22 = WaterNormDescription(description="Утки, гуси", type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+    water_desc22.save()
+    water_desc23 = WaterNormDescription(description="Лошади, молодняк", type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+    water_desc23.save()
+    water_desc24 = WaterNormDescription(description="Свиньи, молодняк", type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+    water_desc24.save()
+    
+    # 4. Виды сельскохозяйственных животных
+    water_desc25 = WaterNormDescription(description="Баня при наличии водопровода", type=WaterNormDescription.DIRECTION_USING)
+    water_desc25.save()
+    water_desc26 = WaterNormDescription(description="Баня при водоснабжении из уличной колонки", type=WaterNormDescription.DIRECTION_USING)
+    water_desc26.save()
+    water_desc27 = WaterNormDescription(description="Мойка мотоцикла", type=WaterNormDescription.DIRECTION_USING)
+    water_desc27.save()
+    water_desc28 = WaterNormDescription(description="Мойка автомобиля при наличии водопровода", type=WaterNormDescription.DIRECTION_USING)
+    water_desc28.save()
+    water_desc29 = WaterNormDescription(description="Мойка автомобиля при водоснабжении из уличной колонки", type=WaterNormDescription.DIRECTION_USING)
+    water_desc29.save()
+    water_desc30 = WaterNormDescription(description="Полив земельного участка при наличии водопровода <*>", type=WaterNormDescription.DIRECTION_USING)
+    water_desc30.save()
+    water_desc31 = WaterNormDescription(description="Полив земельного участка при водоснабжении из уличной колонки <*>", type=WaterNormDescription.DIRECTION_USING)
+    water_desc31.save()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'
