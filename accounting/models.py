@@ -87,5 +87,5 @@ class WaterNormDescription(models.Model):
     type = models.CharField(max_length=1, choices=DESCRIPTION_TYPES, default=DEGREE_OF_IMPROVEMENT_DWELLING)
     
     def __str__(self):
-        return "%s %s" % (self.get_type_display(), self.description)
+        return "%s: %s" % (self.get_type_display(), self.description)
 """\Данные для норматива по воде"""

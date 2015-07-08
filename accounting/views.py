@@ -19,6 +19,7 @@ def test_db():
                 for loc in Locality.objects.filter(municipal_area=municipal_area, municipal_union=municipal_union).order_by('name'):
                     for street in Street.objects.filter(locality=loc).order_by('name'):
                         pass
+    test_norm()
 
 def index(request):
     test_db()
