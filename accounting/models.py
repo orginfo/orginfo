@@ -98,4 +98,26 @@ class WaterNormValidity(models.Model):
     end = models.DateField()
     def __str__(self):
         return "%s->%s" % (str(self.start), str(self.end))
+
+class WaterNorm(models.Model):
+    """ Нормаnив по холодному, горячему водоснабжению и водоотведению.
+    type - тип (холодное водоснабжение | горячее водоснабжение | водоотведение)
+    value - норматив
+    """
+    COLD_WATER_TYPE = '1'
+    HOT_WATER_TYPE = '2'
+    WATER_DISPOSAL_TYPE = '3'
+    WATER_TYPES = (
+        (COLD_WATER_TYPE, 'Холодное водоснабжение'),
+        (HOT_WATER_TYPE, 'Горячее водоснабжение'),
+        (WATER_DISPOSAL_TYPE, 'Водоотведение'),
+    )
+    subject_fr = models.ForeignKey(SubjectRF)
+    norm_description = models.ForeignKey(WaterNormDescription)
+    validity = models.ForeignKey(WaterNormValidity)
+    type = models.CharField(max_length=1, choices=WATER_TYPES, default=COLD_WATER_TYPE)
+    value = models.FloatField()
+    
+    def __str__(self):
+        return "%s\t%s\t%f" % (self.norm_description.description, self.get_type_display(), self.value)
 """\Данные для норматива по воде"""
