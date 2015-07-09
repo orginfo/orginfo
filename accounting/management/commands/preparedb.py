@@ -3,6 +3,7 @@ from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
+from accounting.models import Service
 
 def prepare_db_base():
     # Субъект РФ
@@ -407,6 +408,13 @@ def prepare_db_base():
     water_tariff_val1.save()
     water_tariff_val2 = WaterTariffValidity(start='2015-07-01', end='2015-12-31')
     water_tariff_val2.save()
+    
+    # Услуги
+    Service.objects.all().delete()
+    cold_water_service = Service (service=Service.COLD_WATER)
+    cold_water_service.save()
+    heating_service = Service(service=Service.HEATING)
+    heating_service.save()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'

@@ -156,6 +156,27 @@ class HeatingNorm(models.Model):
         return "[%s, Количество этажей: %d]\tНорматив: %f" % (self.get_commissioning_type_display(), self.floor_amount, self.value)
 """\Данные для норматива по отоплению"""
 
+
+class Service(models.Model):
+    """ Хранит все сервисы, предоставляемые организациями. Так же включает ОДН"""
+    #TODO: или это должна быть отдельная структура?
+     
+    COLD_WATER = '1'
+    HOT_WATER = '2'
+    WATER_DISPOSAL = '3'
+    SERVICE_WATER = '4'
+    HEATING = '5'
+    SERVICES = (
+        (COLD_WATER, 'Холодное водоснабжение'),
+        (HOT_WATER, 'Горячее водоснабжение'),
+        (WATER_DISPOSAL, 'Водоотведение'),
+        (SERVICE_WATER, 'Техническая вода'),
+        (HEATING, 'Тепловая энергия'),
+    )
+    service = models.CharField(max_length=1, choices=SERVICES, default=COLD_WATER)
+    def __str__(self):
+        return self.get_service_display()
+
 """Данные по тарифам для воды"""
 class WaterTariffValidity(models.Model):
     start = models.DateField()

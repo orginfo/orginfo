@@ -3,6 +3,7 @@ from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
+from accounting.models import Service
 
 def test_water_norm():
     file = open('c:\\vitaly\\WaterNorm.txt', 'w')
@@ -25,6 +26,10 @@ def test_water_tariff():
     for water_tariff_validity in WaterTariffValidity.objects.all().order_by('start'):
         pass
     
+def test_service():
+    for service in Service.objects.all():
+        pass
+
 def test_db():
     subjectsRF = SubjectRF.objects.all()
     for subjectRF in subjectsRF:
@@ -37,5 +42,6 @@ def test_db():
 def index(request):
     #test_db()
     #test_heating_norm()
-    test_water_tariff()
+    #test_water_tariff()
+    test_service()
     return HttpResponse("Робот отработал успешно.")
