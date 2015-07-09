@@ -32,7 +32,7 @@ class Locality(models.Model):
     INDUSTRIAL_SETTLEMENT = '7'
     HAMLET = '8'
     
-    TYPE = (
+    LOCALITY_TYPES = (
         (CITY, 'город'),
         (VILLAGE, 'деревня'),
         (RAILROAD_SIDING, 'железнодорожный разъезд'),
@@ -44,7 +44,7 @@ class Locality(models.Model):
     )
     
     name = models.CharField(max_length=20)
-    type = models.CharField(max_length=1, choices=TYPE, default=HAMLET)
+    type = models.CharField(max_length=1, choices=LOCALITY_TYPES, default=HAMLET)
     municipal_area = models.ForeignKey(MunicipalArea)
     municipal_union = models.ForeignKey(MunicipalUnion)
     def __str__(self):
@@ -132,4 +132,26 @@ class HeatingNormValidity(models.Model):
     end = models.DateField()
     def __str__(self):
         return "%s->%s" % (str(self.start), str(self.end))
+
+class HeatingNorm(models.Model):
+    """Норматив по отоплению.
+    commissioning_type - Тип ввода в эксплуатацию. Используется 2 типа: до 2000 года и начиная с 2000 года.
+    floor_amount - количество этажей
+    """
+
+    COMMISIONING_TO_1999 = '1'
+    COMMISIONING_FROM_2000 = '2'
+    COMMISIONING_TYPES = (
+        (COMMISIONING_TO_1999, 'Введено в эксплуатацию до 1999 года включительно'),
+        (COMMISIONING_FROM_2000, 'Введено в эксплуатацию после 1999'),
+    )
+
+    municipal_area = models.ForeignKey(MunicipalArea)
+    validity = models.ForeignKey(HeatingNormValidity)
+    commissioning_type = models.CharField(max_length=1, choices=COMMISIONING_TYPES, default=COMMISIONING_TO_1999)
+    floor_amount = models.IntegerField()
+    value = models.FloatField()
+
+    def __str__(self):
+        return "[%s, Количество этажей: %d]\tНорматив: %f" % (self.get_commissioning_type_display(), self.floor_amount, self.value)
 """\Данные для норматива по отоплению"""

@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality, Street
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
-from accounting.models import HeatingNormValidity
+from accounting.models import HeatingNormValidity, HeatingNorm
 
 def test_water_norm():
     file = open('c:\\vitaly\\WaterNorm.txt', 'w')
@@ -17,7 +17,8 @@ def test_water_norm():
 
 def test_heating_norm():
     for heating_norm_validity in HeatingNormValidity.objects.all().order_by('start'):
-        pass
+        for heating_norm in HeatingNorm.objects.filter(validity=heating_norm_validity).order_by('floor_amount', 'commissioning_type'):
+            norm = heating_norm.value
 
 def test_db():
     subjectsRF = SubjectRF.objects.all()

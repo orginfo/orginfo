@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality, Street
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
-from accounting.models import HeatingNormValidity
+from accounting.models import HeatingNormValidity, HeatingNorm
 
 def prepare_db_base():
     # Субъект РФ
@@ -373,10 +373,32 @@ def prepare_db_base():
     water_norm90 = WaterNorm(subject_fr=subjectRF, norm_description=water_desc31, validity=water_norm_val3, type=WaterNorm.COLD_WATER_TYPE, value=0.073)
     water_norm90.save()
     
-    # Нормативы по отоплению
+    # Скор действия норматива по отоплению
     HeatingNormValidity.objects.all().delete()
     heating_norm_validity = HeatingNormValidity(start='2015-01-01', end='2015-12-31')
     heating_norm_validity.save()
+    # Нормативы по отоплению для Тогучинского района
+    HeatingNorm.objects.all().delete()
+    heating_norm1 = HeatingNorm(municipal_area=municipal_area, validity=heating_norm_validity, commissioning_type=HeatingNorm.COMMISIONING_TO_1999, floor_amount=1, value=0.0474)
+    heating_norm1.save()
+    heating_norm2 = HeatingNorm(municipal_area=municipal_area, validity=heating_norm_validity, commissioning_type=HeatingNorm.COMMISIONING_TO_1999, floor_amount=2, value=0.0459)
+    heating_norm2.save()
+    heating_norm3 = HeatingNorm(municipal_area=municipal_area, validity=heating_norm_validity, commissioning_type=HeatingNorm.COMMISIONING_TO_1999, floor_amount=3, value=0.0302)
+    heating_norm3.save()
+    heating_norm4 = HeatingNorm(municipal_area=municipal_area, validity=heating_norm_validity, commissioning_type=HeatingNorm.COMMISIONING_TO_1999, floor_amount=4, value=0.0302)
+    heating_norm4.save()
+    heating_norm5 = HeatingNorm(municipal_area=municipal_area, validity=heating_norm_validity, commissioning_type=HeatingNorm.COMMISIONING_TO_1999, floor_amount=5, value=0.0260)
+    heating_norm5.save()
+    heating_norm6 = HeatingNorm(municipal_area=municipal_area, validity=heating_norm_validity, commissioning_type=HeatingNorm.COMMISIONING_FROM_2000, floor_amount=1, value=0.0204)
+    heating_norm6.save()
+    heating_norm7 = HeatingNorm(municipal_area=municipal_area, validity=heating_norm_validity, commissioning_type=HeatingNorm.COMMISIONING_FROM_2000, floor_amount=2, value=0.0205)
+    heating_norm7.save()
+    heating_norm8 = HeatingNorm(municipal_area=municipal_area, validity=heating_norm_validity, commissioning_type=HeatingNorm.COMMISIONING_FROM_2000, floor_amount=3, value=0.0199)
+    heating_norm8.save()
+    heating_norm9 = HeatingNorm(municipal_area=municipal_area, validity=heating_norm_validity, commissioning_type=HeatingNorm.COMMISIONING_FROM_2000, floor_amount=4, value=0.0156)
+    heating_norm9.save()
+    heating_norm10 = HeatingNorm(municipal_area=municipal_area, validity=heating_norm_validity, commissioning_type=HeatingNorm.COMMISIONING_FROM_2000, floor_amount=5, value=0.0156)
+    heating_norm10.save()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'
