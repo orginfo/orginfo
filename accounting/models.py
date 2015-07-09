@@ -177,6 +177,12 @@ class Service(models.Model):
     def __str__(self):
         return self.get_service_display()
 
+class LegalForm(models.Model):
+    """Организационно-правовая форма (AO, OAO, ЗАО, ООО, МУП)"""
+    #MayBe: Перенести в 'Organization'.
+    short_name = models.CharField(max_length=5)
+    full_name = models.CharField(max_length=50)
+
 """Данные по тарифам для воды"""
 class WaterTariffValidity(models.Model):
     start = models.DateField()

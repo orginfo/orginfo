@@ -4,6 +4,7 @@ from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
 from accounting.models import Service
+from accounting.models import LegalForm
 
 def prepare_db_base():
     # Субъект РФ
@@ -415,6 +416,22 @@ def prepare_db_base():
     cold_water_service.save()
     heating_service = Service(service=Service.HEATING)
     heating_service.save()
+
+    # Организационно-правовая форма
+    LegalForm.objects.all().delete()
+    mup = LegalForm(short_name="МУП", full_name="Муниципальное унитарное предприятие")
+    mup.save()
+    oao = LegalForm(short_name="ОАО", full_name="Открытое акционерное общество")
+    oao.save()
+    ao = LegalForm(short_name="АО", full_name="Акционерное общество")
+    ao.save()
+    pao = LegalForm(short_name="ПАО", full_name="Публичное акционерное общество")
+    pao.save()
+    ooo = LegalForm(short_name="ООО", full_name="Общество с ограниченной ответственностью")
+    ooo.save()
+    zao = LegalForm(short_name="ЗАО", full_name="Закрытое акционерное общество")
+    zao.save() 
+    
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'
