@@ -155,3 +155,11 @@ class HeatingNorm(models.Model):
     def __str__(self):
         return "[%s, Количество этажей: %d]\tНорматив: %f" % (self.get_commissioning_type_display(), self.floor_amount, self.value)
 """\Данные для норматива по отоплению"""
+
+"""Данные по тарифам для воды"""
+class WaterTariffValidity(models.Model):
+    start = models.DateField()
+    end = models.DateField()
+    def __str__(self):
+        return "%s->%s" % (str(self.start), str(self.end))
+"""\Данные по тарифам для воды"""

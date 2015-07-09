@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality, Street
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
+from accounting.models import WaterTariffValidity
 
 def prepare_db_base():
     # Субъект РФ
@@ -399,6 +400,13 @@ def prepare_db_base():
     heating_norm9.save()
     heating_norm10 = HeatingNorm(municipal_area=municipal_area, validity=heating_norm_validity, commissioning_type=HeatingNorm.COMMISIONING_FROM_2000, floor_amount=5, value=0.0156)
     heating_norm10.save()
+
+    # Срок действия тарифа по воде
+    WaterTariffValidity.objects.all().delete()
+    water_tariff_val1 = WaterTariffValidity(start='2015-01-01', end='2015-06-30')
+    water_tariff_val1.save()
+    water_tariff_val2 = WaterTariffValidity(start='2015-07-01', end='2015-12-31')
+    water_tariff_val2.save()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'
