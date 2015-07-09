@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand
-from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality, Street, WaterNormDescription, WaterNormValidity, WaterNorm
+from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality, Street
+from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
+from accounting.models import HeatingNormValidity
 
 def prepare_db_base():
     # Субъект РФ
@@ -83,11 +85,8 @@ def prepare_db_base():
     street23 = Street(name="Солнечная", locality=loc6)
     street23.save()
     
-    """
-    ОБ УТВЕРЖДЕНИИ НОРМАТИВОВ ПОТРЕБЛЕНИЯ КОММУНАЛЬНЫХ УСЛУГ
-    ПО ХОЛОДНОМУ ВОДОСНАБЖЕНИЮ, ГОРЯЧЕМУ ВОДОСНАБЖЕНИЮ
-    И ВОДООТВЕДЕНИЮ НА ТЕРРИТОРИИ НОВОСИБИРСКОЙ ОБЛАСТИ
-    """
+    # ДОКУМЕНТ:
+    # ОБ УТВЕРЖДЕНИИ НОРМАТИВОВ ПОТРЕБЛЕНИЯ КОММУНАЛЬНЫХ УСЛУГ ПО ХОЛОДНОМУ ВОДОСНАБЖЕНИЮ, ГОРЯЧЕМУ ВОДОСНАБЖЕНИЮ И ВОДООТВЕДЕНИЮ НА ТЕРРИТОРИИ НОВОСИБИРСКОЙ ОБЛАСТИ
     # 
     WaterNormDescription.objects.all().delete()
     # 1. Степень благоустройства жилых помещений
@@ -373,6 +372,11 @@ def prepare_db_base():
     water_norm89.save()
     water_norm90 = WaterNorm(subject_fr=subjectRF, norm_description=water_desc31, validity=water_norm_val3, type=WaterNorm.COLD_WATER_TYPE, value=0.073)
     water_norm90.save()
+    
+    # Нормативы по отоплению
+    HeatingNormValidity.objects.all().delete()
+    heating_norm_validity = HeatingNormValidity(start='2015-01-01', end='2015-12-31')
+    heating_norm_validity.save()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'

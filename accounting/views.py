@@ -1,7 +1,9 @@
 from django.http import HttpResponse
-from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality, Street, WaterNormDescription, WaterNormValidity, WaterNorm
+from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality, Street
+from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
+from accounting.models import HeatingNormValidity
 
-def test_norm():
+def test_water_norm():
     file = open('c:\\vitaly\\WaterNorm.txt', 'w')
     
     for water_norm_desc in WaterNormDescription.objects.all():
@@ -12,10 +14,10 @@ def test_norm():
                 file.write(norm)
         file.write('\n')
     file.close()
-    """
-    for subjectRF in SubjectRF.objects.all():
-        for municipal_area in MunicipalArea.objects.all():
-    """
+
+def test_heating_norm():
+    for heating_norm_validity in HeatingNormValidity.objects.all().order_by('start'):
+        pass
 
 def test_db():
     subjectsRF = SubjectRF.objects.all()
@@ -25,9 +27,8 @@ def test_db():
                 for loc in Locality.objects.filter(municipal_area=municipal_area, municipal_union=municipal_union).order_by('name'):
                     for street in Street.objects.filter(locality=loc).order_by('name'):
                         pass
-    test_norm()
 
 def index(request):
     #test_db()
-    test_norm()
+    test_heating_norm()
     return HttpResponse("Робот отработал успешно.")

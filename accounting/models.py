@@ -121,3 +121,15 @@ class WaterNorm(models.Model):
     def __str__(self):
         return "%s\t%s\t%f" % (self.norm_description.description, self.get_type_display(), self.value)
 """\Данные для норматива по воде"""
+
+"""Данные для норматива по отоплению"""
+class HeatingNormValidity(models.Model):
+    """ Период действия норматива для отопления
+    start - дата, с которой начинает действовать норматив
+    end - дата окончания действия норматива
+    """
+    start = models.DateField()
+    end = models.DateField()
+    def __str__(self):
+        return "%s->%s" % (str(self.start), str(self.end))
+"""\Данные для норматива по отоплению"""
