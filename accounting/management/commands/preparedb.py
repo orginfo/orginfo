@@ -1,10 +1,47 @@
 from django.core.management.base import BaseCommand
-from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality, Street
+from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
+from accounting.models import Street, HouseAddress
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
 from accounting.models import Service
 from accounting.models import LegalForm
+
+def parse_address():
+    HouseAddress.objects.all().delete()
+    
+    file = open('c:\\vitaly\\Reading\\Address_KK.txt', 'r')
+    
+    #row = file.readline()
+    for line in file:
+        index = 0
+        locality_name = ""
+        street_name = ""
+        house_nr = ""
+        for part in line.split("\t"):
+            part.strip()
+            if part == "\n":
+                continue
+            
+            if index == 0:
+                locality_name = part
+            elif index == 1:
+                street_name = part
+            elif index == 2:
+                house_nr = part
+            else:
+                pass
+            index = index + 1
+
+        loc = Locality.objects.filter(name=locality_name).get()
+        street = Street.objects.filter(locality=loc, name=street_name).get()
+        if HouseAddress.objects.filter(street=street, house_number=house_nr).exists():
+            continue
+        else:
+            address = HouseAddress(street=street, house_number=house_nr)
+            address.save()
+        
+    file.close()
 
 def prepare_db_base():
     # Субъект РФ
@@ -87,6 +124,8 @@ def prepare_db_base():
     street22.save()
     street23 = Street(name="Солнечная", locality=loc6)
     street23.save()
+    
+    parse_address()
     
     # ДОКУМЕНТ:
     # ОБ УТВЕРЖДЕНИИ НОРМАТИВОВ ПОТРЕБЛЕНИЯ КОММУНАЛЬНЫХ УСЛУГ ПО ХОЛОДНОМУ ВОДОСНАБЖЕНИЮ, ГОРЯЧЕМУ ВОДОСНАБЖЕНИЮ И ВОДООТВЕДЕНИЮ НА ТЕРРИТОРИИ НОВОСИБИРСКОЙ ОБЛАСТИ

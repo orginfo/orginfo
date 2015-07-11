@@ -66,6 +66,16 @@ class Street(models.Model):
     def __str__(self):
         return "%s %s" % (self.get_type_display(), self.name)
 
+class HouseAddress(models.Model):
+    """ Адрес дома. Не хранит номера помещений. Содержит только номера домов.
+    """
+    #номер дома (входят вся информация о номере дома. Например, "Королёва 40 к48/1" или "Королёва 40 к40а")
+    #TODO: Хранить номер квартиры отдельно. Номер квартиры хранить в одном поле. (кв 54 ком 2 или офис 34)
+    street = models.ForeignKey(Street)
+    house_number = models.CharField(max_length=10)
+    def __str__(self):
+        return "%s, %s" % (self.street.name, self.house_number)
+
 """Данные для норматива по воде"""
 class WaterNormDescription(models.Model):
     """Описание названий видов нормативов для воды (холодная, горячая, водоотведение)"""
