@@ -193,6 +193,75 @@ class LegalForm(models.Model):
     short_name = models.CharField(max_length=5)
     full_name = models.CharField(max_length=50)
 
+class Organization(models.Model):
+    """Организация.
+
+    МУП - это частный случай организации, поэтому МУП находится в этой модели.
+    Организационно-правовая форма (AO, OAO, ЗАО, ООО, МУП)
+    Реквизиты организации:
+    - Полное наименование
+    - ИНН
+    - КПП
+    - ОГРН
+    - Юр адрес
+    - Физ адрес
+    - Почтовый адрес
+    Банковские реквизиты:
+    - Наименование банка
+    - БИК
+    - Корреспондентский счет
+    - Расчетный счет
+    """
+    # Тип организации:
+    RESOURCE_SUPPLY = 1
+    BANK = 2
+    TYPES = (
+        (RESOURCE_SUPPLY, 'Холодное водоснабжение'),
+        (BANK, 'Горячее водоснабжение'),
+    )
+    type = models.CharField(max_length=1, choices=TYPES, default=RESOURCE_SUPPLY)
+    
+    # Организационно-правовая форма
+    AO  = 'АО'
+    MUP = 'МУП'
+    OOO = 'ООО'
+    PAO = 'ПАО'
+    ZAO = 'ЗАО'
+    LEGAL_FORMS = (
+        (AO, 'Акционерное общество'),
+        (MUP, 'Муниципальное унитарное предприятие'),
+        (OOO, 'Общество с ограниченной ответственностью'),
+        (PAO, 'Публичное акционерное общество'),
+        (ZAO, 'Закрытое акционерное общество'),
+    )   
+    legal_form = models.CharField(max_length=3, choices=LEGAL_FORMS, default=MUP)
+    
+    # Название организации (полное\сокращенное)
+    short_name = models.CharField(max_length=100) #TODO: Нужно ли это поле?
+    full_name = models.TextField()
+    
+    # Реквизиты организации
+    taxpayer_identification_number = models.CharField(max_length=25) # ИНН (TIN)
+    tax_registration_reason_code = models.CharField(max_length=25) # КПП
+    primary_state_registration_number = models.CharField(max_length=25) # ОГРН (PSRN)
+    
+    #Банковские реквизиты
+    bank = models.ForeignKey('self', null=True, blank=True, default = None)
+    bank_identifier_code = models.CharField(max_length=25) # БИК (BIC)
+    corresponding_account = models.CharField(max_length=25) # Корреспондентский счет
+    operating_account = models.CharField(max_length=25) # Расчетный счет
+    
+    # vat - Налог на добавленную стоимость. Отлата НДС
+    #TODO: Возможна ли сутация, когда для одной организации для разных услуг используется разное значение этого поля? В этом случае перенести поле в 'Tariff' 
+    vat_payment = models.BooleanField(default=False)
+        
+    phone = models.CharField(max_length=30)
+    fax = models.CharField(max_length=20)
+    email = models.EmailField()
+
+    def __str__(self):
+        return self.name
+
 """Данные по тарифам для воды"""
 class WaterTariffValidity(models.Model):
     start = models.DateField()
