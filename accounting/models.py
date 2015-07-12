@@ -45,8 +45,9 @@ class Locality(models.Model):
     
     name = models.CharField(max_length=20)
     type = models.CharField(max_length=1, choices=LOCALITY_TYPES, default=HAMLET)
-    municipal_area = models.ForeignKey(MunicipalArea)
-    municipal_union = models.ForeignKey(MunicipalUnion)
+    subject_rf = models.ForeignKey(SubjectRF)
+    municipal_area = models.ForeignKey(MunicipalArea, null=True, blank=True, default = None)
+    municipal_union = models.ForeignKey(MunicipalUnion, null=True, blank=True, default = None)
     def __str__(self):
         return "%s, %s, %s %s" % (self.municipal_area.subject_rf.name, self.municipal_area.name, self.get_type_display(), self.name)
 
@@ -167,33 +168,6 @@ class HeatingNorm(models.Model):
         return "[%s, Количество этажей: %d]\tНорматив: %f" % (self.get_commissioning_type_display(), self.floor_amount, self.value)
 """\Данные для норматива по отоплению"""
 
-
-class Service(models.Model):
-    """ Хранит все сервисы, предоставляемые организациями. Так же включает ОДН"""
-    #TODO: или это должна быть отдельная структура?
-     
-    COLD_WATER = 1
-    HOT_WATER = 2
-    WATER_DISPOSAL = 3
-    SERVICE_WATER = 4
-    HEATING = 5
-    COLD_WATER_ODN = 6
-    HOT_WATER_ODN = 7
-    HEATING_ODN = 8
-    SERVICES = (
-        (COLD_WATER, 'Холодное водоснабжение'),
-        (HOT_WATER, 'Горячее водоснабжение'),
-        (WATER_DISPOSAL, 'Водоотведение'),
-        (SERVICE_WATER, 'Техническая вода'),
-        (HEATING, 'Отопление'),
-        (COLD_WATER_ODN, 'ОДН: Холодное водоснабжение'),
-        (HOT_WATER_ODN, 'ОДН: Горячее водоснабжение'),
-        (HEATING_ODN, 'ОДН: Отопление'),
-    )
-    service = models.CharField(max_length=1, choices=SERVICES, default=COLD_WATER)
-    def __str__(self):
-        return self.get_service_display()
-
 class LegalForm(models.Model):
     """Организационно-правовая форма (AO, OAO, ЗАО, ООО, МУП)"""
     #MayBe: Перенести в 'Organization'.
@@ -231,12 +205,14 @@ class Organization(models.Model):
     # Организационно-правовая форма
     AO  = 'АО'
     MUP = 'МУП'
+    OAO = 'ОАО'
     OOO = 'ООО'
     PAO = 'ПАО'
     ZAO = 'ЗАО'
     LEGAL_FORMS = (
         (AO, 'Акционерное общество'),
         (MUP, 'Муниципальное унитарное предприятие'),
+        (OAO, 'Открытое акционерное общество'),
         (OOO, 'Общество с ограниченной ответственностью'),
         (PAO, 'Публичное акционерное общество'),
         (ZAO, 'Закрытое акционерное общество'),
@@ -265,6 +241,7 @@ class Organization(models.Model):
     phone = models.CharField(max_length=30)
     fax = models.CharField(max_length=20)
     email = models.EmailField()
+    operating_mode=models.TextField()
 
     def __str__(self):
         return self.name
@@ -282,6 +259,36 @@ class OrganizationAddress(models.Model):
     type = models.CharField(max_length=1, choices=TYPES, default=LEGAL)
     address = models.ForeignKey(HouseAddress)
     organization = models.ForeignKey(Organization)
+
+class Service(models.Model):
+    COLD_WATER = 1
+    HOT_WATER = 2
+    WATER_DISPOSAL = 3
+    SERVICE_WATER = 4
+    HEATING = 5
+    COLD_WATER_ODN = 6
+    HOT_WATER_ODN = 7
+    HEATING_ODN = 8
+    SERVICES = (
+        (COLD_WATER, 'Холодное водоснабжение'),
+        (HOT_WATER, 'Горячее водоснабжение'),
+        (WATER_DISPOSAL, 'Водоотведение'),
+        (SERVICE_WATER, 'Техническая вода'),
+        (HEATING, 'Отопление'),
+        (COLD_WATER_ODN, 'ОДН: Холодное водоснабжение'),
+        (HOT_WATER_ODN, 'ОДН: Горячее водоснабжение'),
+        (HEATING_ODN, 'ОДН: Отопление'),
+    )
+    service = models.CharField(max_length=1, choices=SERVICES, default=COLD_WATER)
+
+class OrganizationService(models.Model):
+    """ Хранит все сервисы, предоставляемые организациями. Так же включает ОДН"""
+    #TODO: или это должна быть отдельная структура?
+     
+    service = models.ForeignKey(Service)
+    organization = models.ForeignKey(Organization)
+    def __str__(self):
+        return self.get_service_display()
 
 """Данные по тарифам для воды"""
 class WaterTariffValidity(models.Model):

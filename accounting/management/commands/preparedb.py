@@ -4,7 +4,7 @@ from accounting.models import Street, HouseAddress
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
-from accounting.models import Service, Organization, OrganizationAddress
+from accounting.models import Organization, OrganizationAddress, Service, OrganizationService
 
 def parse_address():
     HouseAddress.objects.all().delete()
@@ -63,18 +63,20 @@ def prepare_db_base():
 
     # Населенный пункт
     Locality.objects.all().delete()
-    loc1 = Locality(name="Боровлянка", type=Locality.VILLAGE, municipal_area=municipal_area, municipal_union=union1)
+    loc1 = Locality(name="Боровлянка", type=Locality.VILLAGE, subject_rf=subjectRF, municipal_area=municipal_area, municipal_union=union1)
     loc1.save()
-    loc2 = Locality(name="Зверобойка", type=Locality.SETTLEMENT, municipal_area=municipal_area, municipal_union=union1)
+    loc2 = Locality(name="Зверобойка", type=Locality.SETTLEMENT, subject_rf=subjectRF, municipal_area=municipal_area, municipal_union=union1)
     loc2.save()
-    loc3 = Locality(name="Кудельный Ключ", type=Locality.HAMLET, municipal_area=municipal_area, municipal_union=union1)
+    loc3 = Locality(name="Кудельный Ключ", type=Locality.HAMLET, subject_rf=subjectRF, municipal_area=municipal_area, municipal_union=union1)
     loc3.save()
-    loc4 = Locality(name="Прямушка", type=Locality.SETTLEMENT, municipal_area=municipal_area, municipal_union=union1)
+    loc4 = Locality(name="Прямушка", type=Locality.SETTLEMENT, subject_rf=subjectRF, municipal_area=municipal_area, municipal_union=union1)
     loc4.save()
-    loc5 = Locality(name="Шубкино", type=Locality.HAMLET, municipal_area=municipal_area, municipal_union=union1)
+    loc5 = Locality(name="Шубкино", type=Locality.HAMLET, subject_rf=subjectRF, municipal_area=municipal_area, municipal_union=union1)
     loc5.save()
-    loc6 = Locality(name="Нечаевский", type=Locality.SETTLEMENT, municipal_area=municipal_area, municipal_union=union2)
+    loc6 = Locality(name="Нечаевский", type=Locality.SETTLEMENT, subject_rf=subjectRF, municipal_area=municipal_area, municipal_union=union2)
     loc6.save()
+    loc7 = Locality(name="Новосибирск", type=Locality.CITY, subject_rf=subjectRF)
+    loc7.save()
 
     # Улица
     Street.objects.all().delete()
@@ -449,23 +451,65 @@ def prepare_db_base():
     water_tariff_val2 = WaterTariffValidity(start='2015-07-01', end='2015-12-31')
     water_tariff_val2.save()
     
-    # Услуги
-    Service.objects.all().delete()
-    cold_water_service = Service (service=Service.COLD_WATER)
-    cold_water_service.save()
-    heating_service = Service(service=Service.HEATING)
-    heating_service.save()
-    
     # Организации
     Organization.objects.all().delete()
-    kluchevscoe = Organization(short_name="Ключевское", full_name="Кудельно-Ключевское", taxpayer_identification_number="5438113504", primary_state_registration_number="1045404576128")
+    kluchevscoe = Organization(short_name="Ключевское", full_name="Ключевское",
+                               taxpayer_identification_number="5438113504",
+                               tax_registration_reason_code="543801001",
+                               primary_state_registration_number="10454045761",
+                               phone=" 8(38340)31-104, 8(38340)31-238",
+                               email="kluchinat@mail.ru",
+                               operating_mode="Режим работы: Пн.-Пт. 8.00-17.00, Обед: 13.00-14.00")
     kluchevscoe.save()
     
+    
+    # Заполнение МУП "Нечаевское"
+    # TODO: Заполнить адрес для нечаевского
+    bank1 = Organization(type=Organization.BANK, legal_form=Organization.OAO,
+                         short_name="Россельхозбанк", full_name='Россельхозбанк, Новосибирский региональный филиал')
+    bank1.save()
+    neсhaevscoe = Organization(short_name="Нечаевское", full_name="Нечаевское",
+                              taxpayer_identification_number="5438315941",
+                              tax_registration_reason_code="543801001",
+                              primary_state_registration_number="1055461017248",
+                              bank=bank1,
+                              bank_identifier_code="045004784",
+                              corresponding_account="30101810700000000784",
+                              operating_account="40702810525170000045",
+                              phone="8(38340)32-413",
+                              fax="8(38340)32-242",
+                              email="mupnechaevskoe@yandex.ru",
+                              operating_mode="Режим работы: Пн-Чт. 9:00-17:00, Пт. 9:00-16:00, Обед: 13:00-14:00")
+    neсhaevscoe.save()
+    
     OrganizationAddress.objects.all().delete()
+    # Заполнение адреса банка
+    street_ros = Street(locality=loc7, name="Фабричная")
+    street_ros.save()
+    house_nr = HouseAddress(index=630007, street=street_ros, house_number="13")
+    house_nr.save()
+    
     street_k = Street.objects.filter(locality=loc3, name="Центральная").get()
     address_k = HouseAddress.objects.filter(street=street_k, house_number="6").get()
     org_addr = OrganizationAddress(address=address_k, organization=kluchevscoe)
     org_addr.save()
+
+    
+    #Услуги
+    srv1 = Service (service=Service.COLD_WATER)
+    srv1.save()
+    srv2 = Service (service=Service.HEATING)
+    srv2.save()
+    # Услуги организаций
+    OrganizationService.objects.all().delete()
+    org_srv1 = OrganizationService (service=srv1, organization=kluchevscoe)
+    org_srv1.save()
+    org_srv2 = OrganizationService (service=srv2, organization=kluchevscoe)
+    org_srv2.save()
+    org_srv3 = OrganizationService (service=srv1, organization=neсhaevscoe)
+    org_srv3.save()
+    org_srv4 = OrganizationService (service=srv2, organization=neсhaevscoe)
+    org_srv4.save()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'

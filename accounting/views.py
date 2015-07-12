@@ -4,7 +4,7 @@ from accounting.models import Street, HouseAddress
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
-from accounting.models import Service, Organization
+from accounting.models import Organization, OrganizationService
 
 def test_water_norm():
     file = open('c:\\vitaly\\WaterNorm.txt', 'w')
@@ -27,10 +27,6 @@ def test_water_tariff():
     for water_tariff_validity in WaterTariffValidity.objects.all().order_by('start'):
         pass
     
-def test_service():
-    for service in Service.objects.all():
-        pass
-
 def test_db():
     subjectsRF = SubjectRF.objects.all()
     for subjectRF in subjectsRF:
@@ -68,6 +64,10 @@ def test_org_addr():
     for house in HouseAddress.objects.filter(street=street_k):
         number = 6
 
+def test_org_srv():
+    for org_srv in OrganizationService.objects.all():
+        pass
+
 def index(request):
     #test_db()
     #test_heating_norm()
@@ -75,5 +75,6 @@ def index(request):
     #test_service()
     #test_house_address()
     #test_org()
-    test_org_addr()
+    #test_org_addr()
+    test_org_srv()
     return HttpResponse("Робот отработал успешно.")
