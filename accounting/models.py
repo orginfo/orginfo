@@ -172,17 +172,23 @@ class Service(models.Model):
     """ Хранит все сервисы, предоставляемые организациями. Так же включает ОДН"""
     #TODO: или это должна быть отдельная структура?
      
-    COLD_WATER = '1'
-    HOT_WATER = '2'
-    WATER_DISPOSAL = '3'
-    SERVICE_WATER = '4'
-    HEATING = '5'
+    COLD_WATER = 1
+    HOT_WATER = 2
+    WATER_DISPOSAL = 3
+    SERVICE_WATER = 4
+    HEATING = 5
+    COLD_WATER_ODN = 6
+    HOT_WATER_ODN = 7
+    HEATING_ODN = 8
     SERVICES = (
         (COLD_WATER, 'Холодное водоснабжение'),
         (HOT_WATER, 'Горячее водоснабжение'),
         (WATER_DISPOSAL, 'Водоотведение'),
         (SERVICE_WATER, 'Техническая вода'),
-        (HEATING, 'Тепловая энергия'),
+        (HEATING, 'Отопление'),
+        (COLD_WATER_ODN, 'ОДН: Холодное водоснабжение'),
+        (HOT_WATER_ODN, 'ОДН: Горячее водоснабжение'),
+        (HEATING_ODN, 'ОДН: Отопление'),
     )
     service = models.CharField(max_length=1, choices=SERVICES, default=COLD_WATER)
     def __str__(self):
