@@ -338,4 +338,12 @@ class RealEstate(models.Model):
     residential = models.BooleanField(default=True)
 
     def __str__(self):
-        return "%s, %s, %s" % (self.address.street.locality.name, self.address.street.name, self.address.space_number)
+        return "%s, %s, %s" % (self.address.street.locality.name, self.address.street.name, self.address.house_number)
+
+class RealEstateOwner(models.Model):
+    """ Связь Недвижимость - собственник"""
+    real_estate = models.ForeignKey(RealEstate)
+    part = models.PositiveSmallIntegerField(default=100)
+    owner = models.CharField(max_length=20) #MayBe: Перенести в отдельную таблицу и использовать ссылку на 'owner'
+    def __str__(self):
+        return "%s: %u\%" % (self.owner, self.part)
