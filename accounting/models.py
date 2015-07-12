@@ -264,7 +264,18 @@ class Organization(models.Model):
         return self.name
 
 class OrganizationAddress(models.Model):
-    """ Организация может иметь несколько адресов (Юридический, физический и почтовой)"""
+    """ Связь Организация-Адрес. Организация может иметь несколько адресов (Юридический, физический и почтовой)"""
+    LEGAL = 1
+    PHYSICAL = 2
+    POSTAL = 3
+    TYPES = (
+        (LEGAL, 'Юридический адрес'),
+        (PHYSICAL, 'Фактический адрес'),
+        (POSTAL, 'Почтовый адрес'),
+    )   
+    type = models.CharField(max_length=1, choices=TYPES, default=LEGAL)
+    address = models.ForeignKey(HouseAddress)
+    organization = models.ForeignKey(Organization)
 
 """Данные по тарифам для воды"""
 class WaterTariffValidity(models.Model):

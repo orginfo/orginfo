@@ -61,11 +61,19 @@ def test_org():
     for org in Organization.objects.all():
         pass
 
+def test_org_addr():
+    loc = Locality.objects.filter(name="Кудельный Ключ").get()
+    street_k = Street.objects.filter(locality=loc, name="Центральная").get()
+    #ddress_k = HouseAddress.objects.filter(street=street_k, house_number="5").get()
+    for house in HouseAddress.objects.filter(street=street_k):
+        number = 6
+
 def index(request):
     #test_db()
     #test_heating_norm()
     #test_water_tariff()
     #test_service()
     #test_house_address()
-    test_org()
+    #test_org()
+    test_org_addr()
     return HttpResponse("Робот отработал успешно.")

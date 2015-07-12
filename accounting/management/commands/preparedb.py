@@ -4,7 +4,7 @@ from accounting.models import Street, HouseAddress
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
-from accounting.models import Service, Organization
+from accounting.models import Service, Organization, OrganizationAddress
 
 def parse_address():
     HouseAddress.objects.all().delete()
@@ -460,7 +460,12 @@ def prepare_db_base():
     Organization.objects.all().delete()
     kluchevscoe = Organization(short_name="Ключевское", full_name="Кудельно-Ключевское", taxpayer_identification_number="5438113504", primary_state_registration_number="1045404576128")
     kluchevscoe.save()
-
+    
+    OrganizationAddress.objects.all().delete()
+    street_k = Street.objects.filter(locality=loc3, name="Центральная").get()
+    address_k = HouseAddress.objects.filter(street=street_k, house_number="6").get()
+    org_addr = OrganizationAddress(address=address_k, organization=kluchevscoe)
+    org_addr.save()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'
