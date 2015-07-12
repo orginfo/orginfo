@@ -41,6 +41,7 @@ def parse_address():
             address.save()
         
     file.close()
+    HouseAddress.objects.all().update(index="633447")
 
 def prepare_db_base():
     # Субъект РФ

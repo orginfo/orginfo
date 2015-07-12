@@ -71,6 +71,7 @@ class HouseAddress(models.Model):
     """
     #номер дома (входят вся информация о номере дома. Например, "Королёва 40 к48/1" или "Королёва 40 к40а")
     #TODO: Хранить номер квартиры отдельно. Номер квартиры хранить в одном поле. (кв 54 ком 2 или офис 34)
+    index = models.CharField(max_length=6)
     street = models.ForeignKey(Street)
     house_number = models.CharField(max_length=10)
     def __str__(self):
@@ -261,6 +262,9 @@ class Organization(models.Model):
 
     def __str__(self):
         return self.name
+
+class OrganizationAddress(models.Model):
+    """ Организация может иметь несколько адресов (Юридический, физический и почтовой)"""
 
 """Данные по тарифам для воды"""
 class WaterTariffValidity(models.Model):
