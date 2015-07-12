@@ -297,3 +297,45 @@ class WaterTariffValidity(models.Model):
     def __str__(self):
         return "%s->%s" % (str(self.start), str(self.end))
 """\Данные по тарифам для воды"""
+
+class RealEstate(models.Model):
+    """Объект недвижимости.
+
+    Объектом недвижимости может являться многоквартирный дом, жилой дом,
+    квартира, комната. При этом у модели есть связь, которая показывает,
+    например, какая именно комната принадлежит какой именно квартире.
+
+    TODO: со временем перенести поля residential residents в отдельную
+    таблицу, потому что эта информация может меняться, а иногда полезно делать
+    перерасчет, но информация, возможна будет потеряна.
+    residential -- флаг, указывающий жилое ли помещение. Находится здесь,
+    потому что как используется помещение зависит больше от клиента, а не от
+    помещения.
+    residents - количество зарегестированных (проживающих)
+
+    """
+    MULTIPLE_DWELLING = 1
+    SHARE = 2
+    FLAT = 3
+    ROOM = 4
+    HOUSE = 5
+    MUNICIPAL_BUILDING = 6
+    OFFICE = 7
+    
+    BUILDING_TYPES = (
+        (MULTIPLE_DWELLING, 'Многоквартирный дом'),
+        (SHARE, 'Блок\секция'),
+        (FLAT, 'Квартира'),
+        (ROOM, 'Комната'),
+        (HOUSE, 'Частный дом'),
+        (MUNICIPAL_BUILDING, 'Муниципальное здание'),
+        (OFFICE, 'Офис'),
+    )
+    type = models.CharField(max_length=1, choices=BUILDING_TYPES, default=HOUSE)
+    address = models.ForeignKey(HouseAddress)
+    number = models.CharField (max_length=10, blank=True, default = None) # Номер помещения (Для parent самого верхнего уровня это поле пустое)
+    parent = models.ForeignKey('self', null=True, blank=True, default = None)
+    residential = models.BooleanField(default=True)
+
+    def __str__(self):
+        return "%s, %s, %s" % (self.address.street.locality.name, self.address.street.name, self.address.space_number)
