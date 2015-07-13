@@ -193,8 +193,8 @@ class Organization(models.Model):
     - Расчетный счет
     """
     # Тип организации:
-    RESOURCE_SUPPLY = 1
-    BANK = 2
+    RESOURCE_SUPPLY = "1"
+    BANK = "2"
     TYPES = (
         (RESOURCE_SUPPLY, 'Холодное водоснабжение'),
         (BANK, 'Горячее водоснабжение'),
@@ -247,9 +247,9 @@ class Organization(models.Model):
 
 class OrganizationAddress(models.Model):
     """ Связь Организация-Адрес. Организация может иметь несколько адресов (Юридический, физический и почтовой)"""
-    LEGAL = 1
-    PHYSICAL = 2
-    POSTAL = 3
+    LEGAL = "1"
+    PHYSICAL = "2"
+    POSTAL = "3"
     TYPES = (
         (LEGAL, 'Юридический адрес'),
         (PHYSICAL, 'Фактический адрес'),
@@ -260,14 +260,14 @@ class OrganizationAddress(models.Model):
     organization = models.ForeignKey(Organization)
 
 class Service(models.Model):
-    COLD_WATER = 1
-    HOT_WATER = 2
-    WATER_DISPOSAL = 3
-    SERVICE_WATER = 4
-    HEATING = 5
-    COLD_WATER_ODN = 6
-    HOT_WATER_ODN = 7
-    HEATING_ODN = 8
+    COLD_WATER = "1"
+    HOT_WATER = "2"
+    WATER_DISPOSAL = "3"
+    SERVICE_WATER = "4"
+    HEATING = "5"
+    COLD_WATER_ODN = "6"
+    HOT_WATER_ODN = "7"
+    HEATING_ODN = "8"
     SERVICES = (
         (COLD_WATER, 'Холодное водоснабжение'),
         (HOT_WATER, 'Горячее водоснабжение'),
