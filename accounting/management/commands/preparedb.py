@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
 from accounting.models import Street, HouseAddress
+from accounting.models import RealEstate
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
@@ -42,6 +43,48 @@ def parse_address():
         
     file.close()
     HouseAddress.objects.all().update(index="633447")
+    
+def parse_real_estate():
+    RealEstate.objects.all().delete()
+    
+    for address in HouseAddress.objects.all():
+        real_estate = RealEstate(type=RealEstate.HOUSE, address=address, number="")
+        real_estate.save()
+    
+    file = open('c:\\vitaly\\Reading\\Address_all_KK.txt', 'r')
+    for line in file:
+        index = 0
+        locality_name = ""
+        street_name = ""
+        house_nr = ""
+        number = ""
+        for part in line.split("\t"):
+            part.strip()
+            if part == "\n":
+                continue
+            
+            if index == 0:
+                locality_name = part
+            elif index == 1:
+                street_name = part
+            elif index == 2:
+                house_nr = part
+            elif index == 3:
+                number = part
+            else:
+                pass
+            index = index + 1
+
+        loc = Locality.objects.filter(name=locality_name).get()
+        street = Street.objects.filter(locality=loc, name=street_name).get()
+        address = HouseAddress.objects.filter(street=street, house_number=house_nr).get()
+        if len(number) != 0:
+            RealEstate.objects.filter(address=address, number="").update(type=RealEstate.MULTIPLE_DWELLING)
+            parent = RealEstate.objects.filter(address=address, type=RealEstate.MULTIPLE_DWELLING).get()
+            real_estate = RealEstate(type=RealEstate.FLAT, address=address, parent=parent, number=number)
+            real_estate.save()
+        
+    file.close()
 
 def prepare_db_base():
     # Субъект РФ
@@ -128,6 +171,7 @@ def prepare_db_base():
     street23.save()
     
     parse_address()
+    parse_real_estate()
     
     # ДОКУМЕНТ:
     # ОБ УТВЕРЖДЕНИИ НОРМАТИВОВ ПОТРЕБЛЕНИЯ КОММУНАЛЬНЫХ УСЛУГ ПО ХОЛОДНОМУ ВОДОСНАБЖЕНИЮ, ГОРЯЧЕМУ ВОДОСНАБЖЕНИЮ И ВОДООТВЕДЕНИЮ НА ТЕРРИТОРИИ НОВОСИБИРСКОЙ ОБЛАСТИ
@@ -452,27 +496,33 @@ def prepare_db_base():
     water_tariff_val2.save()
     
     # Организации
+    bank1 = Organization(type=Organization.BANK, legal_form=Organization.OAO,
+                         short_name="Банк Левобережный", full_name="Банк Левобережный")
+    bank1.save()
     Organization.objects.all().delete()
     kluchevscoe = Organization(short_name="Ключевское", full_name="Ключевское",
                                taxpayer_identification_number="5438113504",
                                tax_registration_reason_code="543801001",
                                primary_state_registration_number="10454045761",
-                               phone=" 8(38340)31-104, 8(38340)31-238",
+                               bank=bank1,
+                               bank_identifier_code="045004850",
+                               corresponding_account="30101810100000000850",
+                               operating_account="40702810609240000158",
+                               phone="8(38340)31-104, 8(38340)31-238",
                                email="kluchinat@mail.ru",
                                operating_mode="Режим работы: Пн.-Пт. 8.00-17.00, Обед: 13.00-14.00")
     kluchevscoe.save()
     
-    
     # Заполнение МУП "Нечаевское"
     # TODO: Заполнить адрес для нечаевского
-    bank1 = Organization(type=Organization.BANK, legal_form=Organization.OAO,
+    bank2 = Organization(type=Organization.BANK, legal_form=Organization.OAO,
                          short_name="Россельхозбанк", full_name='Россельхозбанк, Новосибирский региональный филиал')
-    bank1.save()
+    bank2.save()
     neсhaevscoe = Organization(short_name="Нечаевское", full_name="Нечаевское",
                               taxpayer_identification_number="5438315941",
                               tax_registration_reason_code="543801001",
                               primary_state_registration_number="1055461017248",
-                              bank=bank1,
+                              bank=bank2,
                               bank_identifier_code="045004784",
                               corresponding_account="30101810700000000784",
                               operating_account="40702810525170000045",

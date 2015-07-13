@@ -87,7 +87,6 @@ class WaterNormDescription(models.Model):
     AGRICULTURAL_ANIMALS = '3'
     DIRECTION_USING = '4'
     
-    
     DESCRIPTION_TYPES = (
         (DEGREE_OF_IMPROVEMENT_DWELLING, 'Степень благоустройства жилых помещений'),
         (COMMON_PROPERTY, 'Общее имущество'),
@@ -314,13 +313,13 @@ class RealEstate(models.Model):
     residents - количество зарегестированных (проживающих)
 
     """
-    MULTIPLE_DWELLING = 1
-    SHARE = 2
-    FLAT = 3
-    ROOM = 4
-    HOUSE = 5
-    MUNICIPAL_BUILDING = 6
-    OFFICE = 7
+    MULTIPLE_DWELLING = "1"
+    SHARE = "2"
+    FLAT = "3"
+    ROOM = "4"
+    HOUSE = "5"
+    MUNICIPAL_BUILDING = "6"
+    OFFICE = "7"
     
     BUILDING_TYPES = (
         (MULTIPLE_DWELLING, 'Многоквартирный дом'),
@@ -338,12 +337,29 @@ class RealEstate(models.Model):
     residential = models.BooleanField(default=True)
 
     def __str__(self):
-        return "%s, %s, %s" % (self.address.street.locality.name, self.address.street.name, self.address.house_number)
+        return "%s, %s, %s, %s %s" % (self.address.street.locality.name, self.address.street.name, self.address.house_number, self.get_type_display(), self.number)
+
+class HouseRegister(models.Model):
+    """ Домовая книга - содержит историю о количестве проживающих. Содержит информацию только для жилых помещений"""
+    real_estate = models.ForeignKey(RealEstate)
+    count = models.PositiveSmallIntegerField(default=1)
+    start = models.DateField()
+    end = models.DateField(blank=True, null=True)
+
+class TechnicalPassport(models.Model):
+    """ Технический паспорт помещения."""
+    real_estate = models.ForeignKey(RealEstate)
+    floor_amount = models.IntegerField(default=1) # Количество этажей
+    commissioning_date = models.DateField() # Ввод здания в эксплуатацию
+    space = models.FloatField()
+    space_of_joint_estate = models.FloatField()
 
 class RealEstateOwner(models.Model):
     """ Связь Недвижимость - собственник"""
     real_estate = models.ForeignKey(RealEstate)
     part = models.PositiveSmallIntegerField(default=100)
     owner = models.CharField(max_length=20) #MayBe: Перенести в отдельную таблицу и использовать ссылку на 'owner'
+    start = models.DateField()
+    end = models.DateField(blank=True, null=True)
     def __str__(self):
         return "%s: %u\%" % (self.owner, self.part)

@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
 from accounting.models import Street, HouseAddress
+from accounting.models import RealEstate
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
@@ -68,6 +69,24 @@ def test_org_srv():
     for org_srv in OrganizationService.objects.all():
         pass
 
+def test_real_estate():
+    file = open('c:\\vitaly\\RealEstate.txt', 'w')
+    
+    subjectsRF = SubjectRF.objects.all()
+    for subjectRF in subjectsRF:
+        for municipal_area in MunicipalArea.objects.all():
+            for municipal_union in MunicipalUnion.objects.all():
+                for loc in Locality.objects.filter(municipal_area=municipal_area, municipal_union=municipal_union).order_by('name'):
+                    file.write(str(loc))
+                    file.write("\n")
+                    for street in Street.objects.filter(locality=loc).order_by('name'):
+                        for address in HouseAddress.objects.filter(street=street).order_by('house_number'):
+                            for real_estate in RealEstate.objects.filter(address=address):
+                                file.write(str(real_estate))
+                                file.write("\n")
+
+    file.close()
+
 def index(request):
     #test_db()
     #test_heating_norm()
@@ -76,5 +95,6 @@ def index(request):
     #test_house_address()
     #test_org()
     #test_org_addr()
-    test_org_srv()
+    #test_org_srv()
+    test_real_estate()
     return HttpResponse("Робот отработал успешно.")
