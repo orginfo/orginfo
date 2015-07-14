@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
 from accounting.models import Street, HouseAddress
-from accounting.models import RealEstate
+from accounting.models import RealEstate, HouseRegister
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
@@ -83,6 +83,48 @@ def parse_real_estate():
             parent = RealEstate.objects.filter(address=address, type=RealEstate.MULTIPLE_DWELLING).get()
             real_estate = RealEstate(type=RealEstate.FLAT, address=address, parent=parent, number=number)
             real_estate.save()
+        
+    file.close()
+
+def parse_house_register():
+    HouseRegister.objects.all().delete()
+    
+    file = open('c:\\vitaly\\Reading\\Residents_KK_new.txt', 'r')
+    for line in file:
+        index = 0
+        locality_name = ""
+        street_name = ""
+        house_nr = ""
+        number = ""
+        count = ""
+        for part in line.split("\t"):
+            part.strip()
+            if part == "\n":
+                continue
+            
+            if index == 0:
+                locality_name = part
+            elif index == 1:
+                street_name = part
+            elif index == 2:
+                house_nr = part
+            elif index == 3:
+                number = part
+            elif index == 4:
+                count = part
+            else:
+                pass
+            index = index + 1
+
+        loc = Locality.objects.filter(name=locality_name).get()
+        street = Street.objects.filter(locality=loc, name=street_name).get()
+        address = HouseAddress.objects.filter(street=street, house_number=house_nr).get()
+        residents = 0
+        if len(count) != 0:
+            residents = int(count)
+        real_estate = RealEstate.objects.filter(address=address, number=number).get()
+        house_reg = HouseRegister(real_estate=real_estate, count=residents, start='2015-01-01')
+        house_reg.save()
         
     file.close()
 
@@ -172,6 +214,7 @@ def prepare_db_base():
     
     parse_address()
     parse_real_estate()
+    parse_house_register()
     
     # ДОКУМЕНТ:
     # ОБ УТВЕРЖДЕНИИ НОРМАТИВОВ ПОТРЕБЛЕНИЯ КОММУНАЛЬНЫХ УСЛУГ ПО ХОЛОДНОМУ ВОДОСНАБЖЕНИЮ, ГОРЯЧЕМУ ВОДОСНАБЖЕНИЮ И ВОДООТВЕДЕНИЮ НА ТЕРРИТОРИИ НОВОСИБИРСКОЙ ОБЛАСТИ
