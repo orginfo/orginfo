@@ -357,7 +357,7 @@ class TechnicalPassport(models.Model):
 class RealEstateOwner(models.Model):
     """ Связь Недвижимость - собственник"""
     real_estate = models.ForeignKey(RealEstate)
-    part = models.PositiveSmallIntegerField(default=100)
+    #part = models.PositiveSmallIntegerField(default=100)
     owner = models.CharField(max_length=20) #MayBe: Перенести в отдельную таблицу и использовать ссылку на 'owner'
     start = models.DateField()
     end = models.DateField(blank=True, null=True)
