@@ -192,15 +192,6 @@ class Organization(models.Model):
     - Корреспондентский счет
     - Расчетный счет
     """
-    # Тип организации:
-    RESOURCE_SUPPLY = "1"
-    BANK = "2"
-    TYPES = (
-        (RESOURCE_SUPPLY, 'Холодное водоснабжение'),
-        (BANK, 'Горячее водоснабжение'),
-    )
-    type = models.CharField(max_length=1, choices=TYPES, default=RESOURCE_SUPPLY)
-    
     # Организационно-правовая форма
     AO  = 'АО'
     MUP = 'МУП'
@@ -228,7 +219,6 @@ class Organization(models.Model):
     primary_state_registration_number = models.CharField(max_length=25) # ОГРН (PSRN)
     
     #Банковские реквизиты
-    bank = models.ForeignKey('self', null=True, blank=True, default = None)
     bank_identifier_code = models.CharField(max_length=25) # БИК (BIC)
     corresponding_account = models.CharField(max_length=25) # Корреспондентский счет
     operating_account = models.CharField(max_length=25) # Расчетный счет
@@ -339,6 +329,10 @@ class RealEstate(models.Model):
     def __str__(self):
         return "%s, %s, %s, %s %s" % (self.address.street.locality.name, self.address.street.name, self.address.house_number, self.get_type_display(), self.number)
 
+class RealEstateService(models.Model):
+    real_estate = models.ForeignKey(RealEstate)
+    service = models.ForeignKey(Service)
+
 class HouseRegister(models.Model):
     """ Домовая книга - содержит историю о количестве проживающих. Содержит информацию только для жилых помещений"""
     real_estate = models.ForeignKey(RealEstate)
@@ -352,7 +346,7 @@ class TechnicalPassport(models.Model):
     floor_amount = models.IntegerField(default=1) # Количество этажей
     commissioning_date = models.DateField() # Ввод здания в эксплуатацию
     space = models.FloatField()
-    space_of_joint_estate = models.FloatField()
+    #space_of_joint_estate = models.FloatField()
 
 class RealEstateOwner(models.Model):
     """ Связь Недвижимость - собственник"""

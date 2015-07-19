@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
 from accounting.models import Street, HouseAddress
-from accounting.models import RealEstate, HouseRegister, RealEstateOwner
+from accounting.models import RealEstate, HouseRegister, RealEstateOwner, TechnicalPassport
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
@@ -165,6 +165,46 @@ def parse_real_estate_owner():
             real_estate = RealEstate.objects.filter(address=address, number=number).get()
             real_estete_owner = RealEstateOwner(real_estate=real_estate, owner=owner, start='2015-01-01')
             real_estete_owner.save()
+        
+    file.close()
+
+def parse_technical_passport():
+    TechnicalPassport.objects.all().delete()
+    
+    file = open('c:\\vitaly\\Reading\\Space_KK.txt', 'r')
+    for line in file:
+        index = 0
+        locality_name = ""
+        street_name = ""
+        house_nr = ""
+        number = ""
+        space = ""
+        for part in line.split("\t"):
+            part.strip()
+            if part == "\n":
+                continue
+            
+            if index == 0:
+                locality_name = part
+            elif index == 1:
+                street_name = part
+            elif index == 2:
+                house_nr = part
+            elif index == 3:
+                number = part
+            elif index == 4:
+                space = part
+            else:
+                pass
+            index = index + 1
+
+        loc = Locality.objects.filter(name=locality_name).get()
+        street = Street.objects.filter(locality=loc, name=street_name).get()
+        address = HouseAddress.objects.filter(street=street, house_number=house_nr).get()
+        if len(space) != 0:
+            real_estate = RealEstate.objects.filter(address=address, number=number).get()
+            technical_passport = TechnicalPassport(real_estate=real_estate, commissioning_date='1999-01-01', start='2015-01-01')
+            technical_passport.save()
         
     file.close()
 
@@ -580,15 +620,11 @@ def prepare_db_base():
     water_tariff_val2.save()
     
     # Организации
-    bank1 = Organization(type=Organization.BANK, legal_form=Organization.OAO,
-                         short_name="Банк Левобережный", full_name="Банк Левобережный")
-    bank1.save()
     Organization.objects.all().delete()
     kluchevscoe = Organization(short_name="Ключевское", full_name="Ключевское",
                                taxpayer_identification_number="5438113504",
                                tax_registration_reason_code="543801001",
                                primary_state_registration_number="10454045761",
-                               bank=bank1,
                                bank_identifier_code="045004850",
                                corresponding_account="30101810100000000850",
                                operating_account="40702810609240000158",
@@ -599,14 +635,10 @@ def prepare_db_base():
     
     # Заполнение МУП "Нечаевское"
     # TODO: Заполнить адрес для нечаевского
-    bank2 = Organization(type=Organization.BANK, legal_form=Organization.OAO,
-                         short_name="Россельхозбанк", full_name='Россельхозбанк, Новосибирский региональный филиал')
-    bank2.save()
     neсhaevscoe = Organization(short_name="Нечаевское", full_name="Нечаевское",
                               taxpayer_identification_number="5438315941",
                               tax_registration_reason_code="543801001",
                               primary_state_registration_number="1055461017248",
-                              bank=bank2,
                               bank_identifier_code="045004784",
                               corresponding_account="30101810700000000784",
                               operating_account="40702810525170000045",
@@ -627,7 +659,6 @@ def prepare_db_base():
     address_k = HouseAddress.objects.filter(street=street_k, house_number="6").get()
     org_addr = OrganizationAddress(address=address_k, organization=kluchevscoe)
     org_addr.save()
-
     
     #Услуги
     srv1 = Service (service=Service.COLD_WATER)

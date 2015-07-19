@@ -1,11 +1,12 @@
 from django.http import HttpResponse
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
 from accounting.models import Street, HouseAddress
-from accounting.models import RealEstate
+from accounting.models import RealEstate, RealEstateService
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
 from accounting.models import Organization, OrganizationService
+from datetime import datetime, timedelta
 
 def test_water_norm():
     file = open('c:\\vitaly\\WaterNorm.txt', 'w')
@@ -87,6 +88,16 @@ def test_real_estate():
 
     file.close()
 
+def calculate_services(real_estate):
+    pass
+
+def robot():
+    for locality in Locality.objects.all().order_by('subject_rf', 'municipal_area', 'municipal_union', 'name'):
+        for address in HouseAddress.objects.filter(street__locality=locality).order_by('street'):
+            for real_estate in RealEstate.objects.filter(address=address):
+                calculate_services(real_estate)
+    pass
+                
 def index(request):
     #test_db()
     #test_heating_norm()
@@ -96,5 +107,6 @@ def index(request):
     #test_org()
     #test_org_addr()
     #test_org_srv()
-    test_real_estate()
+    #test_real_estate()
+    robot()
     return HttpResponse("Робот отработал успешно.")
