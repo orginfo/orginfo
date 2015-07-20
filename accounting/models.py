@@ -46,8 +46,8 @@ class Locality(models.Model):
     name = models.CharField(max_length=20)
     type = models.CharField(max_length=1, choices=LOCALITY_TYPES, default=HAMLET)
     subject_rf = models.ForeignKey(SubjectRF)
-    municipal_area = models.ForeignKey(MunicipalArea, null=True, blank=True, default = None)
-    municipal_union = models.ForeignKey(MunicipalUnion, null=True, blank=True, default = None)
+    municipal_area = models.ForeignKey(MunicipalArea)
+    municipal_union = models.ForeignKey(MunicipalUnion)
     def __str__(self):
         return "%s, %s, %s %s" % (self.municipal_area.subject_rf.name, self.municipal_area.name, self.get_type_display(), self.name)
 

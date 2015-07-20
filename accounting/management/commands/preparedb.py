@@ -240,8 +240,6 @@ def prepare_db_base():
     loc5.save()
     loc6 = Locality(name="Нечаевский", type=Locality.SETTLEMENT, subject_rf=subjectRF, municipal_area=municipal_area, municipal_union=union2)
     loc6.save()
-    loc7 = Locality(name="Новосибирск", type=Locality.CITY, subject_rf=subjectRF)
-    loc7.save()
 
     # Улица
     Street.objects.all().delete()
@@ -649,12 +647,6 @@ def prepare_db_base():
     neсhaevscoe.save()
     
     OrganizationAddress.objects.all().delete()
-    # Заполнение адреса банка
-    street_ros = Street(locality=loc7, name="Фабричная")
-    street_ros.save()
-    house_nr = HouseAddress(index=630007, street=street_ros, house_number="13")
-    house_nr.save()
-    
     street_k = Street.objects.filter(locality=loc3, name="Центральная").get()
     address_k = HouseAddress.objects.filter(street=street_k, house_number="6").get()
     org_addr = OrganizationAddress(address=address_k, organization=kluchevscoe)
