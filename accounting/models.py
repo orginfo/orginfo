@@ -361,21 +361,8 @@ class RealEstateOwner(models.Model):
     def __str__(self):
         return "%s: %u\%" % (self.owner, self.part)
 
-class HouseRegister(models.Model):
-    """ Домовая книга - содержит историю о количестве проживающих. Содержит информацию только для жилых помещений"""
-    real_estate = models.ForeignKey(RealEstate)
-    count = models.PositiveSmallIntegerField(default=1)
-    start = models.DateField()
-    end = models.DateField(blank=True, null=True)
-
-class DegreeOfHouseImprovement(models.Model):
-    """ Связь 'Степень благоустройства многоквартирного дома или жилого дома' с жилым домом. Не дублируются во внутренних помещениях. 
-    degree_of_improvement_dwelling - ссылка на запись из WaterNormDescription. Применяется только для типа 'DEGREE_OF_IMPROVEMENT_DWELLING' """
-    degree_of_improvement_dwelling = models.ForeignKey(WaterNormDescription)
-    real_estate = models.ForeignKey(RealEstate)
-
-class LandPlotAndOutbuilding(models.Model):
-    """Земельный участок и надворные постройки
+class HomeownershipHistory(models.Model):
+    """История домовладения. Земельный участок и надворные постройки
     count - количество единиц направлений использования"""
     #TODO: Есть ли смысл хранить в этой таблице зависимость "Количество проживающих/зарегестированных" к "помещению (абоненту)"
     real_estate = models.ForeignKey(RealEstate)
