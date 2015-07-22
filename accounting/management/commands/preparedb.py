@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
 from accounting.models import Street, HouseAddress
-from accounting.models import RealEstate, HouseRegister, RealEstateOwner, TechnicalPassport
+from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner, TechnicalPassport
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
@@ -87,7 +87,7 @@ def parse_real_estate():
     file.close()
 
 def parse_house_register():
-    HouseRegister.objects.all().delete()
+    HomeownershipHistory.objects.all().delete()
     
     file = open('c:\\vitaly\\Reading\\Residents_KK_new.txt', 'r')
     for line in file:
@@ -123,7 +123,7 @@ def parse_house_register():
         if len(count) != 0:
             residents = int(count)
         real_estate = RealEstate.objects.filter(address=address, number=number).get()
-        house_reg = HouseRegister(real_estate=real_estate, count=residents, start='2015-01-01')
+        house_reg = HomeownershipHistory(real_estate=real_estate, count=residents, start='2015-01-01')
         house_reg.save()
         
     file.close()

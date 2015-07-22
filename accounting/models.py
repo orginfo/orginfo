@@ -362,7 +362,7 @@ class RealEstateOwner(models.Model):
         return "%s: %u\%" % (self.owner, self.part)
 
 class HomeownershipHistory(models.Model):
-    """История домовладения. Земельный участок и надворные постройки
+    """История домовладения.
     count - количество единиц направлений использования"""
     #TODO: Есть ли смысл хранить в этой таблице зависимость "Количество проживающих/зарегестированных" к "помещению (абоненту)"
     real_estate = models.ForeignKey(RealEstate)
