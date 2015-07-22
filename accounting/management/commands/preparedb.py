@@ -255,7 +255,7 @@ def prepare_db_base():
     street5.save()
     street6 = Street(name="Шубкинская", locality=loc3)
     street6.save()
-    street7 = Street(name="Молодёжная", locality=loc3)
+    street7 = Street(name="Молодежная", locality=loc3)
     street7.save()
     street8 = Street(name="Береговая", locality=loc3)
     street8.save()
@@ -263,7 +263,7 @@ def prepare_db_base():
     street9.save()
     street10 = Street(name="Новая", locality=loc3)
     street10.save()
-    street11 = Street(name="Зелёная", locality=loc3)
+    street11 = Street(name="Зеленая", locality=loc3)
     street11.save()
     street12 = Street(name="Заречная", locality=loc3)
     street12.save()
@@ -273,7 +273,7 @@ def prepare_db_base():
     street14.save()
     street15 = Street(name="Школьная", locality=loc5)
     street15.save()
-    street16 = Street(name="Зелёная", locality=loc5)
+    street16 = Street(name="Зеленая", locality=loc5)
     street16.save()
     street17 = Street(name="Богдана Хмельницкого", locality=loc6)
     street17.save()
@@ -292,8 +292,8 @@ def prepare_db_base():
     
     parse_address()
     parse_real_estate()
-    parse_house_register()
-    parse_real_estate_owner()
+    #parse_house_register()
+    #parse_real_estate_owner()
     
     # ДОКУМЕНТ:
     # ОБ УТВЕРЖДЕНИИ НОРМАТИВОВ ПОТРЕБЛЕНИЯ КОММУНАЛЬНЫХ УСЛУГ ПО ХОЛОДНОМУ ВОДОСНАБЖЕНИЮ, ГОРЯЧЕМУ ВОДОСНАБЖЕНИЮ И ВОДООТВЕДЕНИЮ НА ТЕРРИТОРИИ НОВОСИБИРСКОЙ ОБЛАСТИ
@@ -651,7 +651,7 @@ def prepare_db_base():
     address_k = HouseAddress.objects.filter(street=street_k, house_number="6").get()
     org_addr = OrganizationAddress(address=address_k, organization=kluchevscoe)
     org_addr.save()
-    
+        
     #Услуги
     srv1 = Service (service=Service.COLD_WATER)
     srv1.save()

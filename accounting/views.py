@@ -1,12 +1,13 @@
 from django.http import HttpResponse
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
 from accounting.models import Street, HouseAddress
-from accounting.models import RealEstate, RealEstateService
+from accounting.models import Organization
+from accounting.models import RealEstate
+from accounting.models import Service, ClientService, OrganizationService
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
-from accounting.models import Organization, OrganizationService
-from datetime import datetime, timedelta
+from datetime import date
 
 def test_water_norm():
     file = open('c:\\vitaly\\WaterNorm.txt', 'w')
@@ -55,17 +56,6 @@ def test_house_address():
 
     file.close()
 
-def test_org():
-    for org in Organization.objects.all():
-        pass
-
-def test_org_addr():
-    loc = Locality.objects.filter(name="Кудельный Ключ").get()
-    street_k = Street.objects.filter(locality=loc, name="Центральная").get()
-    #ddress_k = HouseAddress.objects.filter(street=street_k, house_number="5").get()
-    for house in HouseAddress.objects.filter(street=street_k):
-        number = 6
-
 def test_org_srv():
     for org_srv in OrganizationService.objects.all():
         pass
@@ -88,14 +78,26 @@ def test_real_estate():
 
     file.close()
 
-def calculate_services(real_estate):
+def calculate_individual_cold_water_volume(real_estate, calc_period):
     pass
 
+def calculate_services(real_estate, calc_period):
+    for client_service in ClientService.objects.filter(real_estate=real_estate).order_by('service'):
+        service = Service.objects.filter(service=client_service).get()
+        if service == Service.COLD_WATER:
+            calculate_individual_cold_water_volume()
+        elif service == Service.HOT_WATER:
+            pass
+
 def robot():
-    for locality in Locality.objects.all().order_by('subject_rf', 'municipal_area', 'municipal_union', 'name'):
-        for address in HouseAddress.objects.filter(street__locality=locality).order_by('street'):
-            for real_estate in RealEstate.objects.filter(address=address):
-                calculate_services(real_estate)
+    calc_period = date.today() 
+    for subjectRF in SubjectRF.objects.all():
+        for municipal_area in MunicipalArea.objects.filter(subject_rf=subjectRF):
+            for municipal_union in MunicipalUnion.objects.filter(municipal_area=municipal_area):
+                for locality in Locality.objects.filter(municipal_area=municipal_area, municipal_union=municipal_union):
+                    for real_estate in RealEstate.objects.filter(address__street__locality=locality):
+                        calculate_services(real_estate, calc_period)
+
     pass
                 
 def index(request):
@@ -103,10 +105,9 @@ def index(request):
     #test_heating_norm()
     #test_water_tariff()
     #test_service()
-    #test_house_address()
+    test_house_address()
     #test_org()
-    #test_org_addr()
     #test_org_srv()
-    #test_real_estate()
-    robot()
+    test_real_estate()
+    #robot()
     return HttpResponse("Робот отработал успешно.")

@@ -272,12 +272,8 @@ class Service(models.Model):
 
 class OrganizationService(models.Model):
     """ Хранит все сервисы, предоставляемые организациями. Так же включает ОДН"""
-    #TODO: или это должна быть отдельная структура?
-     
-    service = models.ForeignKey(Service)
     organization = models.ForeignKey(Organization)
-    def __str__(self):
-        return self.get_service_display()
+    service = models.ForeignKey(Service)
 
 """Данные по тарифам для воды"""
 class WaterTariffValidity(models.Model):
@@ -329,16 +325,23 @@ class RealEstate(models.Model):
     def __str__(self):
         return "%s, %s, %s, %s %s" % (self.address.street.locality.name, self.address.street.name, self.address.house_number, self.get_type_display(), self.number)
 
-class RealEstateService(models.Model):
+class OrganizationClient(models.Model):
+    """Связь Клиент(Объект недвижимость) - Организация. Один объект недвижимости может быть клиентом нескольких организаций."""
+    organization = models.ForeignKey(Organization)
+    real_estate = models.ForeignKey(RealEstate)
+
+class ClientService(models.Model):
+    """Связь услуга-клиент.
+
+    Связь указывает на то, какая именно услуга потребляется определенным
+    клиентом (объектом недвижимости).
+    """
     real_estate = models.ForeignKey(RealEstate)
     service = models.ForeignKey(Service)
-
-class HouseRegister(models.Model):
-    """ Домовая книга - содержит историю о количестве проживающих. Содержит информацию только для жилых помещений"""
-    real_estate = models.ForeignKey(RealEstate)
-    count = models.PositiveSmallIntegerField(default=1)
     start = models.DateField()
     end = models.DateField(blank=True, null=True)
+    def __str__(self):
+        return "#%s(%s->%s)" % (self.service.service, str(self.start), str(self.end))
 
 class TechnicalPassport(models.Model):
     """ Технический паспорт помещения."""
@@ -357,3 +360,26 @@ class RealEstateOwner(models.Model):
     end = models.DateField(blank=True, null=True)
     def __str__(self):
         return "%s: %u\%" % (self.owner, self.part)
+
+class HouseRegister(models.Model):
+    """ Домовая книга - содержит историю о количестве проживающих. Содержит информацию только для жилых помещений"""
+    real_estate = models.ForeignKey(RealEstate)
+    count = models.PositiveSmallIntegerField(default=1)
+    start = models.DateField()
+    end = models.DateField(blank=True, null=True)
+
+class DegreeOfHouseImprovement(models.Model):
+    """ Связь 'Степень благоустройства многоквартирного дома или жилого дома' с жилым домом. Не дублируются во внутренних помещениях. 
+    degree_of_improvement_dwelling - ссылка на запись из WaterNormDescription. Применяется только для типа 'DEGREE_OF_IMPROVEMENT_DWELLING' """
+    degree_of_improvement_dwelling = models.ForeignKey(WaterNormDescription)
+    real_estate = models.ForeignKey(RealEstate)
+
+class LandPlotAndOutbuilding(models.Model):
+    """Земельный участок и надворные постройки
+    count - количество единиц направлений использования"""
+    #TODO: Есть ли смысл хранить в этой таблице зависимость "Количество проживающих/зарегестированных" к "помещению (абоненту)"
+    real_estate = models.ForeignKey(RealEstate)
+    water_description = models.ForeignKey(WaterNormDescription)
+    count = models.IntegerField()
+    start = models.DateField()
+    end = models.DateField(blank=True, null=True)
