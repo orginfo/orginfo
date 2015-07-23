@@ -5,7 +5,8 @@ from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner,
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
-from accounting.models import Organization, OrganizationAddress, Service, OrganizationService
+from accounting.models import Organization, OrganizationAddress, Service, OrganizationService, ClientService
+from accounting.models import Period
 
 def parse_address():
     HouseAddress.objects.all().delete()
@@ -83,48 +84,6 @@ def parse_real_estate():
             parent = RealEstate.objects.filter(address=address, type=RealEstate.MULTIPLE_DWELLING).get()
             real_estate = RealEstate(type=RealEstate.FLAT, address=address, parent=parent, number=number)
             real_estate.save()
-        
-    file.close()
-
-def parse_house_register():
-    HomeownershipHistory.objects.all().delete()
-    
-    file = open('c:\\vitaly\\Reading\\Residents_KK_new.txt', 'r')
-    for line in file:
-        index = 0
-        locality_name = ""
-        street_name = ""
-        house_nr = ""
-        number = ""
-        count = ""
-        for part in line.split("\t"):
-            part.strip()
-            if part == "\n":
-                continue
-            
-            if index == 0:
-                locality_name = part
-            elif index == 1:
-                street_name = part
-            elif index == 2:
-                house_nr = part
-            elif index == 3:
-                number = part
-            elif index == 4:
-                count = part
-            else:
-                pass
-            index = index + 1
-
-        loc = Locality.objects.filter(name=locality_name).get()
-        street = Street.objects.filter(locality=loc, name=street_name).get()
-        address = HouseAddress.objects.filter(street=street, house_number=house_nr).get()
-        residents = 0
-        if len(count) != 0:
-            residents = int(count)
-        real_estate = RealEstate.objects.filter(address=address, number=number).get()
-        house_reg = HomeownershipHistory(real_estate=real_estate, count=residents, start='2015-01-01')
-        house_reg.save()
         
     file.close()
 
@@ -207,6 +166,100 @@ def parse_technical_passport():
             technical_passport.save()
         
     file.close()
+
+def fill_service():
+    #Услуги
+    Service.objects.all().delete()
+    
+    srv1 = Service (service=Service.COLD_WATER)
+    srv1.save()
+    srv2 = Service (service=Service.HEATING)
+    srv2.save()
+
+def fill_cold_water_srv_into_client_service():
+    ClientService.objects.all().delete()
+    
+    for real_estate in RealEstate.objects.all():
+        service = Service.objects.filter(service=Service.COLD_WATER).get()
+        client_srv = ClientService(real_estate=real_estate, service=service, start='2014-12-26')
+        client_srv.save()
+
+def parse_residents_degree():
+    HomeownershipHistory.objects.all().delete()
+    
+    water_norm_validity = WaterNormValidity.objects.filter(start ='2015-01-01', end='2015-03-31').get()
+    
+    file = open('c:\\Vitaly\\Reading\\residents_degree.txt', 'r')
+    for line in file:
+        index = 0
+        locality_name = ""
+        street_name = ""
+        house_nr = ""
+        number = ""
+        residents = ""
+        norm = ""
+        for part in line.split("\t"):
+            part.strip()
+            if part == "\n" or len(part) == 0:
+                index = index + 1
+                continue
+            
+            if index == 0:
+                locality_name = part
+            elif index == 1:
+                street_name = part
+            elif index == 2:
+                house_nr = part
+            elif index == 3:
+                number = part
+            elif index == 4:
+                residents = part
+            elif index == 5:
+                norm = part
+            else:
+                pass
+            index = index + 1
+
+        loc = Locality.objects.filter(name=locality_name).get()
+        street = Street.objects.filter(locality=loc, name=street_name).get()
+        address = HouseAddress.objects.filter(street=street, house_number=house_nr).get()
+        count = 0
+        if len(residents) != 0:
+            count = int(residents)
+        if len(norm) != 0:
+            norm_value = float(norm)
+            
+            real_estate = RealEstate.objects.filter(address=address, number=number).get()
+            water_desc = None
+            if norm_value == 6.47 or norm_value == 6.0:
+                water_desc = WaterNormDescription.objects.filter(description='Жилые помещения (в том числе общежития) с холодным водоснабжением, водонагревателями, канализованием, оборудованные ваннами, душами, раковинами, кухонными мойками и унитазами', type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING).get()
+            else:
+                water_norm = WaterNorm.objects.filter(validity=water_norm_validity, type=WaterNorm.COLD_WATER_TYPE, value=norm_value).get()
+                water_desc = water_norm.norm_description
+                
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start='2014-12-26')
+            homeownership_history.save()
+        
+    file.close()
+
+def fill_period():
+    Period.objects.all().delete()
+    period1 = Period(serial_number=1, start='2014-12-26', end='2015-1-25')
+    period1.save()
+    period2 = Period(serial_number=1, start='2015-1-26', end='2015-2-25')
+    period2.save()
+    period3 = Period(serial_number=1, start='2015-2-26', end='2015-3-25')
+    period3.save()
+    period4 = Period(serial_number=1, start='2015-3-26', end='2015-4-25')
+    period4.save()
+    period5 = Period(serial_number=1, start='2015-4-26', end='2015-5-25')
+    period5.save()
+    period6 = Period(serial_number=1, start='2015-5-26', end='2015-6-25')
+    period6.save()
+    period7 = Period(serial_number=1, start='2015-6-26', end='2015-7-25')
+    period7.save()
+    period8 = Period(serial_number=1, start='2015-7-26', end='2015-8-25')
+    period8.save()
 
 def prepare_db_base():
     # Субъект РФ
@@ -292,6 +345,8 @@ def prepare_db_base():
     
     parse_address()
     parse_real_estate()
+    fill_service()
+    fill_cold_water_srv_into_client_service()
     #parse_house_register()
     #parse_real_estate_owner()
     
@@ -646,17 +701,17 @@ def prepare_db_base():
                               operating_mode="Режим работы: Пн-Чт. 9:00-17:00, Пт. 9:00-16:00, Обед: 13:00-14:00")
     neсhaevscoe.save()
     
+    """
     OrganizationAddress.objects.all().delete()
     street_k = Street.objects.filter(locality=loc3, name="Центральная").get()
     address_k = HouseAddress.objects.filter(street=street_k, house_number="6").get()
     org_addr = OrganizationAddress(address=address_k, organization=kluchevscoe)
     org_addr.save()
+    """
         
     #Услуги
-    srv1 = Service (service=Service.COLD_WATER)
-    srv1.save()
-    srv2 = Service (service=Service.HEATING)
-    srv2.save()
+    srv1 = Service.objects.filter(service=Service.COLD_WATER).get()
+    srv2 = Service.objects.filter(service=Service.HEATING).get()
     # Услуги организаций
     OrganizationService.objects.all().delete()
     org_srv1 = OrganizationService (service=srv1, organization=kluchevscoe)
@@ -667,6 +722,9 @@ def prepare_db_base():
     org_srv3.save()
     org_srv4 = OrganizationService (service=srv2, organization=neсhaevscoe)
     org_srv4.save()
+    
+    parse_residents_degree()
+    fill_period()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'

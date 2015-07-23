@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
 from accounting.models import Street, HouseAddress
 from accounting.models import Organization
-from accounting.models import RealEstate
+from accounting.models import RealEstate, HomeownershipHistory
 from accounting.models import Service, ClientService, OrganizationService
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
@@ -78,6 +78,63 @@ def test_real_estate():
 
     file.close()
 
+def test_residents_degree():
+    water_norm_validity = WaterNormValidity.objects.filter(start ='2015-01-01', end='2015-03-31').get()
+    
+    file = open('c:\\Vitaly\\Reading\\residents_degree.txt', 'r')
+    file = open('c:\\Vitaly\\Reading\\residents_degree.txt', 'r')
+    for line in file:
+        index = 0
+        locality_name = ""
+        street_name = ""
+        house_nr = ""
+        number = ""
+        residents = ""
+        norm = ""
+        for part in line.split("\t"):
+            part.strip()
+            if part == "\n" or len(part) == 0:
+                index = index + 1
+                continue
+            
+            if index == 0:
+                locality_name = part
+            elif index == 1:
+                street_name = part
+            elif index == 2:
+                house_nr = part
+            elif index == 3:
+                number = part
+            elif index == 4:
+                residents = part
+            elif index == 5:
+                norm = part
+            else:
+                pass
+            index = index + 1
+
+        loc = Locality.objects.filter(name=locality_name).get()
+        street = Street.objects.filter(locality=loc, name=street_name).get()
+        address = HouseAddress.objects.filter(street=street, house_number=house_nr).get()
+        count = 0
+        if len(residents) != 0:
+            count = int(residents)
+        if len(norm) != 0:
+            norm_value = float(norm)
+            
+            real_estate = RealEstate.objects.filter(address=address, number=number).get()
+            water_desc = None
+            if norm_value == 6.47 or norm_value == 6.0:
+                water_desc = WaterNormDescription.objects.filter(description='Жилые помещения (в том числе общежития) с холодным водоснабжением, водонагревателями, канализованием, оборудованные ваннами, душами, раковинами, кухонными мойками и унитазами', type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING).get()
+            else:
+                if WaterNorm.objects.filter(validity=water_norm_validity, type=WaterNorm.COLD_WATER_TYPE, value=norm_value).count() != 1:
+                    pass
+                water_norm = WaterNorm.objects.filter(validity=water_norm_validity, type=WaterNorm.COLD_WATER_TYPE, value=norm_value).get()
+                water_desc = water_norm.norm_description
+
+            water_desc = None
+    file.close()
+
 def calculate_individual_cold_water_volume(real_estate, calc_period):
     pass
 
@@ -109,5 +166,7 @@ def index(request):
     #test_org()
     #test_org_srv()
     #test_real_estate()
-    #robot()
+    #test_residents_degree()
+    robot()
+    
     return HttpResponse("Робот отработал успешно.")
