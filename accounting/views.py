@@ -1,25 +1,15 @@
 from django.http import HttpResponse
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
+from accounting.models import Period
 from accounting.models import Street, HouseAddress
 from accounting.models import Organization
 from accounting.models import RealEstate, HomeownershipHistory
 from accounting.models import Service, ClientService, OrganizationService
-from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
+from accounting.models import WaterType, WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import WaterTariffValidity
 from datetime import date
-
-def test_water_norm():
-    file = open('c:\\vitaly\\WaterNorm.txt', 'w')
-    
-    for water_norm_desc in WaterNormDescription.objects.all():
-        for water_norm_validity in WaterNormValidity.objects.all().order_by('start'):    
-            for water_norm in WaterNorm.objects.filter(norm_description=water_norm_desc, validity=water_norm_validity, type=WaterNorm.COLD_WATER_TYPE):
-                norm = str(water_norm.value)
-                norm += '\t'
-                file.write(norm)
-        file.write('\n')
-    file.close()
+from django.db.models import Q
 
 def test_heating_norm():
     for heating_norm_validity in HeatingNormValidity.objects.all().order_by('start'):
@@ -127,33 +117,108 @@ def test_residents_degree():
             if norm_value == 6.47 or norm_value == 6.0:
                 water_desc = WaterNormDescription.objects.filter(description='Жилые помещения (в том числе общежития) с холодным водоснабжением, водонагревателями, канализованием, оборудованные ваннами, душами, раковинами, кухонными мойками и унитазами', type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING).get()
             else:
-                if WaterNorm.objects.filter(validity=water_norm_validity, type=WaterNorm.COLD_WATER_TYPE, value=norm_value).count() != 1:
+                if WaterNorm.objects.filter(validity=water_norm_validity, type=WaterType.COLD_WATER, value=norm_value).count() != 1:
                     pass
-                water_norm = WaterNorm.objects.filter(validity=water_norm_validity, type=WaterNorm.COLD_WATER_TYPE, value=norm_value).get()
+                water_norm = WaterNorm.objects.filter(validity=water_norm_validity, type=WaterType.COLD_WATER, value=norm_value).get()
                 water_desc = water_norm.norm_description
 
             water_desc = None
     file.close()
 
-def calculate_individual_cold_water_volume(real_estate, calc_period):
+
+def get_water_norm(subject_rf, water_description, period, water_type):
+    # Получение периода действия норматива по расчетному периоду. Расчетный период устанавливается равным календарному месяцу. Поэтому, считаем, что за один месяц может быть только один норматив.
+    validity = WaterNormValidity.objects.filter(start__lte=period.end).order_by('-start')[0]
+    
+    water_norm = WaterNorm.objects.filter(subject_rf=subject_rf, norm_description=water_description, validity=validity, type=water_type).get()
+    return water_norm.value
+
+def test_water_norm():
+    for real_estate in RealEstate.objects.filter(Q(type=RealEstate.HOUSE) | Q(type=RealEstate.FLAT)):
+        for period in Period.objects.all().order_by('serial_number'):
+            pass
+            #HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start='2014-12-26')real_estate
+        
+    for water_norm_desc in WaterNormDescription.objects.all():
+        for water_norm_validity in WaterNormValidity.objects.all().order_by('start'):    
+            for water_norm in WaterNorm.objects.filter(norm_description=water_norm_desc, validity=water_norm_validity, type=WaterType.COLD_WATER):
+                pass
+
+def get_client_water_description(real_estate, period):
+    water_description = HomeownershipHistory.objects
+    WaterNormDescription.objects.filter(type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING, ).get()
+
+
+def get_residents(real_estate, period):
+    """ Возвращает количество проживающих в 'real_estate' за расчетный период 'period'.
+    Полагаем, что количество проживающих за один расчетный период постоянно. Если нужно будет учитывать не по расчетному периоду, а по дате, тогда возвращать кортеж: 'количество дней, количество проживающх'"""
+    homeownership = HomeownershipHistory.objects.filter(Q(real_estate=real_estate) & Q(water_description__type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING) & Q(start__lte=period.end)).order_by('-start')[0]
+    
+    # Поле 'count' в таблице HomeownershipHistory имеет тип float. Преобразуем к целому.
+    residents = int(homeownership.count)
+    return residents
+
+def calculate_individual_water_volume_by_norm(subject_rf, real_estate, period, water_type):
+    """
+    Функция расчета объема услуге по воде по нормативу потребления.
+    Используется формула #4.
+    """
+    if real_estate.type == RealEstate.MUNICIPAL_BUILDING or real_estate.type == RealEstate.SHARE:
+        raise Exception #TODO: Продумать ошибку (Для данного типа помещения нельзя расчитать объем. Расчет должен выполняться для внутренних помещений).
+    
+    # Метода используется только для жилых помещений. Дополнительная проверка на условия не проводится, т.к. здесь может присутствовать либо отстутствовать счетчик (эти условия должны выполняться в методах более высокого уровня)
+    if real_estate.residential == False:
+        raise Exception #TODO: Продумать ошибку (Вычисление норматива потребления должны вызываться только для жилых помещений).
+    
+    homeownership = HomeownershipHistory.objects.filter(Q(real_estate=real_estate) & Q(water_description__type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING) & Q(start__lte=period.end)).order_by('-start')[0]
+    water_description = homeownership.water_description
+    # Получаем количество проживающих.
+    #residents = get_residents(real_estate, period)
+    residents = int(homeownership.count)
+    
+    # Получаем норматив потребления
+    norm = get_water_norm(subject_rf, water_description, period, water_type)
+    
+    volume = norm * residents
+    return volume
+
+def calculate_individual_water_volume(subject_rf, real_estate, calc_period, water_type):
+    calculate_individual_water_volume_by_norm(subject_rf, real_estate, calc_period, water_type)
+
+def calculate_services(subject_rf, house, calc_period):
+    
+    real_estates = []
+    if house.type == RealEstate.MULTIPLE_DWELLING:
+        for real_estate in RealEstate.objects.filter(parent=house):
+            real_estates.append(real_estate)
+    elif house.type == RealEstate.HOUSE:
+        real_estates.append(house) 
+    
+    # Сперва выполняется расчет индивидуального потребления. Затем, если требуется, расчет ОДН.
+    for real_estate in real_estates:
+        for client_service in ClientService.objects.filter(real_estate=real_estate).order_by('service'):
+            #TODO: Добавить проверку- активна ли услуга в расчетчном периоде.
+            service = client_service.service.service
+            if service == Service.COLD_WATER:
+                calculate_individual_water_volume(subject_rf, real_estate, calc_period, WaterType.COLD_WATER)
+            elif service == Service.HOT_WATER:
+                pass
+            elif service == Service.HEATING:
+                pass
+            else:
+                pass
+
+    #TODO: Добавить расчет ОДН.
     pass
 
-def calculate_services(real_estate, calc_period):
-    for client_service in ClientService.objects.filter(real_estate=real_estate).order_by('service'):
-        service = Service.objects.filter(service=client_service).get()
-        if service == Service.COLD_WATER:
-            calculate_individual_cold_water_volume()
-        elif service == Service.HOT_WATER:
-            pass
-
 def robot():
-    calc_period = date.today() 
-    for subjectRF in SubjectRF.objects.all():
-        for municipal_area in MunicipalArea.objects.filter(subject_rf=subjectRF):
+    for subject_rf in SubjectRF.objects.all():
+        for municipal_area in MunicipalArea.objects.filter(subject_rf=subject_rf):
             for municipal_union in MunicipalUnion.objects.filter(municipal_area=municipal_area):
                 for locality in Locality.objects.filter(municipal_area=municipal_area, municipal_union=municipal_union):
-                    for real_estate in RealEstate.objects.filter(address__street__locality=locality):
-                        calculate_services(real_estate, calc_period)
+                    for period in Period.objects.all().order_by('serial_number'):
+                        for real_estate in RealEstate.objects.filter(address__street__locality=locality):
+                            calculate_services(subject_rf, real_estate, period)
 
     pass
                 

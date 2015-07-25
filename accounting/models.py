@@ -79,6 +79,18 @@ class HouseAddress(models.Model):
         return "%s, %s" % (self.street.name, self.house_number)
 
 """Данные для норматива по воде"""
+class WaterType(models.Model):
+    COLD_WATER = '1'
+    HOT_WATER = '2'
+    WATER_DISPOSAL = '3'
+    WATER_TYPES = (
+        (COLD_WATER, 'Холодное водоснабжение'),
+        (HOT_WATER, 'Горячее водоснабжение'),
+        (WATER_DISPOSAL, 'Водоотведение'),
+    )
+    
+    type = models.CharField(max_length=1, choices=WATER_TYPES, default=COLD_WATER)
+
 class WaterNormDescription(models.Model):
     """Описание названий видов нормативов для воды (холодная, горячая, водоотведение)"""
     
@@ -115,18 +127,11 @@ class WaterNorm(models.Model):
     type - тип (холодное водоснабжение | горячее водоснабжение | водоотведение)
     value - норматив
     """
-    COLD_WATER_TYPE = '1'
-    HOT_WATER_TYPE = '2'
-    WATER_DISPOSAL_TYPE = '3'
-    WATER_TYPES = (
-        (COLD_WATER_TYPE, 'Холодное водоснабжение'),
-        (HOT_WATER_TYPE, 'Горячее водоснабжение'),
-        (WATER_DISPOSAL_TYPE, 'Водоотведение'),
-    )
-    subject_fr = models.ForeignKey(SubjectRF)
+    
+    subject_rf = models.ForeignKey(SubjectRF)
     norm_description = models.ForeignKey(WaterNormDescription)
     validity = models.ForeignKey(WaterNormValidity)
-    type = models.CharField(max_length=1, choices=WATER_TYPES, default=COLD_WATER_TYPE)
+    type = models.ForeignKey(WaterType)
     value = models.FloatField()
     
     def __str__(self):
