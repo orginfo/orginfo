@@ -78,28 +78,29 @@ class HouseAddress(models.Model):
     def __str__(self):
         return "%s, %s" % (self.street.name, self.house_number)
 
-"""Данные для норматива по воде"""
-class WaterType(models.Model):
-    COLD_WATER = '1'
-    HOT_WATER = '2'
-    WATER_DISPOSAL = '3'
-    WATER_TYPES = (
+class CommunalService(models.Model):
+    """ Коммунальные услуги """
+    COLD_WATER = "1"
+    HOT_WATER = "2"
+    WATER_DISPOSAL = "3"
+    HEATING = "4"
+    COMMUNAL_RESOURCES = (
         (COLD_WATER, 'Холодное водоснабжение'),
         (HOT_WATER, 'Горячее водоснабжение'),
         (WATER_DISPOSAL, 'Водоотведение'),
+        (HEATING, 'Отопление'),
     )
-    
-    type = models.CharField(max_length=1, choices=WATER_TYPES, default=COLD_WATER)
+    name = models.CharField(max_length=1, choices=COMMUNAL_RESOURCES, default=COLD_WATER)
 
 class WaterNormDescription(models.Model):
-    """Описание названий видов нормативов для воды (холодная, горячая, водоотведение)"""
+    """Описание названий видов нормативов для водоснабжения (холодная, горячая, водоотведение)"""
     
     DEGREE_OF_IMPROVEMENT_DWELLING = '1'
     COMMON_PROPERTY = '2'
     AGRICULTURAL_ANIMALS = '3'
     DIRECTION_USING = '4'
     
-    DESCRIPTION_TYPES = (
+    AREA_APPLICATION_TYPES = (
         (DEGREE_OF_IMPROVEMENT_DWELLING, 'Степень благоустройства жилых помещений'),
         (COMMON_PROPERTY, 'Общее имущество'),
         (AGRICULTURAL_ANIMALS, 'Виды сельскохозяйственных животных'),
@@ -107,10 +108,7 @@ class WaterNormDescription(models.Model):
     )
     
     description = models.TextField()
-    type = models.CharField(max_length=1, choices=DESCRIPTION_TYPES, default=DEGREE_OF_IMPROVEMENT_DWELLING)
-    
-    def __str__(self):
-        return "%s: %s" % (self.get_type_display(), self.description)
+    direction_type = models.CharField(max_length=1, choices=AREA_APPLICATION_TYPES, default=DEGREE_OF_IMPROVEMENT_DWELLING)
     
 class WaterNormValidity(models.Model):
     """ Период действия норматива
@@ -123,20 +121,15 @@ class WaterNormValidity(models.Model):
         return "%s->%s" % (str(self.start), str(self.end))
 
 class WaterNorm(models.Model):
-    """ Нормаnив по холодному, горячему водоснабжению и водоотведению.
+    """ Норматив по холодному, горячему водоснабжению и водоотведению.
     type - тип (холодное водоснабжение | горячее водоснабжение | водоотведение)
     value - норматив
     """
-    
     subject_rf = models.ForeignKey(SubjectRF)
     norm_description = models.ForeignKey(WaterNormDescription)
     validity = models.ForeignKey(WaterNormValidity)
-    type = models.ForeignKey(WaterType)
+    service = models.ForeignKey(CommunalService)
     value = models.FloatField()
-    
-    def __str__(self):
-        return "%s\t%s\t%f" % (self.norm_description.description, self.get_type_display(), self.value)
-"""\Данные для норматива по воде"""
 
 """Данные для норматива по отоплению"""
 class HeatingNormValidity(models.Model):
@@ -171,12 +164,6 @@ class HeatingNorm(models.Model):
     def __str__(self):
         return "[%s, Количество этажей: %d]\tНорматив: %f" % (self.get_commissioning_type_display(), self.floor_amount, self.value)
 """\Данные для норматива по отоплению"""
-
-class LegalForm(models.Model):
-    """Организационно-правовая форма (AO, OAO, ЗАО, ООО, МУП)"""
-    #MayBe: Перенести в 'Organization'.
-    short_name = models.CharField(max_length=5)
-    full_name = models.CharField(max_length=50)
 
 class Organization(models.Model):
     """Организация.
@@ -254,39 +241,41 @@ class OrganizationAddress(models.Model):
     address = models.ForeignKey(HouseAddress)
     organization = models.ForeignKey(Organization)
 
-class Service(models.Model):
-    COLD_WATER = "1"
-    HOT_WATER = "2"
-    WATER_DISPOSAL = "3"
-    SERVICE_WATER = "4"
-    HEATING = "5"
-    COLD_WATER_ODN = "6"
-    HOT_WATER_ODN = "7"
-    HEATING_ODN = "8"
-    SERVICES = (
-        (COLD_WATER, 'Холодное водоснабжение'),
-        (HOT_WATER, 'Горячее водоснабжение'),
-        (WATER_DISPOSAL, 'Водоотведение'),
-        (SERVICE_WATER, 'Техническая вода'),
-        (HEATING, 'Отопление'),
-        (COLD_WATER_ODN, 'ОДН: Холодное водоснабжение'),
-        (HOT_WATER_ODN, 'ОДН: Горячее водоснабжение'),
-        (HEATING_ODN, 'ОДН: Отопление'),
-    )
-    service = models.CharField(max_length=1, choices=SERVICES, default=COLD_WATER)
-
 class OrganizationService(models.Model):
     """ Хранит все сервисы, предоставляемые организациями. Так же включает ОДН"""
     organization = models.ForeignKey(Organization)
-    service = models.ForeignKey(Service)
+    service = models.ForeignKey(CommunalService)
 
-"""Данные по тарифам для воды"""
-class WaterTariffValidity(models.Model):
+"""Таблицы, хранящие информацию о тарифах"""
+class TariffType(models.Model):
+    """Тип тарифа: Население либо бюджетные организации
+    TODO: есть смысл перенести его в таблицу 'Tariff'
+    """
+    BUDGETARY_CONSUMERS = '1'
+    POPULATION = '2'
+    TARIFF_TYPES = (
+        (BUDGETARY_CONSUMERS, 'Бюджетные потребители'),
+        (POPULATION, 'Население'),
+    )
+    type = models.CharField(max_length=1, choices=TARIFF_TYPES, default=POPULATION)
+
+class TariffValidity(models.Model):
+    """ Период действия тарифа
+    Для отопления и воды одинаковые периоды
+    start - дата, с которой начинает действовать тариф
+    end - дата окончания действия тарифа
+    """
     start = models.DateField()
     end = models.DateField()
-    def __str__(self):
-        return "%s->%s" % (str(self.start), str(self.end))
-"""\Данные по тарифам для воды"""
+
+class Tariff(models.Model):
+    """Тариф для соответствующей услуги"""
+    
+    service = models.ForeignKey(CommunalService)
+    organization = models.ForeignKey(Organization)
+    validity = models.ForeignKey(TariffValidity)
+    type = models.ForeignKey(TariffType)
+    value = models.FloatField()
 
 class RealEstate(models.Model):
     """Объект недвижимости.
@@ -305,21 +294,19 @@ class RealEstate(models.Model):
 
     """
     MULTIPLE_DWELLING = "1"
-    SHARE = "2"
-    FLAT = "3"
-    ROOM = "4"
-    HOUSE = "5"
-    MUNICIPAL_BUILDING = "6"
-    OFFICE = "7"
+    FLAT = "2"
+    ROOM = "3"
+    HOUSE = "4"
+    MUNICIPAL_BUILDING = "5"
+    BUILDING = "6"
     
     BUILDING_TYPES = (
         (MULTIPLE_DWELLING, 'Многоквартирный дом'),
-        (SHARE, 'Блок\секция'),
         (FLAT, 'Квартира'),
         (ROOM, 'Комната'),
         (HOUSE, 'Частный дом'),
         (MUNICIPAL_BUILDING, 'Муниципальное здание'),
-        (OFFICE, 'Офис'),
+        (BUILDING, 'Здание'),
     )
     type = models.CharField(max_length=1, choices=BUILDING_TYPES, default=HOUSE)
     address = models.ForeignKey(HouseAddress)
@@ -342,11 +329,9 @@ class ClientService(models.Model):
     клиентом (объектом недвижимости).
     """
     real_estate = models.ForeignKey(RealEstate)
-    service = models.ForeignKey(Service)
+    service = models.ForeignKey(CommunalService)
     start = models.DateField()
     end = models.DateField(blank=True, null=True)
-    def __str__(self):
-        return "#%s(%s->%s)" % (self.service.service, str(self.start), str(self.end))
 
 class TechnicalPassport(models.Model):
     """ Технический паспорт помещения."""
@@ -363,8 +348,6 @@ class RealEstateOwner(models.Model):
     owner = models.CharField(max_length=20) #MayBe: Перенести в отдельную таблицу и использовать ссылку на 'owner'
     start = models.DateField()
     end = models.DateField(blank=True, null=True)
-    def __str__(self):
-        return "%s: %u\%" % (self.owner, self.part)
 
 class HomeownershipHistory(models.Model):
     """История домовладения.
@@ -402,3 +385,20 @@ class Period(models.Model):
     end = models.DateField()
     def __str__(self):
         return "#%s(%s->%s)" % (str(self.serial_number), str(self.start), str(self.end))
+
+class ConsumptionType(models.Model):
+    INDIVIDUAL = "1"
+    COMMON_PROPERTY = "2"
+    CONSUMPTION_TYPES = (
+        (INDIVIDUAL, 'Индивидуальное потребление'),
+        (COMMON_PROPERTY, 'Общедомовые нужны'),
+    )   
+    type = models.CharField(max_length=1, choices=CONSUMPTION_TYPES, default=INDIVIDUAL)
+
+class Volume(models.Model):
+    """ Вычисления объема потребления за определенную услугу """
+    real_estate = models.ForeignKey(RealEstate)
+    communal_service = models.ForeignKey(CommunalService)
+    consumption_type = models.ForeignKey(ConsumptionType)
+    period = models.ForeignKey(Period)
+    volume = models.FloatField()
