@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
-from accounting.models import Period, Volume, ConsumptionType
+from accounting.models import Period, Volume, ConsumptionType, PaymentAmount
 from accounting.models import RealEstate, HomeownershipHistory
 from accounting.models import CommunalService, ClientService, Organization
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffType, Tariff
@@ -70,6 +70,9 @@ def calculate_individual_water_volume(subject_rf, real_estate, calc_period, wate
     volume.save()
     
     tariff = get_tariff(real_estate, calc_period, water_service)
+    amount = individual_volume * tariff
+    payment_amount = PaymentAmount(real_estate=real_estate, communal_service=water_service, consumption_type=consumption_type, period=calc_period, amount=amount)
+    payment_amount.save()
 
 def calculate_services(subject_rf, house, calc_period):
     

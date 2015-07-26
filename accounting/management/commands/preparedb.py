@@ -5,7 +5,7 @@ from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner,
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, ConsumptionType
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import Organization, CommunalService, ClientService
-from accounting.models import Period, Volume
+from accounting.models import Period, Volume, PaymentAmount
 
 def parse_address():
     HouseAddress.objects.all().delete()
@@ -734,6 +734,8 @@ def prepare_db_base():
     consumption_type1.save()
     consumption_type2 = ConsumptionType(type=ConsumptionType.COMMON_PROPERTY)
     consumption_type2.save()
+    
+    PaymentAmount.objects.all().delete()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'

@@ -396,9 +396,18 @@ class ConsumptionType(models.Model):
     type = models.CharField(max_length=1, choices=CONSUMPTION_TYPES, default=INDIVIDUAL)
 
 class Volume(models.Model):
-    """ Вычисления объема потребления за определенную услугу """
+    """ Вычисления объема потребления за определенную услугу. 
+    volume - абсолютное значение (если индивидуальное потребление, то это суммарный объем)"""
     real_estate = models.ForeignKey(RealEstate)
     communal_service = models.ForeignKey(CommunalService)
     consumption_type = models.ForeignKey(ConsumptionType)
     period = models.ForeignKey(Period)
     volume = models.FloatField()
+
+class PaymentAmount(models.Model):
+    """Размер платы за коммунальную услугу."""
+    real_estate = models.ForeignKey(RealEstate)
+    communal_service = models.ForeignKey(CommunalService)
+    consumption_type = models.ForeignKey(ConsumptionType)
+    period = models.ForeignKey(Period)
+    amount = models.DecimalField(max_digits=8, decimal_places=2)
