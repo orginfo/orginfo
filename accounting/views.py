@@ -2,8 +2,8 @@ from django.http import HttpResponse
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
 from accounting.models import Period, Volume, ConsumptionType
 from accounting.models import RealEstate, HomeownershipHistory
-from accounting.models import CommunalService, ClientService
-from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
+from accounting.models import CommunalService, ClientService, Organization
+from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffType, Tariff
 from django.db.models import Q
 from django.shortcuts import render
 
@@ -25,12 +25,26 @@ def get_residents(real_estate, period):
     residents = int(homeownership.count)
     return residents
 
+def get_tariff(real_estate, period, service):
+    # Получение периода действия по расчетному периоду. Расчетный период устанавливается равным календарному месяцу. Поэтому, считаем, что за один месяц может быть только один тариф
+    validity = WaterNormValidity.objects.filter(start__lte=period.end).order_by('-start')[0]
+    
+    resource_supply_organization = Organization.objects.get(services_set=service, abonents_set=real_estate)
+    
+    tariff_type = None
+    if real_estate.type == RealEstate.MUNICIPAL_OBJECT:
+        tariff_type = TariffType.objects.get(type=TariffType.BUDGETARY_CONSUMERS)
+    else:
+        tariff_type = TariffType.objects.get(type=TariffType.POPULATION)
+    
+    tafiff = Tariff.objects.get(service=service, organization=resource_supply_organization, validity=validity, type=tariff_type)
+
 def calculate_individual_water_volume_by_norm(subject_rf, real_estate, period, water_service):
     """
     Функция расчета объема услуге по воде по нормативу потребления.
     Используется формула #4.
     """
-    if real_estate.type == RealEstate.MUNICIPAL_BUILDING:
+    if real_estate.type == RealEstate.MUNICIPAL_OBJECT:
         raise Exception #TODO: Продумать ошибку (Для данного типа помещения нельзя расчитать объем. Расчет должен выполняться для внутренних помещений).
     
     # Метода используется только для жилых помещений. Дополнительная проверка на условия не проводится, т.к. здесь может присутствовать либо отстутствовать счетчик (эти условия должны выполняться в методах более высокого уровня)
@@ -54,6 +68,8 @@ def calculate_individual_water_volume(subject_rf, real_estate, calc_period, wate
     individual_volume = calculate_individual_water_volume_by_norm(subject_rf, real_estate, calc_period, water_service)
     volume = Volume(real_estate=real_estate, communal_service=water_service, consumption_type=consumption_type, period=calc_period, volume=individual_volume)
     volume.save()
+    
+    tariff = get_tariff(real_estate, calc_period, water_service)
 
 def calculate_services(subject_rf, house, calc_period):
     

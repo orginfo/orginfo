@@ -165,6 +165,87 @@ class HeatingNorm(models.Model):
         return "[%s, Количество этажей: %d]\tНорматив: %f" % (self.get_commissioning_type_display(), self.floor_amount, self.value)
 """\Данные для норматива по отоплению"""
 
+class RealEstate(models.Model):
+    """Объект недвижимости.
+
+    Объектом недвижимости может являться многоквартирный дом, жилой дом,
+    квартира, комната. При этом у модели есть связь, которая показывает,
+    например, какая именно комната принадлежит какой именно квартире.
+
+    TODO: со временем перенести поля residential residents в отдельную
+    таблицу, потому что эта информация может меняться, а иногда полезно делать
+    перерасчет, но информация, возможна будет потеряна.
+    residential -- флаг, указывающий жилое ли помещение. Находится здесь,
+    потому что как используется помещение зависит больше от клиента, а не от
+    помещения.
+    residents - количество зарегестированных (проживающих)
+
+    """
+    MULTIPLE_DWELLING = "1"
+    FLAT = "2"
+    ROOM = "3"
+    HOUSE = "4"
+    MUNICIPAL_OBJECT = "5"
+    BUILDING = "6"
+    
+    BUILDING_TYPES = (
+        (MULTIPLE_DWELLING, 'Многоквартирный дом'),
+        (FLAT, 'Квартира'),
+        (ROOM, 'Комната'),
+        (HOUSE, 'Частный дом'),
+        (MUNICIPAL_OBJECT, 'Муниципальное здание'),
+        (BUILDING, 'Здание'),
+    )
+    type = models.CharField(max_length=1, choices=BUILDING_TYPES, default=HOUSE)
+    address = models.ForeignKey(HouseAddress)
+    number = models.CharField (max_length=10, blank=True, default = None) # Номер помещения (Для parent самого верхнего уровня это поле пустое)
+    parent = models.ForeignKey('self', null=True, blank=True, default = None)
+    residential = models.BooleanField(default=True)
+
+    def __str__(self):
+        return "%s, %s, %s, %s %s" % (self.address.street.locality.name, self.address.street.name, self.address.house_number, self.get_type_display(), self.number)
+
+"""
+class OrganizationClient(models.Model):
+    \"""Связь Клиент(Объект недвижимость) - Организация. Один объект недвижимости может быть клиентом нескольких организаций.\"""
+    organization = models.ForeignKey(Organization)
+    real_estate = models.ForeignKey(RealEstate)
+"""
+
+class ClientService(models.Model):
+    """Связь услуга-клиент.
+
+    Связь указывает на то, какая именно услуга потребляется определенным
+    клиентом (объектом недвижимости).
+    """
+    real_estate = models.ForeignKey(RealEstate)
+    service = models.ForeignKey(CommunalService)
+    start = models.DateField()
+    end = models.DateField(blank=True, null=True)
+
+class TechnicalPassport(models.Model):
+    """ Технический паспорт помещения."""
+    real_estate = models.ForeignKey(RealEstate)
+    floor_amount = models.IntegerField(default=1) # Количество этажей
+    commissioning_date = models.DateField() # Ввод здания в эксплуатацию
+    space = models.FloatField()
+
+class RealEstateOwner(models.Model):
+    """ Связь Недвижимость - собственник"""
+    real_estate = models.ForeignKey(RealEstate)
+    owner = models.CharField(max_length=20) #MayBe: Перенести в отдельную таблицу и использовать ссылку на 'owner'
+    start = models.DateField()
+    end = models.DateField(blank=True, null=True)
+
+class HomeownershipHistory(models.Model):
+    """История домовладения.
+    count - количество единиц направлений использования"""
+    #TODO: Есть ли смысл хранить в этой таблице зависимость "Количество проживающих/зарегестированных" к "помещению (абоненту)"
+    real_estate = models.ForeignKey(RealEstate)
+    water_description = models.ForeignKey(WaterNormDescription)
+    count = models.FloatField()
+    start = models.DateField()
+
 class Organization(models.Model):
     """Организация.
 
@@ -223,9 +304,14 @@ class Organization(models.Model):
     fax = models.CharField(max_length=20)
     email = models.EmailField()
     operating_mode=models.TextField()
-
+    
+    # Услуги организации
+    services = models.ManyToManyField(CommunalService)
+    # Абоненты организации
+    abonents = models.ManyToManyField(RealEstate)
+    
     def __str__(self):
-        return self.name
+        return self.full_name
 
 class OrganizationAddress(models.Model):
     """ Связь Организация-Адрес. Организация может иметь несколько адресов (Юридический, физический и почтовой)"""
@@ -240,11 +326,6 @@ class OrganizationAddress(models.Model):
     type = models.CharField(max_length=1, choices=TYPES, default=LEGAL)
     address = models.ForeignKey(HouseAddress)
     organization = models.ForeignKey(Organization)
-
-class OrganizationService(models.Model):
-    """ Хранит все сервисы, предоставляемые организациями. Так же включает ОДН"""
-    organization = models.ForeignKey(Organization)
-    service = models.ForeignKey(CommunalService)
 
 """Таблицы, хранящие информацию о тарифах"""
 class TariffType(models.Model):
@@ -276,87 +357,6 @@ class Tariff(models.Model):
     validity = models.ForeignKey(TariffValidity)
     type = models.ForeignKey(TariffType)
     value = models.FloatField()
-
-class RealEstate(models.Model):
-    """Объект недвижимости.
-
-    Объектом недвижимости может являться многоквартирный дом, жилой дом,
-    квартира, комната. При этом у модели есть связь, которая показывает,
-    например, какая именно комната принадлежит какой именно квартире.
-
-    TODO: со временем перенести поля residential residents в отдельную
-    таблицу, потому что эта информация может меняться, а иногда полезно делать
-    перерасчет, но информация, возможна будет потеряна.
-    residential -- флаг, указывающий жилое ли помещение. Находится здесь,
-    потому что как используется помещение зависит больше от клиента, а не от
-    помещения.
-    residents - количество зарегестированных (проживающих)
-
-    """
-    MULTIPLE_DWELLING = "1"
-    FLAT = "2"
-    ROOM = "3"
-    HOUSE = "4"
-    MUNICIPAL_BUILDING = "5"
-    BUILDING = "6"
-    
-    BUILDING_TYPES = (
-        (MULTIPLE_DWELLING, 'Многоквартирный дом'),
-        (FLAT, 'Квартира'),
-        (ROOM, 'Комната'),
-        (HOUSE, 'Частный дом'),
-        (MUNICIPAL_BUILDING, 'Муниципальное здание'),
-        (BUILDING, 'Здание'),
-    )
-    type = models.CharField(max_length=1, choices=BUILDING_TYPES, default=HOUSE)
-    address = models.ForeignKey(HouseAddress)
-    number = models.CharField (max_length=10, blank=True, default = None) # Номер помещения (Для parent самого верхнего уровня это поле пустое)
-    parent = models.ForeignKey('self', null=True, blank=True, default = None)
-    residential = models.BooleanField(default=True)
-
-    def __str__(self):
-        return "%s, %s, %s, %s %s" % (self.address.street.locality.name, self.address.street.name, self.address.house_number, self.get_type_display(), self.number)
-
-class OrganizationClient(models.Model):
-    """Связь Клиент(Объект недвижимость) - Организация. Один объект недвижимости может быть клиентом нескольких организаций."""
-    organization = models.ForeignKey(Organization)
-    real_estate = models.ForeignKey(RealEstate)
-
-class ClientService(models.Model):
-    """Связь услуга-клиент.
-
-    Связь указывает на то, какая именно услуга потребляется определенным
-    клиентом (объектом недвижимости).
-    """
-    real_estate = models.ForeignKey(RealEstate)
-    service = models.ForeignKey(CommunalService)
-    start = models.DateField()
-    end = models.DateField(blank=True, null=True)
-
-class TechnicalPassport(models.Model):
-    """ Технический паспорт помещения."""
-    real_estate = models.ForeignKey(RealEstate)
-    floor_amount = models.IntegerField(default=1) # Количество этажей
-    commissioning_date = models.DateField() # Ввод здания в эксплуатацию
-    space = models.FloatField()
-    #space_of_joint_estate = models.FloatField()
-
-class RealEstateOwner(models.Model):
-    """ Связь Недвижимость - собственник"""
-    real_estate = models.ForeignKey(RealEstate)
-    #part = models.PositiveSmallIntegerField(default=100)
-    owner = models.CharField(max_length=20) #MayBe: Перенести в отдельную таблицу и использовать ссылку на 'owner'
-    start = models.DateField()
-    end = models.DateField(blank=True, null=True)
-
-class HomeownershipHistory(models.Model):
-    """История домовладения.
-    count - количество единиц направлений использования"""
-    #TODO: Есть ли смысл хранить в этой таблице зависимость "Количество проживающих/зарегестированных" к "помещению (абоненту)"
-    real_estate = models.ForeignKey(RealEstate)
-    water_description = models.ForeignKey(WaterNormDescription)
-    count = models.FloatField()
-    start = models.DateField()
 
 class Period(models.Model):
     """Расчетный период.

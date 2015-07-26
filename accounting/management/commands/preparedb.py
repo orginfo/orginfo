@@ -4,7 +4,7 @@ from accounting.models import Street, HouseAddress
 from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner, TechnicalPassport
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, ConsumptionType
 from accounting.models import HeatingNormValidity, HeatingNorm
-from accounting.models import Organization, CommunalService, OrganizationService, ClientService
+from accounting.models import Organization, CommunalService, ClientService
 from accounting.models import Period, Volume
 
 def parse_address():
@@ -182,6 +182,10 @@ def fill_cold_water_srv_into_client_service():
         service = CommunalService.objects.get(name=CommunalService.COLD_WATER)
         client_srv = ClientService(real_estate=real_estate, service=service, start='2014-12-26')
         client_srv.save()
+
+def add_abonents(organization):
+    for real_estate in RealEstate.objects.all():
+        organization.abonents.add(real_estate)
 
 def parse_residents_degree():
     HomeownershipHistory.objects.all().delete()
@@ -673,6 +677,10 @@ def prepare_db_base():
     tariff_val2 = TariffValidity(start='2015-07-01', end='2015-12-31')
     tariff_val2.save()
     
+    #Услуги
+    srv1 = CommunalService.objects.get(name=CommunalService.COLD_WATER)
+    srv2 = CommunalService.objects.get(name=CommunalService.HEATING)
+    
     # Организации
     Organization.objects.all().delete()
     kluchevscoe = Organization(short_name="Ключевское", full_name="Ключевское",
@@ -685,7 +693,11 @@ def prepare_db_base():
                                phone="8(38340)31-104, 8(38340)31-238",
                                email="kluchinat@mail.ru",
                                operating_mode="Режим работы: Пн.-Пт. 8.00-17.00, Обед: 13.00-14.00")
+    
     kluchevscoe.save()
+    kluchevscoe.services.add (srv1)
+    kluchevscoe.services.add (srv2)
+    add_abonents(kluchevscoe)
     
     # Заполнение МУП "Нечаевское"
     # TODO: Заполнить адрес для нечаевского
@@ -700,7 +712,10 @@ def prepare_db_base():
                               fax="8(38340)32-242",
                               email="mupnechaevskoe@yandex.ru",
                               operating_mode="Режим работы: Пн-Чт. 9:00-17:00, Пт. 9:00-16:00, Обед: 13:00-14:00")
+    
     neсhaevscoe.save()
+    neсhaevscoe.services.add (srv1)
+    neсhaevscoe.services.add (srv2)
     
     """
     OrganizationAddress.objects.all().delete()
@@ -710,20 +725,6 @@ def prepare_db_base():
     org_addr.save()
     """
         
-    #Услуги
-    srv1 = CommunalService.objects.get(name=CommunalService.COLD_WATER)
-    srv2 = CommunalService.objects.get(name=CommunalService.HEATING)
-    # Услуги организаций
-    OrganizationService.objects.all().delete()
-    org_srv1 = OrganizationService (service=srv1, organization=kluchevscoe)
-    org_srv1.save()
-    org_srv2 = OrganizationService (service=srv2, organization=kluchevscoe)
-    org_srv2.save()
-    org_srv3 = OrganizationService (service=srv1, organization=neсhaevscoe)
-    org_srv3.save()
-    org_srv4 = OrganizationService (service=srv2, organization=neсhaevscoe)
-    org_srv4.save()
-    
     parse_residents_degree()
     fill_period()
     
