@@ -1,17 +1,11 @@
 from django.http import HttpResponse
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
-from accounting.models import Period
-from accounting.models import Street, HouseAddress
-from accounting.models import Organization
+from accounting.models import Period, Volume, ConsumptionType
 from accounting.models import RealEstate, HomeownershipHistory
-from accounting.models import CommunalService, ClientService, OrganizationService
+from accounting.models import CommunalService, ClientService
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
-from accounting.models import HeatingNormValidity, HeatingNorm
-from accounting.models import TariffValidity
-from datetime import date
 from django.db.models import Q
 from django.shortcuts import render
-
 
 
 
@@ -19,7 +13,7 @@ def get_water_norm(subject_rf, water_description, period, water_service):
     # Получение периода действия норматива по расчетному периоду. Расчетный период устанавливается равным календарному месяцу. Поэтому, считаем, что за один месяц может быть только один норматив.
     validity = WaterNormValidity.objects.filter(start__lte=period.end).order_by('-start')[0]
     
-    water_norm = WaterNorm.objects.filter(subject_rf=subject_rf, norm_description=water_description, validity=validity, service=water_service).get()
+    water_norm = WaterNorm.objects.get(subject_rf=subject_rf, norm_description=water_description, validity=validity, service=water_service)
     return water_norm.value
 
 def get_residents(real_estate, period):
@@ -56,7 +50,10 @@ def calculate_individual_water_volume_by_norm(subject_rf, real_estate, period, w
     return volume
 
 def calculate_individual_water_volume(subject_rf, real_estate, calc_period, water_service):
-    calculate_individual_water_volume_by_norm(subject_rf, real_estate, calc_period, water_service)
+    consumption_type = ConsumptionType.objects.get(type=ConsumptionType.INDIVIDUAL)
+    individual_volume = calculate_individual_water_volume_by_norm(subject_rf, real_estate, calc_period, water_service)
+    volume = Volume(real_estate=real_estate, communal_service=water_service, consumption_type=consumption_type, period=calc_period, volume=individual_volume)
+    volume.save()
 
 def calculate_services(subject_rf, house, calc_period):
     

@@ -2,11 +2,10 @@ from django.core.management.base import BaseCommand
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
 from accounting.models import Street, HouseAddress
 from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner, TechnicalPassport
-from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
+from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, ConsumptionType
 from accounting.models import HeatingNormValidity, HeatingNorm
-from accounting.models import TariffValidity
-from accounting.models import Organization, OrganizationAddress, CommunalService, OrganizationService, ClientService
-from accounting.models import Period
+from accounting.models import Organization, CommunalService, OrganizationService, ClientService
+from accounting.models import Period, Volume
 
 def parse_address():
     HouseAddress.objects.all().delete()
@@ -34,8 +33,8 @@ def parse_address():
                 pass
             index = index + 1
 
-        loc = Locality.objects.filter(name=locality_name).get()
-        street = Street.objects.filter(locality=loc, name=street_name).get()
+        loc = Locality.objects.get(name=locality_name)
+        street = Street.objects.get(locality=loc, name=street_name)
         if HouseAddress.objects.filter(street=street, house_number=house_nr).exists():
             continue
         else:
@@ -76,12 +75,12 @@ def parse_real_estate():
                 pass
             index = index + 1
 
-        loc = Locality.objects.filter(name=locality_name).get()
-        street = Street.objects.filter(locality=loc, name=street_name).get()
-        address = HouseAddress.objects.filter(street=street, house_number=house_nr).get()
+        loc = Locality.objects.get(name=locality_name)
+        street = Street.objects.get(locality=loc, name=street_name)
+        address = HouseAddress.objects.get(street=street, house_number=house_nr)
         if len(number) != 0:
             RealEstate.objects.filter(address=address, number="").update(type=RealEstate.MULTIPLE_DWELLING)
-            parent = RealEstate.objects.filter(address=address, type=RealEstate.MULTIPLE_DWELLING).get()
+            parent = RealEstate.objects.get(address=address, type=RealEstate.MULTIPLE_DWELLING)
             real_estate = RealEstate(type=RealEstate.FLAT, address=address, parent=parent, number=number)
             real_estate.save()
         
@@ -117,11 +116,11 @@ def parse_real_estate_owner():
                 pass
             index = index + 1
 
-        loc = Locality.objects.filter(name=locality_name).get()
-        street = Street.objects.filter(locality=loc, name=street_name).get()
-        address = HouseAddress.objects.filter(street=street, house_number=house_nr).get()
+        loc = Locality.objects.get(name=locality_name)
+        street = Street.objects.get(locality=loc, name=street_name)
+        address = HouseAddress.objects.get(street=street, house_number=house_nr)
         if len(owner) != 0:
-            real_estate = RealEstate.objects.filter(address=address, number=number).get()
+            real_estate = RealEstate.objects.get(address=address, number=number)
             real_estete_owner = RealEstateOwner(real_estate=real_estate, owner=owner, start='2015-01-01')
             real_estete_owner.save()
         
@@ -157,11 +156,11 @@ def parse_technical_passport():
                 pass
             index = index + 1
 
-        loc = Locality.objects.filter(name=locality_name).get()
-        street = Street.objects.filter(locality=loc, name=street_name).get()
-        address = HouseAddress.objects.filter(street=street, house_number=house_nr).get()
+        loc = Locality.objects.get(name=locality_name)
+        street = Street.objects.get(locality=loc, name=street_name)
+        address = HouseAddress.objects.get(street=street, house_number=house_nr)
         if len(space) != 0:
-            real_estate = RealEstate.objects.filter(address=address, number=number).get()
+            real_estate = RealEstate.objects.get(address=address, number=number)
             technical_passport = TechnicalPassport(real_estate=real_estate, commissioning_date='1999-01-01', start='2015-01-01')
             technical_passport.save()
         
@@ -180,14 +179,14 @@ def fill_cold_water_srv_into_client_service():
     ClientService.objects.all().delete()
     
     for real_estate in RealEstate.objects.all():
-        service = CommunalService.objects.filter(name=CommunalService.COLD_WATER).get()
+        service = CommunalService.objects.get(name=CommunalService.COLD_WATER)
         client_srv = ClientService(real_estate=real_estate, service=service, start='2014-12-26')
         client_srv.save()
 
 def parse_residents_degree():
     HomeownershipHistory.objects.all().delete()
     
-    water_norm_validity = WaterNormValidity.objects.filter(start ='2015-01-01', end='2015-03-31').get()
+    water_norm_validity = WaterNormValidity.objects.get(start ='2015-01-01', end='2015-03-31')
     
     file = open('c:\\Vitaly\\Reading\\residents_degree.txt', 'r')
     for line in file:
@@ -220,22 +219,22 @@ def parse_residents_degree():
                 pass
             index = index + 1
 
-        loc = Locality.objects.filter(name=locality_name).get()
-        street = Street.objects.filter(locality=loc, name=street_name).get()
-        address = HouseAddress.objects.filter(street=street, house_number=house_nr).get()
+        loc = Locality.objects.get(name=locality_name)
+        street = Street.objects.get(locality=loc, name=street_name)
+        address = HouseAddress.objects.get(street=street, house_number=house_nr)
         count = 0
         if len(residents) != 0:
             count = int(residents)
         if len(norm) != 0:
             norm_value = float(norm)
             
-            real_estate = RealEstate.objects.filter(address=address, number=number).get()
+            real_estate = RealEstate.objects.get(address=address, number=number)
             water_desc = None
             if norm_value == 6.47 or norm_value == 6.0:
-                water_desc = WaterNormDescription.objects.filter(description='Жилые помещения (в том числе общежития) с холодным водоснабжением, водонагревателями, канализованием, оборудованные ваннами, душами, раковинами, кухонными мойками и унитазами', direction_type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING).get()
+                water_desc = WaterNormDescription.objects.get(description='Жилые помещения (в том числе общежития) с холодным водоснабжением, водонагревателями, канализованием, оборудованные ваннами, душами, раковинами, кухонными мойками и унитазами', direction_type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING)
             else:
-                service = CommunalService.objects.filter(name=CommunalService.COLD_WATER).get()
-                water_norm = WaterNorm.objects.filter(validity=water_norm_validity, service=service, value=norm_value).get()
+                service = CommunalService.objects.get(name=CommunalService.COLD_WATER)
+                water_norm = WaterNorm.objects.get(validity=water_norm_validity, service=service, value=norm_value)
                 water_desc = water_norm.norm_description
                 
             homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start='2014-12-26')
@@ -440,7 +439,7 @@ def prepare_db_base():
     water_norm_val6 = WaterNormValidity(start='2017-01-01', end='2017-12-31')
     water_norm_val6.save()
 
-    cold_water_service = CommunalService.objects.filter(name=CommunalService.COLD_WATER).get()
+    cold_water_service = CommunalService.objects.get(name=CommunalService.COLD_WATER)
     # Норматив по ХОЛОДНОЙ воде (TODO: остальные заполнять по мере необходимости)
     # Степень благоустройства жилых помещений:
     # '2015-01-01' -> '2015-03-31'
@@ -705,15 +704,15 @@ def prepare_db_base():
     
     """
     OrganizationAddress.objects.all().delete()
-    street_k = Street.objects.filter(locality=loc3, name="Центральная").get()
-    address_k = HouseAddress.objects.filter(street=street_k, house_number="6").get()
+    street_k = Street.objects.get(locality=loc3, name="Центральная")
+    address_k = HouseAddress.objects.get(street=street_k, house_number="6")
     org_addr = OrganizationAddress(address=address_k, organization=kluchevscoe)
     org_addr.save()
     """
         
     #Услуги
-    srv1 = CommunalService.objects.filter(name=CommunalService.COLD_WATER).get()
-    srv2 = CommunalService.objects.filter(name=CommunalService.HEATING).get()
+    srv1 = CommunalService.objects.get(name=CommunalService.COLD_WATER)
+    srv2 = CommunalService.objects.get(name=CommunalService.HEATING)
     # Услуги организаций
     OrganizationService.objects.all().delete()
     org_srv1 = OrganizationService (service=srv1, organization=kluchevscoe)
@@ -727,6 +726,13 @@ def prepare_db_base():
     
     parse_residents_degree()
     fill_period()
+    
+    Volume.objects.all().delete()
+    ConsumptionType.objects.all().delete()
+    consumption_type1 = ConsumptionType(type=ConsumptionType.INDIVIDUAL)
+    consumption_type1.save()
+    consumption_type2 = ConsumptionType(type=ConsumptionType.COMMON_PROPERTY)
+    consumption_type2.save()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'
