@@ -681,6 +681,7 @@ def prepare_db_base():
     srv1 = CommunalService.objects.get(name=CommunalService.COLD_WATER)
     srv2 = CommunalService.objects.get(name=CommunalService.HEATING)
     
+    
     # Организации
     Organization.objects.all().delete()
     kluchevscoe = Organization(short_name="Ключевское", full_name="Ключевское",

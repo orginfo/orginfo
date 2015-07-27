@@ -233,9 +233,12 @@ class TechnicalPassport(models.Model):
 class RealEstateOwner(models.Model):
     """ Связь Недвижимость - собственник"""
     real_estate = models.ForeignKey(RealEstate)
-    owner = models.CharField(max_length=20) #MayBe: Перенести в отдельную таблицу и использовать ссылку на 'owner'
+    owner = models.CharField(max_length=30) #MayBe: Перенести в отдельную таблицу и использовать ссылку на 'owner'
     start = models.DateField()
     end = models.DateField(blank=True, null=True)
+    
+    def __str__(self):
+        return self.owner
 
 class HomeownershipHistory(models.Model):
     """История домовладения.
@@ -303,29 +306,18 @@ class Organization(models.Model):
     phone = models.CharField(max_length=30)
     fax = models.CharField(max_length=20)
     email = models.EmailField()
+    website = models.CharField(max_length=20)
     operating_mode=models.TextField()
     
+    address = models.ForeignKey(HouseAddress)
+
     # Услуги организации
     services = models.ManyToManyField(CommunalService)
     # Абоненты организации
     abonents = models.ManyToManyField(RealEstate)
     
     def __str__(self):
-        return self.full_name
-
-class OrganizationAddress(models.Model):
-    """ Связь Организация-Адрес. Организация может иметь несколько адресов (Юридический, физический и почтовой)"""
-    LEGAL = "1"
-    PHYSICAL = "2"
-    POSTAL = "3"
-    TYPES = (
-        (LEGAL, 'Юридический адрес'),
-        (PHYSICAL, 'Фактический адрес'),
-        (POSTAL, 'Почтовый адрес'),
-    )   
-    type = models.CharField(max_length=1, choices=TYPES, default=LEGAL)
-    address = models.ForeignKey(HouseAddress)
-    organization = models.ForeignKey(Organization)
+        return '%s "%s"' % (self.legal_form, self.full_name)
 
 """Таблицы, хранящие информацию о тарифах"""
 class TariffType(models.Model):
@@ -384,7 +376,7 @@ class Period(models.Model):
     start = models.DateField()
     end = models.DateField()
     def __str__(self):
-        return "#%s(%s->%s)" % (str(self.serial_number), str(self.start), str(self.end))
+        return "%s" % (str(self.end.strftime("%B %Y")))
 
 class ConsumptionType(models.Model):
     INDIVIDUAL = "1"
