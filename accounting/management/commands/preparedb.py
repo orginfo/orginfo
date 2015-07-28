@@ -682,6 +682,9 @@ def prepare_db_base():
     srv2 = CommunalService.objects.get(name=CommunalService.HEATING)
     
     
+    street_k = Street.objects.get(locality=loc3, name="Центральная")
+    address_k = HouseAddress(street=street_k, house_number="6")
+    address_k.save()
     # Организации
     Organization.objects.all().delete()
     kluchevscoe = Organization(short_name="Ключевское", full_name="Ключевское",
@@ -693,13 +696,15 @@ def prepare_db_base():
                                operating_account="40702810609240000158",
                                phone="8(38340)31-104, 8(38340)31-238",
                                email="kluchinat@mail.ru",
-                               operating_mode="Режим работы: Пн.-Пт. 8.00-17.00, Обед: 13.00-14.00")
+                               operating_mode="Режим работы: Пн.-Пт. 8.00-17.00, Обед: 13.00-14.00",
+                               address=address_k)
     
     kluchevscoe.save()
     kluchevscoe.services.add (srv1)
     kluchevscoe.services.add (srv2)
     add_abonents(kluchevscoe)
     
+    """
     # Заполнение МУП "Нечаевское"
     # TODO: Заполнить адрес для нечаевского
     neсhaevscoe = Organization(short_name="Нечаевское", full_name="Нечаевское",
@@ -717,6 +722,7 @@ def prepare_db_base():
     neсhaevscoe.save()
     neсhaevscoe.services.add (srv1)
     neсhaevscoe.services.add (srv2)
+    """
     
     """
     OrganizationAddress.objects.all().delete()
