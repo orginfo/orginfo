@@ -8,6 +8,7 @@ from accounting.models import TechnicalPassport
 from django.db.models import Q
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+import json
 
 def get_water_norm(subject_rf, water_description, period, water_service):
     # Получение периода действия норматива по расчетному периоду. Расчетный период устанавливается равным календарному месяцу. Поэтому, считаем, что за один месяц может быть только один норматив.
@@ -254,3 +255,38 @@ def report(request):
         'period': '2014-06-01 (TODO)'
     }
     return render(request, 'accounting/report.html', context)
+
+@login_required(login_url="/login/")
+def search_real_estates(request):
+    context = {
+        'real_estate': ''
+    }
+    return render(request, 'accounting/search_real_estates.html', context)
+
+@login_required(login_url="/login/")
+def real_estates_as_options(request):
+    response_data = {
+        "total_count": 5,
+        "incomplete_results": False,
+        "items": [{
+            "text": 'адриена лежена',
+            "id": '1',
+        }, {
+            "text": 'богдана хмельницкого',
+            "id": '2',
+        }, {
+            "text": 'виктора уса',
+            "id": '3',
+        }, {
+            "text": 'гоголя',
+            "id": '4',
+        }, {
+            "text": 'дуси ковальчук',
+            "id": '5',
+        }]
+    }
+     
+    return HttpResponse(
+        json.dumps(response_data),
+        content_type="application/json"
+    )
