@@ -50,7 +50,7 @@ def fill_total_kk(file_name):
         #p30 = ""
         #p31 = ""
         for part in line.split("\t"):
-            part.strip()
+            part = part.strip().replace(u'\ufeff', '')
             if part == "\n":
                 continue
             
