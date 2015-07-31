@@ -402,4 +402,4 @@ class PaymentAmount(models.Model):
     communal_service = models.ForeignKey(CommunalService)
     consumption_type = models.ForeignKey(ConsumptionType)
     period = models.ForeignKey(Period)
-    amount = models.DecimalField(max_digits=8, decimal_places=2)
+    amount = models.FloatField()

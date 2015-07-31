@@ -7,96 +7,48 @@ from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import Organization, CommunalService, ClientService
 from accounting.models import Period, Volume, PaymentAmount
 
-def parse_address():
+def fill_total_info():
     HouseAddress.objects.all().delete()
-    
-    file = open('c:\\vitaly\\Reading\\Address_KK.txt', 'r')
-    
-    #row = file.readline()
-    for line in file:
-        index = 0
-        locality_name = ""
-        street_name = ""
-        house_nr = ""
-        for part in line.split("\t"):
-            part.strip()
-            if part == "\n":
-                continue
-            
-            if index == 0:
-                locality_name = part
-            elif index == 1:
-                street_name = part
-            elif index == 2:
-                house_nr = part
-            else:
-                pass
-            index = index + 1
-
-        loc = Locality.objects.get(name=locality_name)
-        street = Street.objects.get(locality=loc, name=street_name)
-        if HouseAddress.objects.filter(street=street, house_number=house_nr).exists():
-            continue
-        else:
-            address = HouseAddress(street=street, house_number=house_nr)
-            address.save()
-        
-    file.close()
-    HouseAddress.objects.all().update(index="633447")
-    
-def parse_real_estate():
     RealEstate.objects.all().delete()
-    
-    for address in HouseAddress.objects.all():
-        real_estate = RealEstate(type=RealEstate.HOUSE, address=address, number="")
-        real_estate.save()
-    
-    file = open('c:\\vitaly\\Reading\\Address_all_KK.txt', 'r')
-    for line in file:
-        index = 0
-        locality_name = ""
-        street_name = ""
-        house_nr = ""
-        number = ""
-        for part in line.split("\t"):
-            part.strip()
-            if part == "\n":
-                continue
-            
-            if index == 0:
-                locality_name = part
-            elif index == 1:
-                street_name = part
-            elif index == 2:
-                house_nr = part
-            elif index == 3:
-                number = part
-            else:
-                pass
-            index = index + 1
-
-        loc = Locality.objects.get(name=locality_name)
-        street = Street.objects.get(locality=loc, name=street_name)
-        address = HouseAddress.objects.get(street=street, house_number=house_nr)
-        if len(number) != 0:
-            RealEstate.objects.filter(address=address, number="").update(type=RealEstate.MULTIPLE_DWELLING)
-            parent = RealEstate.objects.get(address=address, type=RealEstate.MULTIPLE_DWELLING)
-            real_estate = RealEstate(type=RealEstate.FLAT, address=address, parent=parent, number=number)
-            real_estate.save()
-        
-    file.close()
-
-def parse_real_estate_owner():
     RealEstateOwner.objects.all().delete()
+    TechnicalPassport.objects.all().delete()
+    HomeownershipHistory.objects.all().delete()
     
-    file = open('c:\\vitaly\\Reading\\Owner_KK.txt', 'r')
+    file_name = 'c:\\vitaly\\Reading\\Total_KK.txt'
+    fill_total_kk(file_name)
+
+def fill_total_kk(file_name):
+    water_norm_validity = WaterNormValidity.objects.get(start ='2013-12-01', end='2015-03-31')
+    start_calc_date = '2014-12-26'
+    
+    err_file = open('c:\\vitaly\\Reading\\Protocol_KK.txt', 'w')
+    file = open(file_name, 'r')
     for line in file:
         index = 0
-        locality_name = ""
-        street_name = ""
-        house_nr = ""
-        number = ""
-        owner = ""
+        
+        locality_name = ""      # 0
+        street_name = ""        # 1
+        house_nr = ""           # 2
+        number = ""             # 3
+        owner = ""              # 4
+        space = ""              # 5
+        residents = ""   # 6
+        norm = ""   # 7
+        p15 = ""    # 8
+        p16 = ""    # 9
+        p19 = ""    # 10
+        p20 = ""    # 11
+        p17 = ""    # 12
+        p18 = ""    # 13
+        p23 = ""    # 14
+        p24 = ""    # 15
+        p25 = ""    # 16
+        p26 = ""    # 17
+        p27 = ""    # 18
+        p28 = ""    # 19
+        p29 = ""    # 20
+        #p30 = ""
+        #p31 = ""
         for part in line.split("\t"):
             part.strip()
             if part == "\n":
@@ -112,58 +64,173 @@ def parse_real_estate_owner():
                 number = part
             elif index == 4:
                 owner = part
+            elif index == 5:
+                space = part
+            elif index == 6:
+                residents = part
+            elif index == 7:
+                norm = part
+            elif index == 8:
+                p15 = part
+            elif index == 9:
+                p16 = part
+            elif index == 10:
+                p19 = part
+            elif index == 11:
+                p20 = part
+            elif index == 12:
+                p17 = part
+            elif index == 13:
+                p18 = part
+            elif index == 14:
+                p23 = part
+            elif index == 15:
+                p24 = part
+            elif index == 16:
+                p25 = part
+            elif index == 17:
+                p26 = part
+            elif index == 18:
+                p27 = part
+            elif index == 19:
+                p28 = part
+            elif index == 20:
+                p29 = part
             else:
                 pass
             index = index + 1
 
-        loc = Locality.objects.get(name=locality_name)
-        street = Street.objects.get(locality=loc, name=street_name)
-        address = HouseAddress.objects.get(street=street, house_number=house_nr)
-        if len(owner) != 0:
-            real_estate = RealEstate.objects.get(address=address, number=number)
-            real_estete_owner = RealEstateOwner(real_estate=real_estate, owner=owner, start='2015-01-01')
-            real_estete_owner.save()
+        if len(locality_name) == 0:
+            continue
         
-    file.close()
+        loc = Locality.objects.get(name=locality_name)
+        if len(street_name) == 0:
+            continue
+        street = Street.objects.get(locality=loc, name=street_name)
+        
+        address = None
+        if HouseAddress.objects.filter(street=street, house_number=house_nr).exists():
+            address = HouseAddress.objects.get(street=street, house_number=house_nr)
+        else:
+            address = HouseAddress(street=street, house_number=house_nr)
+            address.save()
+        
+        real_estate = None
+        if RealEstate.objects.filter(address=address, number="").exists():
+            real_estate = RealEstate.objects.get(address=address, number="")
+        else:
+            real_estate = RealEstate(address=address, number="")
+            real_estate.save()
 
-def parse_technical_passport():
-    TechnicalPassport.objects.all().delete()
-    
-    file = open('c:\\vitaly\\Reading\\Space_KK.txt', 'r')
-    for line in file:
-        index = 0
-        locality_name = ""
-        street_name = ""
-        house_nr = ""
-        number = ""
-        space = ""
-        for part in line.split("\t"):
-            part.strip()
-            if part == "\n":
+        if len(number) != 0:
+            if RealEstate.objects.filter(address=address, number=number).exists():
+                exist_obj = RealEstate.objects.get(address=address, number=number)
+                err_desc = str(exist_obj) + ' was exists\n'
+                err_file.write(str(err_desc))
                 continue
             
-            if index == 0:
-                locality_name = part
-            elif index == 1:
-                street_name = part
-            elif index == 2:
-                house_nr = part
-            elif index == 3:
-                number = part
-            elif index == 4:
-                space = part
-            else:
-                pass
-            index = index + 1
-
-        loc = Locality.objects.get(name=locality_name)
-        street = Street.objects.get(locality=loc, name=street_name)
-        address = HouseAddress.objects.get(street=street, house_number=house_nr)
+            #RealEstate.objects.filter(address=address, number="").update(type=RealEstate.MULTIPLE_DWELLING)
+            real_estate.type = RealEstate.MULTIPLE_DWELLING
+            real_estate.save()
+            child_real_estate = RealEstate(type=RealEstate.FLAT, address=address, parent=real_estate, number=number)
+            child_real_estate.save()
+            
+        if len(owner) != 0:
+            real_estete_owner = RealEstateOwner(real_estate=real_estate, owner=owner, start=start_calc_date)
+            real_estete_owner.save()
+        
         if len(space) != 0:
-            real_estate = RealEstate.objects.get(address=address, number=number)
-            technical_passport = TechnicalPassport(real_estate=real_estate, commissioning_date='1999-01-01', start='2015-01-01')
+            real_estate_space = float(space)
+            technical_passport = TechnicalPassport(real_estate=real_estate, commissioning_date='1999-01-01', space=real_estate_space)
             technical_passport.save()
         
+        count = 0
+        if len(residents) != 0:
+            count = int(residents)
+        if len(norm) != 0:
+            norm_value = float(norm)
+            
+            water_desc = None
+            if norm_value == 6.47 or norm_value == 6.0:
+                water_desc = WaterNormDescription.objects.get(description='Жилые помещения (в том числе общежития) с холодным водоснабжением, водонагревателями, канализованием, оборудованные ваннами, душами, раковинами, кухонными мойками и унитазами', direction_type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING)
+            else:
+                service = CommunalService.objects.get(name=CommunalService.COLD_WATER)
+                water_norm = WaterNorm.objects.get(validity=water_norm_validity, service=service, value=norm_value)
+                water_desc = water_norm.norm_description
+                
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        
+        if len(p15) != 0:
+            count = int(p15)
+            water_desc = WaterNormDescription.objects.get(description="Крупный рогатый скот", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        if len(p16) != 0:
+            count = int(p16)
+            water_desc = WaterNormDescription.objects.get(description="Крупный рогатый скот, молодняк", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        if len(p19) != 0:
+            count = int(p19)
+            water_desc = WaterNormDescription.objects.get(description="Овцы", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        if len(p20) != 0:
+            count = int(p20)
+            water_desc = WaterNormDescription.objects.get(description="Козы", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        if len(p17) != 0:
+            count = int(p17)
+            water_desc = WaterNormDescription.objects.get(description="Лошади", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        if len(p18) != 0:
+            count = int(p18)
+            water_desc = WaterNormDescription.objects.get(description="Свиньи", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        if len(p23) != 0:
+            count = int(p23)
+            water_desc = WaterNormDescription.objects.get(description="Лошади, молодняк", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        if len(p24) != 0:
+            count = int(p24)
+            water_desc = WaterNormDescription.objects.get(description="Свиньи, молодняк", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        if len(p25) != 0:
+            water_desc = WaterNormDescription.objects.get(description="Баня при наличии водопровода")
+            if len(residents) == 0:
+                err_desc = 'p25! Residents == ' + residents + '\n' 
+                err_file.write(err_desc)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        if len(p26) != 0:
+            water_desc = WaterNormDescription.objects.get(description="Баня при водоснабжении из уличной колонки")
+            if len(residents) == 0:
+                err_desc = 'p26! Residents == ' + residents + '\n' 
+                err_file.write(err_desc)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        if len(p27) != 0:
+            count = int(p27)
+            water_desc = WaterNormDescription.objects.get(description="Мойка мотоцикла")
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        if len(p28) != 0:
+            count = int(p28)
+            water_desc = WaterNormDescription.objects.get(description="Мойка автомобиля при наличии водопровода")
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        if len(p29) != 0:
+            count = int(p29)
+            water_desc = WaterNormDescription.objects.get(description="Мойка автомобиля при водоснабжении из уличной колонки")
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+    
     file.close()
 
 def fill_service():
@@ -186,65 +253,6 @@ def fill_cold_water_srv_into_client_service():
 def add_abonents(organization):
     for real_estate in RealEstate.objects.all():
         organization.abonents.add(real_estate)
-
-def parse_residents_degree():
-    HomeownershipHistory.objects.all().delete()
-    
-    water_norm_validity = WaterNormValidity.objects.get(start ='2015-01-01', end='2015-03-31')
-    
-    file = open('c:\\Vitaly\\Reading\\residents_degree.txt', 'r')
-    for line in file:
-        index = 0
-        locality_name = ""
-        street_name = ""
-        house_nr = ""
-        number = ""
-        residents = ""
-        norm = ""
-        for part in line.split("\t"):
-            part.strip()
-            if part == "\n" or len(part) == 0:
-                index = index + 1
-                continue
-            
-            if index == 0:
-                locality_name = part
-            elif index == 1:
-                street_name = part
-            elif index == 2:
-                house_nr = part
-            elif index == 3:
-                number = part
-            elif index == 4:
-                residents = part
-            elif index == 5:
-                norm = part
-            else:
-                pass
-            index = index + 1
-
-        loc = Locality.objects.get(name=locality_name)
-        street = Street.objects.get(locality=loc, name=street_name)
-        address = HouseAddress.objects.get(street=street, house_number=house_nr)
-        count = 0
-        if len(residents) != 0:
-            count = int(residents)
-        if len(norm) != 0:
-            norm_value = float(norm)
-            
-            real_estate = RealEstate.objects.get(address=address, number=number)
-            water_desc = None
-            if norm_value == 6.47 or norm_value == 6.0:
-                water_desc = WaterNormDescription.objects.get(description='Жилые помещения (в том числе общежития) с холодным водоснабжением, водонагревателями, канализованием, оборудованные ваннами, душами, раковинами, кухонными мойками и унитазами', direction_type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING)
-            else:
-                service = CommunalService.objects.get(name=CommunalService.COLD_WATER)
-                water_norm = WaterNorm.objects.get(validity=water_norm_validity, service=service, value=norm_value)
-                water_desc = water_norm.norm_description
-                
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start='2014-12-26')
-            homeownership_history.save()
-        
-    file.close()
 
 def fill_period():
     Period.objects.all().delete()
@@ -347,13 +355,6 @@ def prepare_db_base():
     street23 = Street(name="Солнечная", locality=loc6)
     street23.save()
     
-    parse_address()
-    parse_real_estate()
-    fill_service()
-    fill_cold_water_srv_into_client_service()
-    #parse_house_register()
-    #parse_real_estate_owner()
-    
     # ДОКУМЕНТ:
     # ОБ УТВЕРЖДЕНИИ НОРМАТИВОВ ПОТРЕБЛЕНИЯ КОММУНАЛЬНЫХ УСЛУГ ПО ХОЛОДНОМУ ВОДОСНАБЖЕНИЮ, ГОРЯЧЕМУ ВОДОСНАБЖЕНИЮ И ВОДООТВЕДЕНИЮ НА ТЕРРИТОРИИ НОВОСИБИРСКОЙ ОБЛАСТИ
     #
@@ -430,7 +431,7 @@ def prepare_db_base():
     
     # Скор действия норматива по воде 
     WaterNormValidity.objects.all().delete()
-    water_norm_val1 = WaterNormValidity(start='2015-01-01', end='2015-03-31')
+    water_norm_val1 = WaterNormValidity(start='2013-12-01', end='2015-03-31')
     water_norm_val1.save()
     water_norm_val2 = WaterNormValidity(start='2015-04-01', end='2015-06-30')
     water_norm_val2.save()
@@ -443,6 +444,8 @@ def prepare_db_base():
     water_norm_val6 = WaterNormValidity(start='2017-01-01', end='2017-12-31')
     water_norm_val6.save()
 
+    fill_service()
+    
     cold_water_service = CommunalService.objects.get(name=CommunalService.COLD_WATER)
     # Норматив по ХОЛОДНОЙ воде (TODO: остальные заполнять по мере необходимости)
     # Степень благоустройства жилых помещений:
@@ -677,10 +680,12 @@ def prepare_db_base():
     tariff_val2 = TariffValidity(start='2015-07-01', end='2015-12-31')
     tariff_val2.save()
     
+    fill_total_info()
+    fill_cold_water_srv_into_client_service()
+    
     #Услуги
     srv1 = CommunalService.objects.get(name=CommunalService.COLD_WATER)
     srv2 = CommunalService.objects.get(name=CommunalService.HEATING)
-    
     
     street_k = Street.objects.get(locality=loc3, name="Центральная")
     address_k = HouseAddress(street=street_k, house_number="6")
@@ -732,7 +737,6 @@ def prepare_db_base():
     org_addr.save()
     """
         
-    parse_residents_degree()
     fill_period()
     
     Volume.objects.all().delete()
