@@ -384,7 +384,7 @@ class ConsumptionType(models.Model):
     CONSUMPTION_TYPES = (
         (INDIVIDUAL, 'Индивидуальное потребление'),
         (COMMON_PROPERTY, 'Общедомовые нужны'),
-    )   
+    )
     type = models.CharField(max_length=1, choices=CONSUMPTION_TYPES, default=INDIVIDUAL)
 
 class Volume(models.Model):
