@@ -265,25 +265,17 @@ def search_real_estates(request):
 
 @login_required(login_url="/login/")
 def real_estates_as_options(request):
+    real_estates = RealEstate.objects.all()
+    words = request.GET['q'].split(" ")
+    for word in words:
+        real_estates = list(filter(lambda re: word in re.__str__(), real_estates))
+
+    items = list(map(lambda re: {"text": re.__str__(), "id": re.id}, real_estates))
+
     response_data = {
-        "total_count": 5,
+        "total_count": len(items),
         "incomplete_results": False,
-        "items": [{
-            "text": 'адриена лежена',
-            "id": '1',
-        }, {
-            "text": 'богдана хмельницкого',
-            "id": '2',
-        }, {
-            "text": 'виктора уса',
-            "id": '3',
-        }, {
-            "text": 'гоголя',
-            "id": '4',
-        }, {
-            "text": 'дуси ковальчук',
-            "id": '5',
-        }]
+        "items": items
     }
      
     return HttpResponse(
