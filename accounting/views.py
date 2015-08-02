@@ -1,9 +1,9 @@
 from django.http import HttpResponse
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
-from accounting.models import Period, Volume, ConsumptionType, PaymentAmount
+from accounting.models import Period, CalculationService
 from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner
 from accounting.models import CommunalService, ClientService, Organization
-from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, Tariff
+from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, Tariff
 from accounting.models import TechnicalPassport
 from django.db.models import Q
 from django.shortcuts import render
@@ -29,9 +29,9 @@ def get_residents(real_estate, period):
 
 def get_tariff(real_estate, period, service):
     # Получение периода действия по расчетному периоду. Расчетный период устанавливается равным календарному месяцу. Поэтому, считаем, что за один месяц может быть только один тариф
-    validity = WaterNormValidity.objects.filter(start__lte=period.end).order_by('-start')[0]
+    validity = TariffValidity.objects.filter(start__lte=period.end).order_by('-start')[0]
     
-    resource_supply_organization = Organization.objects.get(services_set=service, abonents_set=real_estate)
+    resource_supply_organization = Organization.objects.get(services=service, abonents=real_estate)
     
     tariff_type = None
     if real_estate.type == RealEstate.MUNICIPAL_OBJECT:
@@ -40,7 +40,7 @@ def get_tariff(real_estate, period, service):
         tariff_type = Tariff.POPULATION
     
     tafiff = Tariff.objects.get(service=service, organization=resource_supply_organization, validity=validity, type=tariff_type)
-    return tafiff 
+    return tafiff.value
 
 def calculate_individual_water_volume_by_norm(subject_rf, real_estate, period, water_service):
     """
@@ -54,7 +54,9 @@ def calculate_individual_water_volume_by_norm(subject_rf, real_estate, period, w
     if real_estate.residential == False:
         raise Exception #TODO: Продумать ошибку (Вычисление норматива потребления должны вызываться только для жилых помещений).
     
-    homeownership = HomeownershipHistory.objects.filter(Q(real_estate=real_estate) & Q(water_description__direction_type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING) & Q(start__lte=period.end)).order_by('-start')[0]
+    if HomeownershipHistory.objects.filter(real_estate=real_estate, water_description__direction_type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING, start__lte=period.end).count() != 1:
+        pass
+    homeownership = HomeownershipHistory.objects.filter(real_estate=real_estate, water_description__direction_type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING, start__lte=period.end).order_by('-start')[0]
     water_description = homeownership.water_description
     # Получаем количество проживающих.
     #residents = get_residents(real_estate, period)
@@ -67,15 +69,13 @@ def calculate_individual_water_volume_by_norm(subject_rf, real_estate, period, w
     return volume
 
 def calculate_individual_water_volume(subject_rf, real_estate, calc_period, water_service):
-    consumption_type = ConsumptionType.objects.get(type=ConsumptionType.INDIVIDUAL)
     individual_volume = calculate_individual_water_volume_by_norm(subject_rf, real_estate, calc_period, water_service)
-    volume = Volume(real_estate=real_estate, communal_service=water_service, consumption_type=consumption_type, period=calc_period, volume=individual_volume)
-    volume.save()
     
     tariff = get_tariff(real_estate, calc_period, water_service)
     amount = individual_volume * tariff
-    payment_amount = PaymentAmount(real_estate=real_estate, communal_service=water_service, consumption_type=consumption_type, period=calc_period, amount=amount)
-    payment_amount.save()
+    
+    calc_service = CalculationService(real_estate=real_estate, communal_service=water_service, consumption_type=CalculationService.INDIVIDUAL, period=calc_period, volume=individual_volume, amount=amount)
+    calc_service.save()
 
 def calculate_services(subject_rf, house, calc_period):
     
@@ -177,7 +177,7 @@ def get_client_services(real_estate, period):
 # Сумма к оплате за расчетный период: Значения хранятся в PaymentAmount. Вызвать метод get_payment_amount(real_estate, period)
 def get_payment_amount(real_estate, period):
     amount = 0.0
-    for payment_amount in PaymentAmount.objects.filter(real_estate=real_estate, period=period):
+    for payment_amount in CalculationService.objects.filter(real_estate=real_estate, period=period):
         amount = amount + payment_amount.amount
     
     return amount
@@ -237,7 +237,7 @@ def index(request):
     #test_real_estate()
     #test_residents_degree()
     
-    #robot()
+    robot()
     #test_period()
     #test_owner()
     

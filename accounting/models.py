@@ -372,28 +372,19 @@ class Period(models.Model):
     def __str__(self):
         return "%s" % (str(self.end.strftime("%B %Y")))
 
-class ConsumptionType(models.Model):
+class CalculationService(models.Model):
+    """ Вычисления объема потребления и размер платы за определенную услугу. 
+    volume - абсолютное значение (если индивидуальное потребление, то это суммарный объем)"""
     INDIVIDUAL = "1"
     COMMON_PROPERTY = "2"
     CONSUMPTION_TYPES = (
         (INDIVIDUAL, 'Индивидуальное потребление'),
         (COMMON_PROPERTY, 'Общедомовые нужны'),
     )
-    type = models.CharField(max_length=1, choices=CONSUMPTION_TYPES, default=INDIVIDUAL)
-
-class Volume(models.Model):
-    """ Вычисления объема потребления за определенную услугу. 
-    volume - абсолютное значение (если индивидуальное потребление, то это суммарный объем)"""
+    
     real_estate = models.ForeignKey(RealEstate)
     communal_service = models.ForeignKey(CommunalService)
-    consumption_type = models.ForeignKey(ConsumptionType)
+    consumption_type = models.CharField(max_length=1, choices=CONSUMPTION_TYPES, default=INDIVIDUAL)
     period = models.ForeignKey(Period)
     volume = models.FloatField()
-
-class PaymentAmount(models.Model):
-    """Размер платы за коммунальную услугу."""
-    real_estate = models.ForeignKey(RealEstate)
-    communal_service = models.ForeignKey(CommunalService)
-    consumption_type = models.ForeignKey(ConsumptionType)
-    period = models.ForeignKey(Period)
     amount = models.FloatField()

@@ -2,10 +2,10 @@ from django.core.management.base import BaseCommand
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
 from accounting.models import Street, HouseAddress
 from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner, TechnicalPassport
-from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, ConsumptionType, Tariff
+from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, Tariff
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import Organization, CommunalService, ClientService
-from accounting.models import Period, Volume, PaymentAmount
+from accounting.models import Period, CalculationService
 
 def fill_total_info():
     HouseAddress.objects.all().delete()
@@ -135,6 +135,8 @@ def fill_total_kk(file_name):
             real_estate.save()
             child_real_estate = RealEstate(type=RealEstate.FLAT, address=address, parent=real_estate, number=number)
             child_real_estate.save()
+            
+            real_estate = child_real_estate 
             
         if len(owner) != 0:
             real_estete_owner = RealEstateOwner(real_estate=real_estate, owner=owner, start=start_calc_date)
@@ -701,7 +703,9 @@ def prepare_db_base():
     kluchevscoe.save()
     kluchevscoe.services.add (srv1)
     kluchevscoe.services.add (srv2)
+    kluchevscoe.save()
     add_abonents(kluchevscoe)
+    kluchevscoe.save()
     
     """
     # Заполнение МУП "Нечаевское"
@@ -752,14 +756,7 @@ def prepare_db_base():
     
     fill_period()
     
-    Volume.objects.all().delete()
-    ConsumptionType.objects.all().delete()
-    consumption_type1 = ConsumptionType(type=ConsumptionType.INDIVIDUAL)
-    consumption_type1.save()
-    consumption_type2 = ConsumptionType(type=ConsumptionType.COMMON_PROPERTY)
-    consumption_type2.save()
-    
-    PaymentAmount.objects.all().delete()
+    CalculationService.objects.all().delete()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'
