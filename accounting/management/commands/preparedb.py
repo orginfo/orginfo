@@ -21,8 +21,9 @@ def fill_total_kk(file_name):
     water_norm_validity = WaterNormValidity.objects.get(start ='2013-12-01', end='2015-03-31')
     start_calc_date = '2014-12-26'
     
-    err_file = open('c:\\vitaly\\Reading\\Protocol_KK.txt', 'w')
-    file = open(file_name, 'r')
+    encoding = 'utf-8'
+    err_file = open('c:\\vitaly\\Reading\\Protocol_KK.txt', 'w', encoding=encoding)
+    file = open(file_name, 'r', encoding=encoding)
     for line in file:
         index = 0
         

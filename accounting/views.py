@@ -10,6 +10,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 import json
 
+
 def get_water_norm(subject_rf, water_description, period, water_service):
     # Получение периода действия норматива по расчетному периоду. Расчетный период устанавливается равным календарному месяцу. Поэтому, считаем, что за один месяц может быть только один норматив.
     validity = WaterNormValidity.objects.filter(start__lte=period.end).order_by('-start')[0]
@@ -224,92 +225,6 @@ def test_owner():
                         for real_estate in RealEstate.objects.filter(address__street__locality=locality):
                             owner = get_owner(real_estate, period)
 
-def read_total_kk():
-    water_norm_validity = WaterNormValidity.objects.get(start ='2013-12-01', end='2015-03-31')
-    start_calc_date = '2014-12-26'
-    
-    file_name = 'c:\\vitaly\\Reading\\Total_KK.txt'
-    err_file = open('c:\\vitaly\\Reading\\Protocol_KK.txt', 'w')
-    file = open(file_name, 'r')
-    for line in file:
-        index = 0
-        
-        locality_name = ""      # 0
-        street_name = ""        # 1
-        house_nr = ""           # 2
-        number = ""             # 3
-        owner = ""              # 4
-        space = ""              # 5
-        residents = ""   # 6
-        norm = ""   # 7
-        p15 = ""    # 8
-        p16 = ""    # 9
-        p19 = ""    # 10
-        p20 = ""    # 11
-        p17 = ""    # 12
-        p18 = ""    # 13
-        p23 = ""    # 14
-        p24 = ""    # 15
-        p25 = ""    # 16
-        p26 = ""    # 17
-        p27 = ""    # 18
-        p28 = ""    # 19
-        p29 = ""    # 20
-        #p30 = ""
-        #p31 = ""
-        for part in line.split("\t"):
-            part.strip()
-            if part == "\n":
-                continue
-            
-            if index == 0:
-                locality_name = part
-            elif index == 1:
-                street_name = part
-            elif index == 2:
-                house_nr = part
-            elif index == 3:
-                number = part
-            elif index == 4:
-                owner = part
-            elif index == 5:
-                space = part
-            elif index == 6:
-                residents = part
-            elif index == 7:
-                norm = part
-            elif index == 8:
-                p15 = part
-            elif index == 9:
-                p16 = part
-            elif index == 10:
-                p19 = part
-            elif index == 11:
-                p20 = part
-            elif index == 12:
-                p17 = part
-            elif index == 13:
-                p18 = part
-            elif index == 14:
-                p23 = part
-            elif index == 15:
-                p24 = part
-            elif index == 16:
-                p25 = part
-            elif index == 17:
-                p26 = part
-            elif index == 18:
-                p27 = part
-            elif index == 19:
-                p28 = part
-            elif index == 20:
-                p29 = part
-            else:
-                pass
-            index = index + 1
-
-    file.close()
-
 @login_required(login_url="/login/")
 def index(request):
     #test_db()
@@ -325,7 +240,6 @@ def index(request):
     #robot()
     #test_period()
     #test_owner()
-    read_total_kk()
     
     return HttpResponse("Робот отработал успешно.")
 
