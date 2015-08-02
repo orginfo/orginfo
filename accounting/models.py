@@ -388,3 +388,18 @@ class CalculationService(models.Model):
     period = models.ForeignKey(Period)
     volume = models.FloatField()
     amount = models.FloatField()
+
+class Account(models.Model):
+    """ Лицевой счет """
+    WRITE_OFF = "1"
+    TOP_UP = "2"
+    OPERATION_TYPES = (
+        (WRITE_OFF, 'Списание'),
+        (TOP_UP, 'Зачисление'),
+    )
+    
+    real_estate = models.ForeignKey(RealEstate)
+    balance = models.FloatField()
+    operation_type = models.CharField(max_length=1, choices=OPERATION_TYPES, default=WRITE_OFF)
+    operation_date = models.DateField()
+    amount = models.FloatField()

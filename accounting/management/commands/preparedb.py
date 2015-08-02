@@ -5,7 +5,7 @@ from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner,
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, Tariff
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import Organization, CommunalService, ClientService
-from accounting.models import Period, CalculationService
+from accounting.models import Period, CalculationService, Account
 
 def fill_total_info():
     HouseAddress.objects.all().delete()
@@ -757,6 +757,7 @@ def prepare_db_base():
     fill_period()
     
     CalculationService.objects.all().delete()
+    Account.objects.all().delete()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'
