@@ -320,18 +320,6 @@ class Organization(models.Model):
         return '%s "%s"' % (self.legal_form, self.full_name)
 
 """Таблицы, хранящие информацию о тарифах"""
-class TariffType(models.Model):
-    """Тип тарифа: Население либо бюджетные организации
-    TODO: есть смысл перенести его в таблицу 'Tariff'
-    """
-    BUDGETARY_CONSUMERS = '1'
-    POPULATION = '2'
-    TARIFF_TYPES = (
-        (BUDGETARY_CONSUMERS, 'Бюджетные потребители'),
-        (POPULATION, 'Население'),
-    )
-    type = models.CharField(max_length=1, choices=TARIFF_TYPES, default=POPULATION)
-
 class TariffValidity(models.Model):
     """ Период действия тарифа
     Для отопления и воды одинаковые периоды
@@ -343,11 +331,17 @@ class TariffValidity(models.Model):
 
 class Tariff(models.Model):
     """Тариф для соответствующей услуги"""
-    
+    BUDGETARY_CONSUMERS = '1'
+    POPULATION = '2'
+    TARIFF_TYPES = (
+        (BUDGETARY_CONSUMERS, 'Бюджетные потребители'),
+        (POPULATION, 'Население'),
+    )
+
     service = models.ForeignKey(CommunalService)
     organization = models.ForeignKey(Organization)
     validity = models.ForeignKey(TariffValidity)
-    type = models.ForeignKey(TariffType)
+    type = models.CharField(max_length=1, choices=TARIFF_TYPES, default=POPULATION)
     value = models.FloatField()
 
 class Period(models.Model):

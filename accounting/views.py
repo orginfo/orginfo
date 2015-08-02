@@ -3,7 +3,7 @@ from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
 from accounting.models import Period, Volume, ConsumptionType, PaymentAmount
 from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner
 from accounting.models import CommunalService, ClientService, Organization
-from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffType, Tariff
+from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, Tariff
 from accounting.models import TechnicalPassport
 from django.db.models import Q
 from django.shortcuts import render
@@ -35,9 +35,9 @@ def get_tariff(real_estate, period, service):
     
     tariff_type = None
     if real_estate.type == RealEstate.MUNICIPAL_OBJECT:
-        tariff_type = TariffType.objects.get(type=TariffType.BUDGETARY_CONSUMERS)
+        tariff_type = Tariff.BUDGETARY_CONSUMERS
     else:
-        tariff_type = TariffType.objects.get(type=TariffType.POPULATION)
+        tariff_type = Tariff.POPULATION
     
     tafiff = Tariff.objects.get(service=service, organization=resource_supply_organization, validity=validity, type=tariff_type)
     return tafiff 

@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
 from accounting.models import Street, HouseAddress
 from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner, TechnicalPassport
-from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, ConsumptionType
+from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, ConsumptionType, Tariff
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import Organization, CommunalService, ClientService
 from accounting.models import Period, Volume, PaymentAmount
@@ -674,19 +674,12 @@ def prepare_db_base():
     heating_norm10 = HeatingNorm(municipal_area=municipal_area, validity=heating_norm_validity, commissioning_type=HeatingNorm.COMMISIONING_FROM_2000, floor_amount=5, value=0.0156)
     heating_norm10.save()
 
-    # Срок действия тарифа по воде
-    TariffValidity.objects.all().delete()
-    tariff_val1 = TariffValidity(start='2015-01-01', end='2015-06-30')
-    tariff_val1.save()
-    tariff_val2 = TariffValidity(start='2015-07-01', end='2015-12-31')
-    tariff_val2.save()
-    
-    fill_total_info()
-    fill_cold_water_srv_into_client_service()
-    
     #Услуги
     srv1 = CommunalService.objects.get(name=CommunalService.COLD_WATER)
     srv2 = CommunalService.objects.get(name=CommunalService.HEATING)
+    
+    fill_total_info()
+    fill_cold_water_srv_into_client_service()
     
     street_k = Street.objects.get(locality=loc3, name="Центральная")
     address_k = HouseAddress(street=street_k, house_number="6")
@@ -737,7 +730,26 @@ def prepare_db_base():
     org_addr = OrganizationAddress(address=address_k, organization=kluchevscoe)
     org_addr.save()
     """
-        
+
+    # Срок действия тарифа по воде
+    TariffValidity.objects.all().delete()
+    tariff_val1 = TariffValidity(start='2015-01-01', end='2015-06-30')
+    tariff_val1.save()
+    tariff_val2 = TariffValidity(start='2015-07-01', end='2015-12-31')
+    tariff_val2.save()
+
+    # Тарифы
+    Tariff.objects.all().delete()
+    cold_water_tariff = Tariff(service=srv1, organization=kluchevscoe, validity=tariff_val1, value=26.02)
+    cold_water_tariff.save()
+    cold_water_tariff = Tariff(service=srv1, organization=kluchevscoe, validity=tariff_val1, type=Tariff.BUDGETARY_CONSUMERS, value=26.02)
+    cold_water_tariff.save()
+    
+    cold_water_tariff = Tariff(service=srv1, organization=kluchevscoe, validity=tariff_val2, value=27.12)
+    cold_water_tariff.save()
+    cold_water_tariff = Tariff(service=srv1, organization=kluchevscoe, validity=tariff_val2, type=Tariff.BUDGETARY_CONSUMERS, value=27.12)
+    cold_water_tariff.save()
+    
     fill_period()
     
     Volume.objects.all().delete()
