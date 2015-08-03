@@ -55,7 +55,12 @@ def calculate_individual_water_volume_by_norm(subject_rf, real_estate, period, w
         raise Exception #TODO: Продумать ошибку (Вычисление норматива потребления должны вызываться только для жилых помещений).
     
     if HomeownershipHistory.objects.filter(real_estate=real_estate, water_description__direction_type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING, start__lte=period.end).count() != 1:
-        pass
+        encoding = 'utf-8'
+        err_file = open('c:\\vitaly\\Reading\\Protocol_SrvNoActive_KK.txt', 'a', encoding=encoding)
+        err_desc = str(real_estate) + '\t' + str(period) + '\n'
+        err_file.write(err_desc)
+        err_file.close()
+        return -1
     homeownership = HomeownershipHistory.objects.filter(real_estate=real_estate, water_description__direction_type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING, start__lte=period.end).order_by('-start')[0]
     water_description = homeownership.water_description
     # Получаем количество проживающих.
@@ -74,11 +79,11 @@ def calculate_individual_water_volume(subject_rf, real_estate, calc_period, wate
     tariff = get_tariff(real_estate, calc_period, water_service)
     amount = individual_volume * tariff
     
-    calc_service = CalculationService(real_estate=real_estate, communal_service=water_service, consumption_type=CalculationService.INDIVIDUAL, period=calc_period, volume=individual_volume, amount=amount)
-    calc_service.save()
+    if amount > 0:
+        calc_service = CalculationService(real_estate=real_estate, communal_service=water_service, consumption_type=CalculationService.INDIVIDUAL, period=calc_period, volume=individual_volume, amount=amount)
+        calc_service.save()
 
 def calculate_services(subject_rf, house, calc_period):
-    
     real_estates = []
     if house.type == RealEstate.MULTIPLE_DWELLING:
         for real_estate in RealEstate.objects.filter(parent=house):

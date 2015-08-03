@@ -111,6 +111,8 @@ def fill_total_kk(file_name):
             continue
         street = Street.objects.get(locality=loc, name=street_name)
         
+        if len(house_nr) == 0:
+            continue
         address = None
         if HouseAddress.objects.filter(street=street, house_number=house_nr).exists():
             address = HouseAddress.objects.get(street=street, house_number=house_nr)
@@ -247,13 +249,54 @@ def fill_service():
     srv2 = CommunalService (name=CommunalService.HEATING)
     srv2.save()
 
+def get_real_estate_with_service_not_active_kk():
+    real_estates = []
+    
+    encoding = 'utf-8'
+    file_name = 'c:\\vitaly\\Reading\\Service_NotActive_KK.txt'
+    file = open(file_name, 'r', encoding=encoding)
+    for line in file:
+        index = 0
+        
+        locality_name = ""      # 0
+        street_name = ""        # 1
+        house_nr = ""           # 2
+        number = ""             # 3
+        for part in line.split("\t"):
+            part = part.strip().replace(u'\ufeff', '')
+            if part == "\n":
+                continue
+            if index == 0:
+                locality_name = part
+            elif index == 1:
+                street_name = part
+            elif index == 2:
+                house_nr = part
+            elif index == 3:
+                number = part
+            else:
+                pass
+            index = index + 1
+        
+        loc = Locality.objects.get(name=locality_name)
+        street = Street.objects.get(locality=loc, name=street_name)
+        address = HouseAddress.objects.get(street=street, house_number=house_nr)
+        real_estate = RealEstate.objects.get(address=address, number=number)
+        real_estates.append(real_estate)
+
+    file.close()
+    return real_estates
+
 def fill_cold_water_srv_into_client_service():
     ClientService.objects.all().delete()
     
+    real_estates = get_real_estate_with_service_not_active_kk()
+    
     for real_estate in RealEstate.objects.all():
-        service = CommunalService.objects.get(name=CommunalService.COLD_WATER)
-        client_srv = ClientService(real_estate=real_estate, service=service, start='2014-12-26')
-        client_srv.save()
+        if real_estate not in real_estates:
+            service = CommunalService.objects.get(name=CommunalService.COLD_WATER)
+            client_srv = ClientService(real_estate=real_estate, service=service, start='2014-12-26')
+            client_srv.save()
 
 def add_abonents(organization):
     for real_estate in RealEstate.objects.all():
