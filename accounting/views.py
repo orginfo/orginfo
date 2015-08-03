@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
-from accounting.models import Period, CalculationService
+from accounting.models import Period, CalculationService, Account
 from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner
 from accounting.models import CommunalService, ClientService, Organization
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, Tariff
@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 import json
+from datetime import timedelta
 
 
 def get_water_norm(subject_rf, water_description, period, water_service):
@@ -41,6 +42,10 @@ def get_tariff(real_estate, period, service):
     
     tafiff = Tariff.objects.get(service=service, organization=resource_supply_organization, validity=validity, type=tariff_type)
     return tafiff.value
+
+def write_off(real_estate, service, period):
+    #TODO: Реализовать этот метод и везде его использовать
+    pass
 
 def calculate_individual_water_volume_by_norm(subject_rf, real_estate, period, water_service):
     """
@@ -82,6 +87,14 @@ def calculate_individual_water_volume(subject_rf, real_estate, calc_period, wate
     if amount > 0:
         calc_service = CalculationService(real_estate=real_estate, communal_service=water_service, consumption_type=CalculationService.INDIVIDUAL, period=calc_period, volume=individual_volume, amount=amount)
         calc_service.save()
+        
+        #TODO: Использовать метод write_off()
+        #TODO: Получаем баланс на начало расчетного периода или нужно использовать последний баланс?
+        account = Account.objects.filter(real_estate=real_estate).order_by('operation_date').last()
+        balance = account.balance - amount
+        operation_date = calc_period.end + timedelta(days=1)
+        account = Account(real_estate=real_estate, balance=balance, operation_type=Account.WRITE_OFF, operation_date=operation_date, amount=amount)
+        account.save()
 
 def calculate_services(subject_rf, house, calc_period):
     real_estates = []

@@ -321,6 +321,17 @@ def fill_period():
     period8 = Period(serial_number=1, start='2015-7-26', end='2015-8-25')
     period8.save()
 
+def fill_account():
+    Account.objects.all().delete()
+    
+    balance = 0.0
+    operation_date = '2014-12-26'
+    amount = 0.0
+    #TODO: реализовать через считывание данных из файла.
+    for real_estate in RealEstate.objects.exclude(type=RealEstate.MULTIPLE_DWELLING):
+        account = Account(real_estate=real_estate, balance=balance, operation_type=Account.WRITE_OFF, operation_date=operation_date, amount=amount)
+        account.save()
+
 def prepare_db_base():
     # Субъект РФ
     SubjectRF.objects.all().delete()
@@ -802,7 +813,7 @@ def prepare_db_base():
     fill_period()
     
     CalculationService.objects.all().delete()
-    Account.objects.all().delete()
+    fill_account()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'
