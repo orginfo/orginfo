@@ -44,6 +44,32 @@
   </div>
 </form>
 
+{% if accounts %}
+    <h2>Платёжные документы</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Период</th>
+                <th>Баланс</th>
+                <th>Операции</th>
+                <th>Действие</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for account in accounts %}
+            <tr>
+                <td>{{ account.period }}</td>
+                <td>{{ account.balance }}</td>
+                <td><span style="color: red">-250</span></td>
+                <td><a href="#">подробнее...</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Поиск результатов не дал.</p>
+{% endif %}
+
 {% endblock %}
 
 {% block page_script %}

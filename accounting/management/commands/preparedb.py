@@ -15,6 +15,7 @@ def fill_total_info():
     HomeownershipHistory.objects.all().delete()
     
     file_name = 'c:\\vitaly\\Reading\\Total_KK.txt'
+    #file_name = '/home/a/Downloads/Total_KK.txt'
     fill_total_kk(file_name)
 
 def fill_total_kk(file_name):
@@ -23,6 +24,7 @@ def fill_total_kk(file_name):
     
     encoding = 'utf-8'
     err_file = open('c:\\vitaly\\Reading\\Protocol_KK.txt', 'w', encoding=encoding)
+    #err_file = open('/home/a/Downloads/Protocol_KK.txt', 'w', encoding=encoding)
     file = open(file_name, 'r', encoding=encoding)
     for line in file:
         index = 0

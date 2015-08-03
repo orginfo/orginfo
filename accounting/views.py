@@ -259,8 +259,18 @@ def report(request):
 
 @login_required(login_url="/login/")
 def search_real_estates(request):
+    accounts = [{
+        "balance": 0,
+        "period": "1"
+    }, {
+        "balance": -250,
+        "period": "2"
+    }, {
+        "balance": -530,
+        "period": "3"
+    }]
     context = {
-        'real_estate': ''
+        'accounts': accounts
     }
     return render(request, 'accounting/search_real_estates.html', context)
 
