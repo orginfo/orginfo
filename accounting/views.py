@@ -10,6 +10,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 import json
 from datetime import timedelta
+from django.views.generic import ListView
 
 
 def get_water_norm(subject_rf, water_description, period, water_service):
@@ -275,22 +276,49 @@ def report(request):
     }
     return render(request, 'accounting/report.html', context)
 
-@login_required(login_url="/login/")
-def search_real_estates(request):
-    accounts = [{
-        "balance": 0,
-        "period": "1"
-    }, {
-        "balance": -250,
-        "period": "2"
-    }, {
-        "balance": -530,
-        "period": "3"
-    }]
-    context = {
-        'accounts': accounts
-    }
-    return render(request, 'accounting/search_real_estates.html', context)
+class Accounts(ListView):
+    context_object_name = 'accounts'
+    template_name = 'accounting/search_real_estates.html'
+    def get_queryset(self):
+        Account.objects.filter(real_estate__id=6)
+        periods = Period.objects.all()
+
+        periods_by_id = {}
+        for period in periods:
+            periods_by_id[period.id] = period
+
+        accounts_by_period = {}
+        for account in Account.objects.filter(real_estate__id=6):
+            for period in periods:
+                if period.start <= account.operation_date and account.operation_date <= period.end:
+                    if period.id not in accounts_by_period:
+                        accounts_by_period[period.id] = []
+                    accounts_by_period[period.id].append(account)
+
+        sorted_period_ids = sorted(accounts_by_period)
+        result = []
+        for id in sorted_period_ids:
+            result.append({
+                "period": periods_by_id[id],
+                "balance": accounts_by_period[id][-1].balance,
+                "operations": accounts_by_period[id]
+            })
+        return result#object_list
+#     def dispatch(self, *args, **kwargs):
+#         self.form = self.form_class(self.request.GET)
+#         self.user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
+#         return super(RealEstates, self).dispatch(*args, **kwargs)
+#     def get_context_data(self, **kwargs):
+#         context = super(RealEstates, self).get_context_data(**kwargs)
+#         context['form'] = self.form
+#         return context
+#     def get_queryset(self):
+#         if self.form.is_valid():
+#             name = self.form.cleaned_data['name']
+#             object_list = RealEstate.objects.filter(address__icontains = name, organization=self.user_org.organization)
+#         else:
+#             object_list = RealEstate.objects.none()
+#         return object_list
 
 @login_required(login_url="/login/")
 def real_estates_as_options(request):

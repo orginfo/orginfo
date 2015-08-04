@@ -11,30 +11,12 @@
 
 <form class="form-horizontal" role="form">
   <div class="form-group">
-    <label for="inputEmail3" class="col-sm-2 control-label">Email</label>
-    <div class="col-sm-10">
-      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
-    </div>
-  </div>
-  <div class="form-group">
-    <label for="inputPassword3" class="col-sm-2 control-label">Пароль</label>
+    <label for="inputPassword3" class="col-sm-2 control-label">Адрес</label>
     <div class="col-sm-10 select2-wrapper">
-        <select class="js-example-data-ajax form-control">
-<!--           <option value="3620194" selected="selected">select2/select2</option> -->
+        <select class="js-example-data-ajax form-control" name="XXX">
+            <option value="3620194" selected="selected">select2/select2</option>
+            <!-- if need set value. -->
         </select>
-
-      <!-- <select id="demonstrations" class="form-control">
-    <option></option>
-    <option value="master.html" selected>master</option>
-    <option value="3.5.2.html">3.5.2</option>
-    <option value="3.5.1.html">3.5.1</option>
-    <option value="3.4.5.html">3.4.5</option>
-    <option value="3.4.4.html">3.4.4</option>
-    <option value="3.4.3.html">3.4.3</option>
-    <option value="3.4.2.html">3.4.2</option>
-    <option value="3.4.1.html">3.4.1</option>
-    <option value="3.3.2.html">3.3.2</option>
-      </select>-->
     </div>
   </div>
   <div class="form-group">
@@ -45,7 +27,7 @@
 </form>
 
 {% if accounts %}
-    <h2>Платёжные документы</h2>
+    <h2>Cчёт</h2>
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -58,10 +40,14 @@
         <tbody>
         {% for account in accounts %}
             <tr>
-                <td>{{ account.period }}</td>
+                <td>#{{ account.period.id }} с {{ account.period.start }} по {{ account.period.end }}</td>
                 <td>{{ account.balance }}</td>
-                <td><span style="color: red">-250</span></td>
-                <td><a href="#">подробнее...</a></td>
+                <td>
+                {% for operation in account.operations %}
+                    <span style="{% if operation.operation_type == operation.WRITE_OFF %}color: red; {% else %}color: green; {% endif %}white-space:nowrap;">{{operation.amount }} {{ operation.operation_date }}</span><br>
+                {% endfor %}
+                </td>
+                <td><a href="#">платёжный документ</a></td>
             </tr>
         {% endfor %}
         </tbody>

@@ -35,10 +35,11 @@ body {
             <li{% if request.get_full_path == l2home %} class="active"{% endif %}><a href="{% url 'accounting:index' %}">Home</a></li>
             {% url 'accounting:report' as l2report %}
             <li{% if request.get_full_path == l2report %} class="active"{% endif %}><a href="{% url 'accounting:report' %}" target="_blank">Report</a></li>
-            {% url 'accounting:search_real_estates' as l2search %}
-            <li{% if request.get_full_path == l2search %} class="active"{% endif %}><a href="{% url 'accounting:search_real_estates' %}">Search</a></li>
+            {% url 'accounting:accounts' as l2accounts %}
+            <li{% if request.path == l2accounts %} class="active"{% endif %}><a href="{% url 'accounting:accounts' %}">Accounts</a></li>
             
           </ul>
+          {{ request.get_full_path }}
         </div><!--/.nav-collapse -->
       </div>
     </div>

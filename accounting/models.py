@@ -403,3 +403,5 @@ class Account(models.Model):
     operation_type = models.CharField(max_length=1, choices=OPERATION_TYPES, default=WRITE_OFF)
     operation_date = models.DateField()
     amount = models.FloatField()
+    def __str__(self):
+        return "%d %f %s %f" % (self.real_estate.id, self.balance, self.operation_type, self.amount)
