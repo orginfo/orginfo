@@ -4,13 +4,14 @@ from accounting.models import Period, CalculationService, Account
 from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner
 from accounting.models import CommunalService, ClientService, Organization
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, Tariff
-from accounting.models import TechnicalPassport
+from accounting.models import TechnicalPassport, UserOrganization
 from django.db.models import Q
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 import json
 from datetime import timedelta
 from django.views.generic import ListView
+from django.shortcuts import get_object_or_404
 
 
 def get_water_norm(subject_rf, water_description, period, water_service):
@@ -322,7 +323,9 @@ class Accounts(ListView):
 
 @login_required(login_url="/login/")
 def real_estates_as_options(request):
-    real_estates = RealEstate.objects.all()
+    user_org = get_object_or_404(UserOrganization, user=request.user.id)
+    #TODO: уточнить как связаны комнаты и квартира, что бы вывести комнаты без квартиры.
+    real_estates = user_org.organization.abonents.filter(Q(type=RealEstate.HOUSE) | Q(type=RealEstate.FLAT))
     words = request.GET['q'].split(" ")
     for word in words:
         real_estates = list(filter(lambda re: word in re.__str__(), real_estates))
