@@ -281,7 +281,9 @@ class Accounts(ListView):
     context_object_name = 'accounts'
     template_name = 'accounting/search_real_estates.html'
     def get_queryset(self):
-        Account.objects.filter(real_estate__id=6)
+        if self.real_estate_id == None:
+            return []
+
         periods = Period.objects.all()
 
         periods_by_id = {}
@@ -289,7 +291,7 @@ class Accounts(ListView):
             periods_by_id[period.id] = period
 
         accounts_by_period = {}
-        for account in Account.objects.filter(real_estate__id=6):
+        for account in Account.objects.filter(real_estate__id=self.real_estate_id):
             for period in periods:
                 if period.start <= account.operation_date and account.operation_date <= period.end:
                     if period.id not in accounts_by_period:
@@ -305,21 +307,24 @@ class Accounts(ListView):
                 "operations": accounts_by_period[id]
             })
         return result#object_list
-#     def dispatch(self, *args, **kwargs):
-#         self.form = self.form_class(self.request.GET)
-#         self.user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
-#         return super(RealEstates, self).dispatch(*args, **kwargs)
-#     def get_context_data(self, **kwargs):
-#         context = super(RealEstates, self).get_context_data(**kwargs)
-#         context['form'] = self.form
-#         return context
-#     def get_queryset(self):
-#         if self.form.is_valid():
-#             name = self.form.cleaned_data['name']
-#             object_list = RealEstate.objects.filter(address__icontains = name, organization=self.user_org.organization)
-#         else:
-#             object_list = RealEstate.objects.none()
-#         return object_list
+    def dispatch(self, *args, **kwargs):
+        self.real_estate_id = None
+        if 'XXX' in self.request.GET:
+            self.real_estate_id = self.request.GET['XXX']
+
+        return super(Accounts, self).dispatch(*args, **kwargs)
+    def get_context_data(self, **kwargs):
+        context = super(Accounts, self).get_context_data(**kwargs)
+
+        if self.real_estate_id == None:
+            return context
+
+        real_estate_str = RealEstate.objects.get(id=self.real_estate_id).__str__()
+        context['real_estate'] = {
+            "id": self.real_estate_id,
+            "real_estate_str": real_estate_str
+        }
+        return context
 
 @login_required(login_url="/login/")
 def real_estates_as_options(request):
