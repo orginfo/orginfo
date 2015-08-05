@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class SubjectRF(models.Model):
     """ СУбъект РФ """
@@ -405,3 +406,12 @@ class Account(models.Model):
     amount = models.FloatField()
     def __str__(self):
         return "%d %f %s %f" % (self.real_estate.id, self.balance, self.operation_type, self.amount)
+
+class UserOrganization(models.Model):
+    """Связь пользователь-организация.
+    Пользователи бывают администраторами, клиентами организации, работниками
+    организации. Связь показывает какой именно пользователь сайта является
+    работником организации.
+    """
+    user = models.ForeignKey(User)
+    organization = models.ForeignKey(Organization, null=True, blank=True, default = None)
