@@ -6,6 +6,8 @@ from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import Organization, CommunalService, ClientService
 from accounting.models import Period, CalculationService, Account
+import os.path
+from orginfo.settings import BASE_DIR
 
 def fill_total_info():
     HouseAddress.objects.all().delete()
@@ -13,19 +15,17 @@ def fill_total_info():
     RealEstateOwner.objects.all().delete()
     TechnicalPassport.objects.all().delete()
     HomeownershipHistory.objects.all().delete()
-    
-    file_name = 'c:\\vitaly\\Reading\\Total_KK.txt'
-    #file_name = '/home/a/Downloads/Total_KK.txt'
-    fill_total_kk(file_name)
 
-def fill_total_kk(file_name):
+    fill_total_kk()
+
+def fill_total_kk():
     water_norm_validity = WaterNormValidity.objects.get(start ='2013-12-01', end='2015-03-31')
     start_calc_date = '2014-12-26'
     
-    encoding = 'utf-8'
-    err_file = open('c:\\vitaly\\Reading\\Protocol_KK.txt', 'w', encoding=encoding)
-    #err_file = open('/home/a/Downloads/Protocol_KK.txt', 'w', encoding=encoding)
-    file = open(file_name, 'r', encoding=encoding)
+    protocol_kk_path = os.path.join(BASE_DIR, "data", "preparedb", "Protocol_KK.txt")
+    err_file = open(protocol_kk_path, 'w', encoding='utf-8')
+    total_kk_path = os.path.join(BASE_DIR, "data", "preparedb", "Total_KK.txt")
+    file = open(total_kk_path, 'r', encoding='utf-8')
     for line in file:
         index = 0
         
@@ -252,9 +252,8 @@ def fill_service():
 def get_real_estate_with_service_not_active_kk():
     real_estates = []
     
-    encoding = 'utf-8'
-    file_name = 'c:\\vitaly\\Reading\\Service_NotActive_KK.txt'
-    file = open(file_name, 'r', encoding=encoding)
+    service_not_active_kk_path = os.path.join(BASE_DIR, "data", "preparedb", "Service_NotActive_KK.txt")
+    file = open(service_not_active_kk_path, 'r', encoding='utf-8')
     for line in file:
         index = 0
         
