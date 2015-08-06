@@ -1,24 +1,32 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% if last_payment %}
 <div class="panel panel-default">
-  <div class="panel-heading">Раздел 1. <strong>Сведения о плательщике и исполнителе услуг</strong></div>
+  <div class="panel-heading"><strong>Раздел 1. Сведения о плательщике и исполнителе услуг</strong></div>
   <div class="panel-body">
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-9">
           <div class="row">
             <div class="col-md-9">
-              за <span style="text-decoration: underline">{{period}}</span> (расчетный период)
+              за <span style="text-decoration: underline">{{calc_period_name}}</span> (расчетный период)
             </div>
             <div class="col-md-9">
-              Ф.И.О. (наименование) плательщика соственника/нанимателя <span style="text-decoration: underline">{{last_payment.client.lfm}}</span>
+              Ф.И.О. (наименование) плательщика соственника/нанимателя <span style="text-decoration: underline">{{owner}}</span>
+            </div>
+            <div class="col-md-9">
+              Адрес помещения <span style="text-decoration: underline">{{client_address}}</span>
+            </div>
+            <div class="col-md-9">
+              Площадь помещения: <span style="text-decoration: underline">{{space}}</span> кв. м Количество проживающих <span style="text-decoration: underline">{{residents}}</span> чел.
             </div>
           </div>
           <div class="row">
             <div class="col-md-9">
-              Наименование организации или Ф.И.О. индивидуального предпринимателя - исполнителя услуг <span style="text-decoration: underline">{{last_payment.client.organization.name}}</span>
+              Наименование организации или Ф.И.О. индивидуального предпринимателя - исполнителя услуг <span style="text-decoration: underline">{{organization_name}}</span>
+            </div>
+            <div class="col-md-9">
+              Адрес <span style="text-decoration: underline">{{organization_address}}</span>
             </div>
             <div class="col-md-9">
               Адрес <span style="text-decoration: underline">{{last_payment.real_estate.address}}</span>
@@ -154,15 +162,12 @@
 body { font-size: 8pt; }
 .container-fluid, .panel-heading, .panel-body { padding: 0px; }
 </style>
-{% else %}
-    No payments.
-{% endif %}
 {% endblock %}
 
 {% block script %}
 <script>
 $(document).ready(function () {
-    print();
+    //print();
 });
 </script>
 {% endblock %}

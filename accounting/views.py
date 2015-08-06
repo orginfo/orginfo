@@ -13,6 +13,20 @@ from datetime import timedelta
 from django.views.generic import ListView
 from django.shortcuts import get_object_or_404
 
+import locale
+import threading
+from contextlib import contextmanager
+LOCALE_LOCK = threading.Lock()
+
+@contextmanager
+def setlocale(name):
+    with LOCALE_LOCK:
+        saved = locale.setlocale(locale.LC_ALL)
+        try:
+            yield locale.setlocale(locale.LC_ALL, name)
+        finally:
+            locale.setlocale(locale.LC_ALL, saved)
+
 
 def get_water_norm(subject_rf, water_description, period, water_service):
     # Получение периода действия норматива по расчетному периоду. Расчетный период устанавливается равным календарному месяцу. Поэтому, считаем, что за один месяц может быть только один норматив.
@@ -139,7 +153,7 @@ def robot():
 # за ________ расчетный период: Используется табилца Period
 # Ф.И.О. (наименование) плательщика собственника/нанимателя: Таблица RealEstateOwner. Для получения вызвать метод get_owner(real_estate, period)
 def get_owner(real_estate, period):
-    owner = RealEstateOwner.objects.filter(Q(real_estate) & Q(start__lte=period.end)).order_by('-start')[0]
+    owner = RealEstateOwner.objects.filter(Q(real_estate=real_estate) & Q(start__lte=period.end)).order_by('-start')[0]
     return owner
 
 # Адрес помещения: Таблица RealEstate.
@@ -265,16 +279,49 @@ def index(request):
 
 @login_required(login_url="/login/")
 def report(request):
-    "the last payment in the organization"
-#    user_org = get_object_or_404(UserOrganization, user=request.user.id)
+    real_estate_id = 8 #TODO: Параметр.
+    real_estate = RealEstate.objects.get(id=real_estate_id)
+
+    period_id = 8 #TODO: Параметр.
+    period = Period.objects.get(id=period_id)
+
+    context = {}
+
+    # за ________ расчетный период:
+    with setlocale('ru_RU.UTF-8'):
+        context["calc_period_name"] = period.end.strftime("%B %Y")
+
+    # Ф.И.О. (наименование) плательщика собственника/нанимателя: Таблица RealEstateOwner. Для получения вызвать метод get_owner(real_estate, period)
+    context["owner"] = get_owner(real_estate, period)
+    # Адрес помещения: Таблица RealEstate.
+    context["client_address"] = str(real_estate)
+    # Площадь помещения. Таблица TechnicalPassport
+    context["space"] = get_real_estate_space(real_estate)
+    # Количество проживающих. Хранятся в HomeownershipHistory. Вызвать get_residents(real_estate, period)
+    context["residents"] = get_residents(real_estate, period)
+    # Наименование организации или Ф.И.О индивидуально предпринимателя - исполнителя услуг:
+    user_org = get_object_or_404(UserOrganization, user=request.user.id)
+    organization = user_org.organization
+    context["organization_name"] = str(organization)
+    # Адрес: Organization.address
+    context["organization_address"] = str(organization.address)
+    # Телефон организации
+    #phone = Organization.phone
+    # Факс организации
+    #fax = Organization.fax
+    # адрес электронной почты
+    #email = Organization.email
+    # адрес сайта
+    #website = Organization.website
+    # Режим работы ___________
+    #operating_mode = Organization.operating_mode
+    # (operating_mode); телефон 
+    #phone = Organization.phone
+
 #    if not user_org.organization:
 #        raise Http404
 #    last_payment = Payment.objects.filter(client__organization=user_org.organization).last()
-    context = {
-        #'last_payment': last_payment,
-        'last_payment': None,
-        'period': '2014-06-01 (TODO)'
-    }
+
     return render(request, 'accounting/report.html', context)
 
 class Accounts(ListView):
