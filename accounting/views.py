@@ -206,7 +206,7 @@ def test_part1(organization, real_estate, period):
 def get_client_services(real_estate, period):
     services = []
     for client_service in ClientService.objects.filter(real_estate=real_estate).order_by('service'):
-        services.append(client_service.service.CommunalService.name)
+        services.append(client_service.service.name)
     return services
 # Сумма к оплате за расчетный период: Значения хранятся в PaymentAmount. Вызвать метод get_payment_amount(real_estate, period)
 def get_payment_amount(real_estate, period):
@@ -302,6 +302,17 @@ def report(request):
     context["email"] = organization.email
     context["website"] = organization.website
     context["operating_mode"] = organization.operating_mode
+
+    context["resourse_supply_organizations"] = []
+    for resourse_supply_organization in Organization.objects.filter(abonents=real_estate):
+        context["resourse_supply_organizations"].append({
+            "organization_name": str(resourse_supply_organization),
+            "bank_identifier_code": resourse_supply_organization.bank_identifier_code,
+            "corresponding_account": resourse_supply_organization.corresponding_account,
+            "operating_account": resourse_supply_organization.operating_account,
+            "services": get_client_services(real_estate, period),
+            "amount": get_payment_amount(real_estate, period)
+        })
 
 #    if not user_org.organization:
 #        raise Http404
