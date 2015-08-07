@@ -287,40 +287,24 @@ def report(request):
 
     context = {}
 
-    # за ________ расчетный период:
     with setlocale('ru_RU.UTF-8'):
         context["calc_period_name"] = period.end.strftime("%B %Y")
-
-    # Ф.И.О. (наименование) плательщика собственника/нанимателя: Таблица RealEstateOwner. Для получения вызвать метод get_owner(real_estate, period)
     context["owner"] = get_owner(real_estate, period)
-    # Адрес помещения: Таблица RealEstate.
     context["client_address"] = str(real_estate)
-    # Площадь помещения. Таблица TechnicalPassport
     context["space"] = get_real_estate_space(real_estate)
-    # Количество проживающих. Хранятся в HomeownershipHistory. Вызвать get_residents(real_estate, period)
     context["residents"] = get_residents(real_estate, period)
-    # Наименование организации или Ф.И.О индивидуально предпринимателя - исполнителя услуг:
     user_org = get_object_or_404(UserOrganization, user=request.user.id)
     organization = user_org.organization
     context["organization_name"] = str(organization)
-    # Адрес: Organization.address
     context["organization_address"] = str(organization.address)
-    # Телефон организации
-    #phone = Organization.phone
-    # Факс организации
-    #fax = Organization.fax
-    # адрес электронной почты
-    #email = Organization.email
-    # адрес сайта
-    #website = Organization.website
-    # Режим работы ___________
-    #operating_mode = Organization.operating_mode
-    # (operating_mode); телефон 
-    #phone = Organization.phone
+    context["phone"] = "/".join(list(map(lambda x: x.strip(), organization.phone.split(","))))
+    context["fax"] = organization.fax
+    context["email"] = organization.email
+    context["website"] = organization.website
+    context["operating_mode"] = organization.operating_mode
 
 #    if not user_org.organization:
 #        raise Http404
-#    last_payment = Payment.objects.filter(client__organization=user_org.organization).last()
 
     return render(request, 'accounting/report.html', context)
 

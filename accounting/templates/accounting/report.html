@@ -29,7 +29,10 @@
               Адрес <span style="text-decoration: underline">{{organization_address}}</span>
             </div>
             <div class="col-md-9">
-              Адрес <span style="text-decoration: underline">{{last_payment.real_estate.address}}</span>
+              Телефон, факс, адрес электронной почты, адрес сайта в сети Интернет <span style="text-decoration: underline">{% if phone %}{{phone}}{% else %}--{% endif %}, {% if fax %}{{fax}}{% else %}--{% endif %}, {% if email %}{{email}}{% else %}--{% endif %}, {% if website %}{{website}}{% else %}--{% endif %}</span>
+            </div>
+            <div class="col-md-9">
+              <span style="text-decoration: underline">{{operating_mode}}</span>; телефон <span style="text-decoration: underline">{{phone}}</span>
             </div>
           </div>
         </div>
