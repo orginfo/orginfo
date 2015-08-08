@@ -10,6 +10,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 import json
 from datetime import timedelta
+from django.db.models import Sum
 from django.views.generic import ListView
 from django.shortcuts import get_object_or_404
 
@@ -345,6 +346,25 @@ def report(request):
             "common_property_amount": common_property_amount,
             "total_amount": total_amount
         })
+
+    # Задолженность за предыдующие периоды
+    account = Account.objects.get(real_estate=real_estate, operation_type=Account.WRITE_OFF, operation_date=period.start)
+    debts = account.balance if account.balance < 0.0 else 0.0
+    
+    # Аванс на начало расчетного периода
+    account = Account.objects.filter(real_estate=real_estate, operation_date__lte=period.end).order_by('operation_date').last()
+    advance = 0.0 if account.balance < 0.0 else account.balance
+    
+    # Дата последней оплаты:
+    account = Account.objects.filter(real_estate=real_estate, operation_type=Account.TOP_UP, operation_date__lte=period.end).order_by('operation_date').last()
+    if account is not None: 
+        last_payment_date = account.operation_date
+    
+    # Оплата за все услуги для расчетного периода
+    payment_amount = CalculationService.objects.filter(real_estate=real_estate, period=period).aggregate(Sum('amount'))['amount__sum']
+    
+    # Итого к оплате:
+    total_amount = advance + debts - payment_amount
 
 #    if not user_org.organization:
 #        raise Http404
