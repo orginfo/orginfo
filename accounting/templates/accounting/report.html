@@ -2,53 +2,37 @@
 
 {% block content %}
 <div class="panel panel-default">
-  <div class="panel-heading"><strong>Раздел 1. Сведения о плательщике и исполнителе услуг</strong></div>
   <div class="panel-body">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-9">
-          <div class="row">
-            <div class="col-md-9">
-              за <span style="text-decoration: underline">{{calc_period_name}}</span> (расчетный период)
-            </div>
-            <div class="col-md-9">
-              Ф.И.О. (наименование) плательщика соственника/нанимателя <span style="text-decoration: underline">{{owner}}</span>
-            </div>
-            <div class="col-md-9">
-              Адрес помещения <span style="text-decoration: underline">{{client_address}}</span>
-            </div>
-            <div class="col-md-9">
-              Площадь помещения: <span style="text-decoration: underline">{{space}}</span> кв. м Количество проживающих <span style="text-decoration: underline">{{residents}}</span> чел.
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-9">
-              Наименование организации или Ф.И.О. индивидуального предпринимателя - исполнителя услуг <span style="text-decoration: underline">{{organization_name}}</span>
-            </div>
-            <div class="col-md-9">
-              Адрес <span style="text-decoration: underline">{{organization_address}}</span>
-            </div>
-            <div class="col-md-9">
-              Телефон, факс, адрес электронной почты, адрес сайта в сети Интернет <span style="text-decoration: underline">{% if phone %}{{phone}}{% else %}--{% endif %}, {% if fax %}{{fax}}{% else %}--{% endif %}, {% if email %}{{email}}{% else %}--{% endif %}, {% if website %}{{website}}{% else %}--{% endif %}</span>
-            </div>
-            <div class="col-md-9">
-              <span style="text-decoration: underline">{{operating_mode}}</span>; телефон <span style="text-decoration: underline">{{phone}}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="panel panel-default">
-  <div class="panel-heading">Раздел 2. <strong>Информация для внесения платы получателю платежа (получателям платежей)</strong></div>
-  <div class="panel-body">
-    <div class="container-fluid">
-
 
 <table border="1">
   <tbody>
+    <tr>
+      <td><strong>Раздел 1. Сведения о плательщике и исполнителе услуг</strong></td>
+    </tr>
+    <tr>
+      <td>
+        за <span style="text-decoration: underline">{{calc_period_name}}</span> (расчетный период)<br>
+        Ф.И.О. (наименование) плательщика соственника/нанимателя <span style="text-decoration: underline">{{owner}}</span><br>
+        Адрес помещения <span style="text-decoration: underline">{{client_address}}</span><br>
+        Площадь помещения: <span style="text-decoration: underline">{{space}}</span> кв. м Количество проживающих <span style="text-decoration: underline">{{residents}}</span> чел.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Наименование организации или Ф.И.О. индивидуального предпринимателя - исполнителя услуг <span style="text-decoration: underline">{{organization_name}}</span><br>
+        Адрес <span style="text-decoration: underline">{{organization_address}}</span><br>
+        Телефон, факс, адрес электронной почты, адрес сайта в сети Интернет <span style="text-decoration: underline">{% if phone %}{{phone}}{% else %}--{% endif %}, {% if fax %}{{fax}}{% else %}--{% endif %}, {% if email %}{{email}}{% else %}--{% endif %}, {% if website %}{{website}}{% else %}--{% endif %}</span><br>
+        <span style="text-decoration: underline">{{operating_mode}}</span>; телефон <span style="text-decoration: underline">{{phone}}</span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<table border="1">
+  <tbody>
+    <tr>
+      <td colspan="5"><strong>Раздел 2. Информация для внесения платы получателю платежа (получателям платежей)</td>
+    </tr>
     <tr>
       <td>Наименование получателя платежа</td>
       <td>Номер банковского счета
@@ -82,33 +66,34 @@
     </tr>
   </tbody>
 </table>
-
-
-    </div>
-  </div>
-</div>
-
-<div class="panel panel-default">
-  <div class="panel-heading">Раздел 3. <strong>Расчет размера платы за содержание и ремонт жилого помещения и коммунальные услуги</strong></div>
-  <div class="panel-body">
-    <div class="container-fluid">
-
+<br>
 <table border="1">
   <tbody>
     <tr>
-    <td rowspan="3">Виды услуг </td>
-    <td rowspan="3">Ед. изм. </td>
-    <td colspan="2">Объем коммун.
-      <br />услуг *</td>
-    <td rowspan="3">
-      <p>Тариф руб./ед. изм. Размер платы на кв. м, руб. </p>
-    </td>
+      <td colspan="13"><strong>Раздел 3. Расчет размера платы за содержание и ремонт жилого помещения и коммунальные услуги</strong></td>
+      <!-- пустое место между "Раздел 3" и "Раздел 4" -->
+      <td>&nbsp;</td>
+      <td colspan="6"><strong>Раздел 4. Справочная информация</strong></td>
+    </tr>
+    <tr>
+      <td rowspan="3">Виды услуг </td>
+      <td rowspan="3">Ед. изм. </td>
+      <td colspan="2">Объем коммун.
+        <br />услуг *</td>
+      <td rowspan="3">
+        <p>Тариф руб./ед. изм. Размер платы на кв. м, руб. </p>
+      </td>
       <td colspan="2">Размер платы за ком. услуги, руб. </td>
-      <td rowspan="3">Всего на- числено за расчет- ный период, руб. </td>
-      <td rowspan="3">Пере-расче-ты всего, руб. </td>
-      <td rowspan="3">Льготы, субси-дии,
+      <td rowspan="3">Всего начислено за расчетный период, руб. </td>
+      <td rowspan="3">Перерасчеты всего, руб. </td>
+      <td rowspan="3">Льготы, субсидии,
         <br />руб. </td>
       <td colspan="3"> Итого к оплате за расчетный период, руб. </td>
+      <!-- пустое место между "Раздел 3" и "Раздел 4" -->
+      <td rowspan="2">&nbsp;</td>
+      <td colspan="2" rowspan="2">Норматив потребления коммунальных услуг</td>
+      <td colspan="2" rowspan="2">Текущие показания приборов учета коммунальных услуг</td>
+      <td colspan="2" rowspan="2">Суммарный объем коммунальных услуг в доме</td>
     </tr>
     <tr>
       <td rowspan="2">индив.
@@ -123,6 +108,14 @@
     <tr>
       <td> инд. потребл.</td>
       <td>общед. нужды</td>
+      <!-- пустое место между "Раздел 3" и "Раздел 4" -->
+      <td>&nbsp;</td>
+      <td>в жилых помещениях</td>
+      <td>на общедомовые нужды</td>
+      <td>индивидуальных (квартирных)</td>
+      <td>коллективных (общедомовых)</td>
+      <td>в помещениях дома</td>
+      <td>на общедомовые нужды</td>
     </tr>
     <tr>
       <td> 1</td>
@@ -138,9 +131,25 @@
       <td> 11</td>
       <td> 12</td>
       <td> 13</td>
+      <!-- пустое место между "Раздел 3" и "Раздел 4" -->
+      <td>&nbsp;</td>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+      <td>4</td>
+      <td>5</td>
+      <td>6</td>
     </tr>
     <tr>
       <td colspan="12">Коммунальные услуги</td>
+      <td> </td>
+      <!-- пустое место между "Раздел 3" и "Раздел 4" -->
+      <td>&nbsp;</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
       <td> </td>
     </tr>
     {% for service in services %}
@@ -158,20 +167,118 @@
       <td> </td>
       <td> </td>
       <td> </td>
+      <!-- пустое место между "Раздел 3" и "Раздел 4" -->
+      <td>&nbsp;</td>
+      <td>1</td>
+      <td>2</td>
+      <td>1</td>
+      <td>2</td>
+      <td>1</td>
+      <td>2</td>
     </tr>
     {% endfor %}
+    <tr>
+      <td>Итого к оплате за коммунальные услуги</td>
+      <td  colspan="6"></td>
+      <td> </td>
+      <td> </td>
+      <td></td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <!-- пустое место между "Раздел 3" и "Раздел 4" -->
+      <td>&nbsp;</td>
+      <td colspan="5" rowspan="2">Предельный (максимальный) индекс изменения размера платы граждан за коммунальные услуги в муниципальном образовании, %.</td>
+      <td rowspan="2">2</td>
+    </tr>
     <tr>
       <td colspan="10"> Итого к оплате за расчетный период</td>
       <td>{{all_total_amount}}</td>
       <td> </td>
       <td> </td>
+      <!-- пустое место между "Раздел 3" и "Раздел 4" -->
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<table border="1">
+  <tbody>
+    <tr>
+      <td colspan="3"><strong>Раздел 5. Сведения о перерасчетах (доначисления +, уменьшения -)</strong></td>
+    </tr>
+    <tr>
+      <td>Вид услуг</td>
+      <td>Основания перерасчетов</td>
+      <td>Сумма, руб.</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<table border="1">
+  <tbody>
+    <tr>
+      <td colspan="6"><strong>Раздел 6. Расчет суммы к оплате с учетом рассрочки платежа</strong></td>
+    </tr>
+    <tr>
+      <td rowspan="2">Виды услуг</td>
+      <td colspan="2">Сумма платы с учетом рассрочки платежа</td>
+      <td colspan="2">Проценты за рассрочку</td>
+      <td rowspan="2">Сумма к оплате с учетом рассрочки платежа и процентов за рассрочку, руб.</td>
+    </tr>
+    <tr>
+      <td>от платы за расчетный период</td>
+      <td>от платы за предыдущие расчетные периоды</td>
+      <td>руб.</td>
+      <td>%</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+      <td>4</td>
+      <td>5</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td>Коммунальные услуги</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>Холодное водоснабжение</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
     </tr>
   </tbody>
 </table>
 
-    </div>
+
+
   </div>
 </div>
+
 <style type="text/css" media="print">
 body { font-size: 8pt; }
 .container-fluid, .panel-heading, .panel-body { padding: 0px; }
