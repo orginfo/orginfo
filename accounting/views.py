@@ -206,7 +206,7 @@ def test_part1(organization, real_estate, period):
 def get_client_services(real_estate, period):
     services = []
     for client_service in ClientService.objects.filter(real_estate=real_estate).order_by('service'):
-        services.append(client_service.service.name)
+        services.append(client_service.service)
     return services
 # Сумма к оплате за расчетный период: Значения хранятся в PaymentAmount. Вызвать метод get_payment_amount(real_estate, period)
 def get_payment_amount(real_estate, period):
@@ -313,6 +313,26 @@ def report(request):
             "services": get_client_services(real_estate, period),
             "amount": get_payment_amount(real_estate, period)
         })
+
+        context["services"] = []
+        for client_service in ClientService.objects.filter(real_estate_id=real_estate_id):
+            context["services"].append(client_service) 
+
+# Таблица связи, если правильно помню - ClientService
+#    "Виды услуг" - ClientService
+#    "Единица измерения" - в модели нигде не учитывал единицы измерения. В случае, если используется отопление - "Гкал", в случае водоснабжения и водоотведения - "куб. м"
+#    "Объем коммунальных услуг *":
+#    - "индивидуальное потребление" - таблица 'CalculationService', для выборки использовать 'CalculationService.consumption_type == CalculationService.INDIVIDUAL'. Объем хранит поле 'CalculationService.volume'
+#    - "общедомовые нужды" - тоже, что и "индивидуальное потребление", только для выборки использовать тип 'CalculationService.consumption_type == CalculationService.COMMON_PROPERTY' (на данный момент наши клиенты не используют ОДН).
+#    - "Тариф руб./единица измерения" - использовать метод 'def get_tariff(real_estate, period, service):'. Единицы измерения нигде не учитывал. В случае, если используется отопление - "руб./Гкал", в случае водоснабжения и водоотведения - "руб./м3"
+#    "Размер платы за коммунальные услуги, руб."
+#    - "индивидуальное потребление" - таблица 'CalculationService', для выборки использовать 'CalculationService.consumption_type == CalculationService.INDIVIDUAL'. Объем хранит поле 'CalculationService.amount'
+#    - "общедомовые нужды" - тоже, что и "индивидуальное потребление", только для выборки использовать тип 'CalculationService.consumption_type == CalculationService.COMMON_PROPERTY' (на данный момент наши клиенты не используют ОДН).
+#    "Всего начислено за расчетный период, руб." - сумма 'CalculationService.amount' за индивидуальное и ОДН.
+#    "Перерасчеты всего, руб." - пока не использовать
+#    "Льготы, субсидии, руб." - пока не использовать
+# последние 3 столбца чуть попозже скажу
+
 
 #    if not user_org.organization:
 #        raise Http404

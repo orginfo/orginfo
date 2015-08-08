@@ -48,34 +48,39 @@
 
 
 <table border="1">
-<tbody>
-<tr>
-<td>Наименование получателя платежа</td>
-<td>Номер банковского счета<br />и банковские реквизиты</td>
-<td>№ лицевого счета (иной идентификатор плательщика)</td>
-<td>Виды услуг</td>
-<td>Сумма к оплате за расчетный период,руб.</td>
-</tr>
-<tr>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
-</tr>
-<tr>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
-</tr>
-<tr>
-<td colspan="5">
-<p>Cправочно:<br /> Задолженность за предыдущие периоды <span style="text-decoration: underline;">(TODO)</span><br /> Аванс на начало расчетного периода <span style="text-decoration: underline;">(TODO)</span><br /> (учтены платежи, поступившие до 25 числа расчетного периода включительно)<br /> Дата последней поступившей оплаты <span style="text-decoration: underline;">(TODO)</span><br /> Итого к оплате <span style="text-decoration: underline;">(TODO)</span> руб.</p>
-</td>
-</tr>
-</tbody>
+  <tbody>
+    <tr>
+      <td>Наименование получателя платежа</td>
+      <td>Номер банковского счета
+        <br />и банковские реквизиты</td>
+      <td>№ лицевого счета (иной идентификатор плательщика)</td>
+      <td>Виды услуг</td>
+      <td>Сумма к оплате за расчетный период,руб.</td>
+    </tr>
+    {% for organization in resourse_supply_organizations %}
+    <tr>
+      <td>{{organization.organization_name}}</td>
+      <td>{{organization.bank_identifier_code}}</td>
+      <td>{{organization.operating_account}}</td>
+      <td>
+      {% for service in organization.services %}
+        {{service.get_name_display}}
+      {% endfor %}
+      </td>
+      <td>{{organization.amount}}</td>
+    </tr>
+    {% endfor %}
+    <tr>
+      <td colspan="5">
+        <p>Cправочно:
+          <br /> Задолженность за предыдущие периоды <span style="text-decoration: underline;">(TODO)</span>
+          <br /> Аванс на начало расчетного периода <span style="text-decoration: underline;">(TODO)</span>
+          <br /> (учтены платежи, поступившие до 25 числа расчетного периода включительно)
+          <br /> Дата последней поступившей оплаты <span style="text-decoration: underline;">(TODO)</span>
+          <br /> Итого к оплате <span style="text-decoration: underline;">(TODO)</span> руб.</p>
+      </td>
+    </tr>
+  </tbody>
 </table>
 
 
