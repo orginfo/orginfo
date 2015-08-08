@@ -94,73 +94,79 @@
     <div class="container-fluid">
 
 <table border="1">
-<tbody>
-<tr>
-<td rowspan="3">Виды услуг  </td>
-<td rowspan="3">Ед. изм.  </td>
-<td colspan="2">Объем коммун.<br />услуг *</td>
-<td rowspan="3">
-<p>Тариф руб./ед. изм. Размер платы на кв. м, руб.  </p>
-</td>
-<td colspan="2">Размер платы за ком. услуги, руб. </td>
-<td rowspan="3">Всего на- числено за расчет- ный период, руб. </td>
-<td rowspan="3">Пере-расче-ты всего, руб. </td>
-<td rowspan="3">Льготы, субси-дии,<br />руб. </td>
-<td colspan="3"> Итого к оплате за расчетный период, руб.  </td>
-</tr>
-<tr>
-<td rowspan="2">индив.<br />потребл. </td>
-<td rowspan="2">общедом.<br />нужды </td>
-<td rowspan="2">индив. потреб. </td>
-<td rowspan="2">общед. нужды </td>
-<td rowspan="2">всего </td>
-<td colspan="2">в т.ч. за ком. усл. </td>
-</tr>
-<tr>
-<td> инд. потребл.</td>
-<td>общед. нужды</td>
-</tr>
-<tr>
-<td> 1</td>
-<td> 2</td>
-<td> 3</td>
-<td> 4</td>
-<td> 5</td>
-<td> 6</td>
-<td> 7</td>
-<td> 8</td>
-<td> 9</td>
-<td> 10</td>
-<td> 11</td>
-<td> 12</td>
-<td> 13</td>
-</tr>
-<tr>
-<td colspan="12">Коммунальные услуги           </td>
-<td> </td>
-</tr>
-<tr>
-<td> Холодное водоснабжение</td>
-<td> куб. м</td>
-<td> </td>
-<td> </td>
-<td> </td>
-<td> </td>
-<td> </td>
-<td> </td>
-<td> </td>
-<td> </td>
-<td> </td>
-<td> </td>
-<td> </td>
-</tr>
-<tr>
-<td colspan="10"> Итого к оплате за расчетный период         </td>
-<td> </td>
-<td> </td>
-<td> </td>
-</tr>
-</tbody>
+  <tbody>
+    <tr>
+    <td rowspan="3">Виды услуг </td>
+    <td rowspan="3">Ед. изм. </td>
+    <td colspan="2">Объем коммун.
+      <br />услуг *</td>
+    <td rowspan="3">
+      <p>Тариф руб./ед. изм. Размер платы на кв. м, руб. </p>
+    </td>
+      <td colspan="2">Размер платы за ком. услуги, руб. </td>
+      <td rowspan="3">Всего на- числено за расчет- ный период, руб. </td>
+      <td rowspan="3">Пере-расче-ты всего, руб. </td>
+      <td rowspan="3">Льготы, субси-дии,
+        <br />руб. </td>
+      <td colspan="3"> Итого к оплате за расчетный период, руб. </td>
+    </tr>
+    <tr>
+      <td rowspan="2">индив.
+        <br />потребл. </td>
+      <td rowspan="2">общедом.
+        <br />нужды </td>
+      <td rowspan="2">индив. потреб. </td>
+      <td rowspan="2">общед. нужды </td>
+      <td rowspan="2">всего </td>
+      <td colspan="2">в т.ч. за ком. усл. </td>
+    </tr>
+    <tr>
+      <td> инд. потребл.</td>
+      <td>общед. нужды</td>
+    </tr>
+    <tr>
+      <td> 1</td>
+      <td> 2</td>
+      <td> 3</td>
+      <td> 4</td>
+      <td> 5</td>
+      <td> 6</td>
+      <td> 7</td>
+      <td> 8</td>
+      <td> 9</td>
+      <td> 10</td>
+      <td> 11</td>
+      <td> 12</td>
+      <td> 13</td>
+    </tr>
+    <tr>
+      <td colspan="12">Коммунальные услуги</td>
+      <td> </td>
+    </tr>
+    {% for service in services %}
+    <tr>
+      <td>{{service.name}}</td>
+      <td>куб. м</td>
+      <td>{{service.individual_volume}}</td>
+      <td>{{service.common_property_value}}</td>
+      <td>{{service.tariff}} руб./м3</td>
+      <td>{{service.individual_amount}}</td>
+      <td>{{service.common_property_amount}}</td>
+      <td>{{service.total_amount}}</td>
+      <td>--</td>
+      <td>--</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    {% endfor %}
+    <tr>
+      <td colspan="10"> Итого к оплате за расчетный период</td>
+      <td>{{all_total_amount}}</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+  </tbody>
 </table>
 
     </div>
