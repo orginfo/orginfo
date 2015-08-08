@@ -315,6 +315,25 @@ def report(request):
             "amount": get_payment_amount(real_estate, period)
         })
 
+    context["account_info"] = {}
+    # Задолженность за предыдующие периоды
+    account = Account.objects.get(real_estate=real_estate, operation_type=Account.WRITE_OFF, operation_date=period.start)
+    debts = account.balance if account.balance < 0.0 else 0.0
+    context["account_info"]["debts"] = debts
+    # Аванс на начало расчетного периода
+    account = Account.objects.filter(real_estate=real_estate, operation_date__lte=period.end).order_by('operation_date').last()
+    advance = 0.0 if account.balance < 0.0 else account.balance
+    context["account_info"]["advance"] = advance
+    # Дата последней оплаты:
+    context["account_info"]["last_payment_date"] = "--"
+    account = Account.objects.filter(real_estate=real_estate, operation_type=Account.TOP_UP, operation_date__lte=period.end).order_by('operation_date').last()
+    if account is not None: 
+        context["account_info"]["last_payment_date"] = account.operation_date
+    # Оплата за все услуги для расчетного периода
+    payment_amount = CalculationService.objects.filter(real_estate=real_estate, period=period).aggregate(Sum('amount'))['amount__sum'] or 0.0
+    # Итого к оплате:
+    context["account_info"]["total_amount"] = advance + debts - payment_amount
+
     context["all_total_amount"] = 0
     context["services"] = [];
     for service in get_client_services(real_estate, period):
@@ -346,25 +365,6 @@ def report(request):
             "common_property_amount": common_property_amount,
             "total_amount": total_amount
         })
-
-    # Задолженность за предыдующие периоды
-    account = Account.objects.get(real_estate=real_estate, operation_type=Account.WRITE_OFF, operation_date=period.start)
-    debts = account.balance if account.balance < 0.0 else 0.0
-    
-    # Аванс на начало расчетного периода
-    account = Account.objects.filter(real_estate=real_estate, operation_date__lte=period.end).order_by('operation_date').last()
-    advance = 0.0 if account.balance < 0.0 else account.balance
-    
-    # Дата последней оплаты:
-    account = Account.objects.filter(real_estate=real_estate, operation_type=Account.TOP_UP, operation_date__lte=period.end).order_by('operation_date').last()
-    if account is not None: 
-        last_payment_date = account.operation_date
-    
-    # Оплата за все услуги для расчетного периода
-    payment_amount = CalculationService.objects.filter(real_estate=real_estate, period=period).aggregate(Sum('amount'))['amount__sum']
-    
-    # Итого к оплате:
-    total_amount = advance + debts - payment_amount
 
 #    if not user_org.organization:
 #        raise Http404
