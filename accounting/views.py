@@ -280,7 +280,8 @@ def index(request):
 
 @login_required(login_url="/login/")
 def report(request):
-    real_estate_id = 8 #TODO: Параметр.
+    subject_rf = SubjectRF.objects.get(name="Новосибирская область")
+    real_estate_id = 6 #TODO: Параметр.
     real_estate = RealEstate.objects.get(id=real_estate_id)
 
     period_id = 1 #TODO: Параметр.
@@ -356,6 +357,15 @@ def report(request):
         period = Period.objects.get(id=period_id)
         tariff = get_tariff(real_estate, period, service)
 
+        norm = 0.0
+        service_name = service.name
+        if service_name == CommunalService.HEATING:
+            pass
+        else:
+            homeownership = HomeownershipHistory.objects.filter(real_estate=real_estate, water_description__direction_type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING, start__lte=period.end).order_by('-start')[0]
+            water_description = homeownership.water_description
+            norm = get_water_norm(subject_rf, water_description, period, service)
+        
         context["services"].append({
             "name": service.get_name_display(),
             "individual_volume": individual_volume,
@@ -363,7 +373,8 @@ def report(request):
             "tariff": tariff,
             "individual_amount": individual_amount,
             "common_property_amount": common_property_amount,
-            "total_amount": total_amount
+            "total_amount": total_amount,
+            "norm" : norm,
         })
 
 #    if not user_org.organization:
