@@ -13,6 +13,7 @@ from datetime import timedelta
 from django.db.models import Sum
 from django.views.generic import ListView
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 
 import locale
 import threading
@@ -280,12 +281,26 @@ def index(request):
 
 @login_required(login_url="/login/")
 def report(request):
-    subject_rf = SubjectRF.objects.get(name="Новосибирская область")
-    real_estate_id = 6 #TODO: Параметр.
-    real_estate = RealEstate.objects.get(id=real_estate_id)
-
-    period_id = 1 #TODO: Параметр.
+    user_org = get_object_or_404(UserOrganization, user=request.user.id)
+    if not user_org.organization:
+        raise Http404
+    ru_people_count = "140000000"
+    if ('real_estate' not in request.GET or
+            len(request.GET["real_estate"]) > len(ru_people_count) or
+            request.GET["real_estate"].isnumeric() == False):
+        raise Http404
+    real_estates = user_org.organization.abonents.filter(id=request.GET["real_estate"])
+    if len(real_estates) != 1:
+        raise Http404
+    real_estate_id = request.GET["real_estate"]
+    real_estate = real_estates[0]
+    if ('period' not in request.GET or
+            len(request.GET["period"]) > 4 or
+            request.GET["period"].isnumeric() == False):
+        raise Http404
+    period_id = request.GET["period"]
     period = Period.objects.get(id=period_id)
+    subject_rf = SubjectRF.objects.get(name="Новосибирская область")
 
     context = {}
 
@@ -295,7 +310,6 @@ def report(request):
     context["client_address"] = str(real_estate)
     context["space"] = get_real_estate_space(real_estate)
     context["residents"] = get_residents(real_estate, period)
-    user_org = get_object_or_404(UserOrganization, user=request.user.id)
     organization = user_org.organization
     context["organization_name"] = str(organization)
     context["organization_address"] = str(organization.address)
@@ -376,9 +390,6 @@ def report(request):
             "total_amount": total_amount,
             "norm" : norm,
         })
-
-#    if not user_org.organization:
-#        raise Http404
 
     return render(request, 'accounting/report.html', context)
 
