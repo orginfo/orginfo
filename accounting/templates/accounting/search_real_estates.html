@@ -48,7 +48,7 @@
                     <span style="{% if operation.operation_type == operation.WRITE_OFF %}color: red; {% else %}color: green; {% endif %}white-space:nowrap;">{{operation.amount }} {{ operation.operation_date }}</span><br>
                 {% endfor %}
                 </td>
-                <td><a href="#">платёжный документ</a></td>
+                <td><a href="{% url 'accounting:report' %}?period={{ account.period.id }}&real_estate={{ real_estate.id }}">платёжный документ</a></td>
             </tr>
         {% endfor %}
         </tbody>
