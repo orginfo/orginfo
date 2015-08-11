@@ -35,36 +35,10 @@
     <li{% if request.path == l2readings %} role="presentation" class="active"{% endif %}><a href="{% url 'accounting:readings' %}?real_estate={{real_estate.id}}">Показания счётчиков</a></li>
   </ul>
   <br>
-{% if accounts %}
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Период</th>
-                <th>Баланс</th>
-                <th>Операции</th>
-                <th>Действие</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for account in accounts %}
-            <tr>
-                <td>#{{ account.period.id }} с {{ account.period.start }} по {{ account.period.end }}</td>
-                <td>{{ account.balance }}</td>
-                <td>
-                {% for operation in account.operations %}
-                    <span style="{% if operation.operation_type == operation.WRITE_OFF %}color: red; {% else %}color: green; {% endif %}white-space:nowrap;">{{operation.amount }} {{ operation.operation_date }}</span><br>
-                {% endfor %}
-                </td>
-                <td><a href="{% url 'accounting:report' %}?period={{ account.period.id }}&real_estate={{ real_estate.id }}">платёжный документ</a></td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <p>Поиск результатов не дал.</p>
-{% endif %}
-{% endif %}
 
+  <!-- data -->
+  readings for real_estate_id={{real_estate.id}}
+{% endif %}
 {% endblock %}
 
 {% block page_script %}

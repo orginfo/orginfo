@@ -36,7 +36,8 @@ body {
             {% url 'accounting:report' as l2report %}
             <li{% if request.get_full_path == l2report %} class="active"{% endif %}><a href="{% url 'accounting:report' %}" target="_blank">Report</a></li>
             {% url 'accounting:accounts' as l2accounts %}
-            <li{% if request.path == l2accounts %} class="active"{% endif %}><a href="{% url 'accounting:accounts' %}">Accounts</a></li>
+            {% url 'accounting:readings' as l2readings %}
+            <li{% if request.path == l2accounts or request.path == l2readings %} class="active"{% endif %}><a href="{% url 'accounting:accounts' %}">Accounts</a></li>
             
           </ul>
           {{ request.get_full_path }}

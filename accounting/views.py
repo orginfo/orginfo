@@ -281,7 +281,25 @@ def index(request):
 
 @login_required(login_url="/login/")
 def readings(request):
-    return HttpResponse("readings")
+    user_org = get_object_or_404(UserOrganization, user=request.user.id)
+    if not user_org.organization:
+        raise Http404
+
+    real_estate = None
+    context = {}
+    ru_people_count = "140000000"
+    if ('real_estate' in request.GET and
+            len(request.GET["real_estate"]) <= len(ru_people_count) and
+            request.GET["real_estate"].isnumeric()):
+        real_estates = user_org.organization.abonents.filter(id=request.GET["real_estate"])
+        if len(real_estates) == 1:
+            real_estate = real_estates[0]
+            context["real_estate"] = {
+                "id": real_estate.id,
+                "real_estate_str": real_estate.__str__()}
+
+    
+    return render(request, 'accounting/readings.html', context)
 
 @login_required(login_url="/login/")
 def report(request):
@@ -429,8 +447,8 @@ class Accounts(ListView):
         return result#object_list
     def dispatch(self, *args, **kwargs):
         self.real_estate_id = None
-        if 'XXX' in self.request.GET:
-            self.real_estate_id = self.request.GET['XXX']
+        if 'real_estate' in self.request.GET:
+            self.real_estate_id = self.request.GET['real_estate']
 
         return super(Accounts, self).dispatch(*args, **kwargs)
     def get_context_data(self, **kwargs):
