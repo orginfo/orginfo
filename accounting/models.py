@@ -92,6 +92,8 @@ class CommunalService(models.Model):
         (HEATING, 'Отопление'),
     )
     name = models.CharField(max_length=1, choices=COMMUNAL_RESOURCES, default=COLD_WATER)
+    def __str__(self):
+        return self.get_name_display()
 
 class WaterNormDescription(models.Model):
     """Описание названий видов нормативов для водоснабжения (холодная, горячая, водоотведение)"""

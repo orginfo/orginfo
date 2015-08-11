@@ -4,16 +4,20 @@ from accounting.models import Period, CalculationService, Account
 from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner
 from accounting.models import CommunalService, ClientService, Organization
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, Tariff
-from accounting.models import TechnicalPassport, UserOrganization
+from accounting.models import TechnicalPassport, UserOrganization, CounterReading
 from django.db.models import Q
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 import json
 from datetime import timedelta
 from django.db.models import Sum
-from django.views.generic import ListView
+from django.views.generic import ListView, CreateView
 from django.shortcuts import get_object_or_404
 from django.http import Http404
+from django.forms import ModelForm
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder, Field
+from django.core.urlresolvers import reverse
 
 import locale
 import threading
@@ -278,6 +282,44 @@ def index(request):
     #test_owner()
     
     return HttpResponse("Робот отработал успешно.")
+
+class CounterReadingForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(CounterReadingForm, self).__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-sm-2'
+        self.helper.field_class = 'col-sm-6'
+        self.fields['counter'].label = "Счётчик"
+        self.fields['date'].label = "Дата"
+        self.fields['period'].label = "Период"
+        self.fields['value'].label = "Показание"
+        self.helper.layout = Layout(
+            Fieldset(
+                'Показание счетчика холодного водоснабжения',
+                'counter',
+                Field('date', placeholder="ДД.ММ.ГГГГ"),
+                'period',
+                'value',
+            ),
+            ButtonHolder(
+                Submit('submit', 'Сохранить', css_class='btn-default')
+            )
+        )
+    class Meta:
+        model = CounterReading
+        fields = ['counter', 'date', 'period', 'value']
+
+class CounterReadingTab(CreateView):
+    model = CounterReading
+    form_class = CounterReadingForm
+    template_name = 'accounting/counter_reading_tab.html'
+    def get_success_url(self):
+        return reverse('accounting:create_reading')
+    def form_valid(self, form):
+        form.instance.real_estate_id = 8#self.kwargs['real_estate_id']
+        return super(CounterReadingTab, self).form_valid(form)
 
 @login_required(login_url="/login/")
 def readings(request):
