@@ -280,6 +280,10 @@ def index(request):
     return HttpResponse("Робот отработал успешно.")
 
 @login_required(login_url="/login/")
+def readings(request):
+    return HttpResponse("readings")
+
+@login_required(login_url="/login/")
 def report(request):
     user_org = get_object_or_404(UserOrganization, user=request.user.id)
     if not user_org.organization:

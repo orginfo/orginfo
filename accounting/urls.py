@@ -9,4 +9,5 @@ urlpatterns = patterns('',
     url(r'^report/$', views.report, name='report'),
     url(r'^real_estates/options/$', views.real_estates_as_options, name='real_estates_as_options'),
     url(r'^accounts/$', login_required(views.Accounts.as_view(), login_url="/login/"), name='accounts'),
+    url(r'^readings/$', views.readings, name='readings'),
 )
