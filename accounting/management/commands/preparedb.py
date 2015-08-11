@@ -5,7 +5,7 @@ from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner,
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, Tariff
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import Organization, CommunalService, ClientService
-from accounting.models import Period, CalculationService, Account
+from accounting.models import Period, CalculationService, Account, Counter, CounterReading
 import os.path
 from orginfo.settings import BASE_DIR
 
@@ -330,6 +330,102 @@ def fill_account():
     for real_estate in RealEstate.objects.exclude(type=RealEstate.MULTIPLE_DWELLING):
         account = Account(real_estate=real_estate, balance=balance, operation_type=Account.WRITE_OFF, operation_date=operation_date, amount=amount)
         account.save()
+
+def preapare_cold_water_counter_kk():
+    Counter.objects.all().delete()
+    CounterReading.objects.all().delete()
+    
+    cold_water_service = CommunalService.objects.get(name = CommunalService.COLD_WATER)
+    
+    counter_kk_path = os.path.join(BASE_DIR, "data", "preparedb", "Counter_KK.txt")
+    file = open(counter_kk_path, 'r', encoding='utf-8')
+    for line in file:
+        index = 0
+        
+        locality_name = ""      # 0
+        street_name = ""        # 1
+        house_nr = ""       # 2
+        number = ""         # 3
+        counter_number = "" # 4
+        start = ""              # 5
+        april = ""              # 6
+        may = ""                # 7
+        june = ""               # 8
+        july = ""               # 9
+        for part in line.split("\t"):
+            part = part.strip().replace(u'\ufeff', '')
+            if part == "\n":
+                continue
+            if index == 0:
+                locality_name = part
+            elif index == 1:
+                street_name = part
+            elif index == 2:
+                house_nr = part
+            elif index == 3:
+                number = part
+            elif index == 4:
+                counter_number = part
+            elif index == 5:
+                start = part
+            elif index == 6:
+                april = part
+            elif index == 7:
+                may = part
+            elif index == 8:
+                june = part
+            elif index == 9:
+                july = part
+            else:
+                pass
+            index = index + 1
+        
+        loc = Locality.objects.get(name=locality_name)
+        street = Street.objects.get(locality=loc, name=street_name)
+        address = HouseAddress.objects.get(street=street, house_number=house_nr)
+        if RealEstate.objects.filter(address=address, number=number).count() !=1:
+            continue
+        real_estate = RealEstate.objects.get(address=address, number=number)
+        
+        #setup_date = datetime.strptime(start, "%d.%m.%Y")
+        setup_date = start
+        water_counter = Counter (number=counter_number, service=cold_water_service, real_estate=real_estate, start=setup_date)
+        water_counter.save()
+        
+        if len(april) != 0:
+            date_reading = '2015-4-25'
+            period = Period.objects.get(start__lte=date_reading, end__gte=date_reading)
+            value = float(april)
+            reading = CounterReading(counter=water_counter, date=date_reading, period=period, value=value)
+            reading.save()
+        
+        if len(may) != 0:
+            date_reading = '2015-5-25'
+            period = Period.objects.get(start__lte=date_reading, end__gte=date_reading)
+            value = float(may)
+            reading = CounterReading(counter=water_counter, date=date_reading, period=period, value=value)
+            reading.save()
+        
+        if len(june) != 0:
+            date_reading = '2015-6-25'
+            period = Period.objects.get(start__lte=date_reading, end__gte=date_reading)
+            value = float(june)
+            reading = CounterReading(counter=water_counter, date=date_reading, period=period, value=value)
+            reading.save()
+        
+        if len(july) != 0:
+            date_reading = '2015-7-25'
+            period = Period.objects.get(start__lte=date_reading, end__gte=date_reading)
+            value = float(july)
+            reading = CounterReading(counter=water_counter, date=date_reading, period=period, value=value)
+            reading.save()
+            
+        if len(april) == 0 and len(may) == 0 and len(june) == 0 and len(july):
+            period = Period.objects.get(start__lte=date_reading, end__gte=setup_date)
+            reading = CounterReading(counter=water_counter, date=setup_date, period=period, value=0.0)
+            reading.save()
+
+    file.close()
 
 def prepare_db_base():
     # Субъект РФ
@@ -813,6 +909,8 @@ def prepare_db_base():
     
     CalculationService.objects.all().delete()
     fill_account()
+    
+    preapare_cold_water_counter_kk()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'

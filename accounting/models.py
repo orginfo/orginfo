@@ -417,3 +417,38 @@ class UserOrganization(models.Model):
     """
     user = models.ForeignKey(User)
     organization = models.ForeignKey(Organization, null=True, blank=True, default = None)
+
+class Counter(models.Model):
+    """
+    Таблица содержит информацию об установленных счетчиках.
+    Хранит информацию обо всех счетчиках.
+    Счетчик может выйти из строя и быть заменен, поэтому для одного и того же типа счетчика может быть несколько записей для объекта недвижимости.
+    """
+    CUM = '1'
+    GCAL = '2'
+    JOULE = '3'
+    WATT = '4'
+    UNIT_TYPES = (
+        (CUM, 'м3'),
+        (GCAL, 'ГКал'),
+        (JOULE, 'Дж'),
+        (WATT, 'Вт'),
+    )
+    number = models.CharField(max_length=20)
+    service = models.ForeignKey(CommunalService)
+    real_estate = models.ForeignKey(RealEstate)
+    unit_type = models.CharField(max_length=1, choices=UNIT_TYPES, default=CUM)
+    start = models.DateField()
+    end = models.DateField(blank=True, null=True)
+
+class CounterReading(models.Model):
+    """
+    Показания всех приборов учета.
+    Так как информация по показаниям однотипная, вся информация будет храниться в одной таблице.
+    В одном периоде может быть несколько показаний.
+     MayBe: Нужно ли хранить здесь поле 'period'? Период можно получить по 'date'
+    """
+    counter = models.ForeignKey(Counter)
+    date = models.DateField()
+    period = models.ForeignKey(Period)
+    value = models.DecimalField(max_digits=9, decimal_places=3)
