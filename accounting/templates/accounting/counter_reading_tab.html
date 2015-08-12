@@ -35,6 +35,30 @@
     <li{% if request.path == l2readings %} role="presentation" class="active"{% endif %}><a href="{% url 'accounting:readings' %}?real_estate={{real_estate.id}}">Показания счётчиков</a></li>
   </ul>
   <br>
+{% if readings %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Счётчик</th>
+                <th>Дата</th>
+                <th>Период</th>
+                <th>Значение</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for reading in readings %}
+            <tr>
+                <td>{{reading.counter.service.get_name_display}}</td>
+                <td>{{reading.date}}</td>
+                <td>{{reading.period}}</td>
+                <td>{{reading.value}}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Поиск результатов не дал.</p>
+{% endif %}
 
 {% load crispy_forms_tags %}
 {% crispy form %}

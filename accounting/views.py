@@ -335,6 +335,8 @@ class CounterReadingTab(CreateView):
         if self.real_estate_id == None:
             return context
 
+        context['readings'] = CounterReading.objects.filter(counter__real_estate__id=self.real_estate_id)
+
         real_estate_str = RealEstate.objects.get(id=self.real_estate_id).__str__()
         context['real_estate'] = {
             "id": self.real_estate_id,
