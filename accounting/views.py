@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from accounting.models import SubjectRF, MunicipalArea, MunicipalUnion, Locality
-from accounting.models import Period, CalculationService, Account
+from accounting.models import Period, CalculationService, AccountOperation
 from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner
 from accounting.models import CommunalService, ClientService, Organization
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, Tariff
@@ -112,11 +112,11 @@ def calculate_individual_water_volume(subject_rf, real_estate, calc_period, wate
         
         #TODO: Использовать метод write_off()
         #TODO: Получаем баланс на начало расчетного периода или нужно использовать последний баланс?
-        account = Account.objects.filter(real_estate=real_estate).order_by('operation_date').last()
-        balance = account.balance - amount
+        operation = AccountOperation.objects.filter(real_estate=real_estate).order_by('operation_date').last()
+        balance = operation.balance - amount
         operation_date = calc_period.end + timedelta(days=1)
-        account = Account(real_estate=real_estate, balance=balance, operation_type=Account.WRITE_OFF, operation_date=operation_date, amount=amount)
-        account.save()
+        operation = AccountOperation(real_estate=real_estate, balance=balance, operation_type=AccountOperation.WRITE_OFF, operation_date=operation_date, amount=amount)
+        operation.save()
 
 def calculate_services(subject_rf, house, calc_period):
     real_estates = []
@@ -419,18 +419,18 @@ def report(request):
 
     context["account_info"] = {}
     # Задолженность за предыдующие периоды
-    account = Account.objects.get(real_estate=real_estate, operation_type=Account.WRITE_OFF, operation_date=period.start)
-    debts = account.balance if account.balance < 0.0 else 0.0
+    operation = AccountOperation.objects.get(real_estate=real_estate, operation_type=AccountOperation.WRITE_OFF, operation_date=period.start)
+    debts = operation.balance if operation.balance < 0.0 else 0.0
     context["account_info"]["debts"] = debts
     # Аванс на начало расчетного периода
-    account = Account.objects.filter(real_estate=real_estate, operation_date__lte=period.end).order_by('operation_date').last()
-    advance = 0.0 if account.balance < 0.0 else account.balance
+    operation = AccountOperation.objects.filter(real_estate=real_estate, operation_date__lte=period.end).order_by('operation_date').last()
+    advance = 0.0 if operation.balance < 0.0 else operation.balance
     context["account_info"]["advance"] = advance
     # Дата последней оплаты:
     context["account_info"]["last_payment_date"] = "--"
-    account = Account.objects.filter(real_estate=real_estate, operation_type=Account.TOP_UP, operation_date__lte=period.end).order_by('operation_date').last()
-    if account is not None: 
-        context["account_info"]["last_payment_date"] = account.operation_date
+    operation = AccountOperation.objects.filter(real_estate=real_estate, operation_type=AccountOperation.TOP_UP, operation_date__lte=period.end).order_by('operation_date').last()
+    if operation is not None: 
+        context["account_info"]["last_payment_date"] = operation.operation_date
     # Оплата за все услуги для расчетного периода
     payment_amount = CalculationService.objects.filter(real_estate=real_estate, period=period).aggregate(Sum('amount'))['amount__sum'] or 0.0
     # Итого к оплате:
@@ -493,21 +493,21 @@ class Accounts(ListView):
         for period in periods:
             periods_by_id[period.id] = period
 
-        accounts_by_period = {}
-        for account in Account.objects.filter(real_estate__id=self.real_estate_id):
+        operations_by_period = {}
+        for operation in AccountOperation.objects.filter(real_estate__id=self.real_estate_id):
             for period in periods:
-                if period.start <= account.operation_date and account.operation_date <= period.end:
-                    if period.id not in accounts_by_period:
-                        accounts_by_period[period.id] = []
-                    accounts_by_period[period.id].append(account)
+                if period.start <= operation.operation_date and operation.operation_date <= period.end:
+                    if period.id not in operations_by_period:
+                        operations_by_period[period.id] = []
+                    operations_by_period[period.id].append(operation)
 
-        sorted_period_ids = sorted(accounts_by_period)
+        sorted_period_ids = sorted(operations_by_period)
         result = []
         for id in sorted_period_ids:
             result.append({
                 "period": periods_by_id[id],
-                "balance": accounts_by_period[id][-1].balance,
-                "operations": accounts_by_period[id]
+                "balance": operations_by_period[id][-1].balance,
+                "operations": operations_by_period[id]
             })
         return result#object_list
     def dispatch(self, *args, **kwargs):

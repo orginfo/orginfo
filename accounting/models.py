@@ -394,7 +394,7 @@ class CalculationService(models.Model):
     def __str__(self):
         return "re_id=%d, name='%s', consumption_type='%s', preriod_id=%d" % (self.real_estate.id, self.communal_service.get_name_display(), self.get_consumption_type_display(), self.period.id)
 
-class Account(models.Model):
+class AccountOperation(models.Model):
     """ Лицевой счет """
     WRITE_OFF = "1"
     TOP_UP = "2"

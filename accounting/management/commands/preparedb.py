@@ -5,7 +5,7 @@ from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner,
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, Tariff
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import Organization, CommunalService, ClientService
-from accounting.models import Period, CalculationService, Account, Counter, CounterReading
+from accounting.models import Period, CalculationService, AccountOperation, Counter, CounterReading
 import os.path
 from orginfo.settings import BASE_DIR
 
@@ -321,15 +321,15 @@ def fill_period():
     period8.save()
 
 def fill_account():
-    Account.objects.all().delete()
+    AccountOperation.objects.all().delete()
     
     balance = 0.0
     operation_date = '2014-12-26'
     amount = 0.0
     #TODO: реализовать через считывание данных из файла.
     for real_estate in RealEstate.objects.exclude(type=RealEstate.MULTIPLE_DWELLING):
-        account = Account(real_estate=real_estate, balance=balance, operation_type=Account.WRITE_OFF, operation_date=operation_date, amount=amount)
-        account.save()
+        operation = AccountOperation(real_estate=real_estate, balance=balance, operation_type=AccountOperation.WRITE_OFF, operation_date=operation_date, amount=amount)
+        operation.save()
 
 def preapare_cold_water_counter_kk():
     Counter.objects.all().delete()
