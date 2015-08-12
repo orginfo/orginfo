@@ -442,6 +442,10 @@ class Counter(models.Model):
     unit_type = models.CharField(max_length=1, choices=UNIT_TYPES, default=CUM)
     start = models.DateField()
     end = models.DateField(blank=True, null=True)
+    def __str__(self):
+        readings = CounterReading.objects.filter(counter=self)
+        last_reading = readings.last().value if len(readings) > 0 else -1
+        return "%s (%f)" % (self.service.get_name_display(), last_reading)
 
 class CounterReading(models.Model):
     """

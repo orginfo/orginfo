@@ -4,7 +4,7 @@ from accounting.models import Period, CalculationService, Account
 from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner
 from accounting.models import CommunalService, ClientService, Organization
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, Tariff
-from accounting.models import TechnicalPassport, UserOrganization, CounterReading
+from accounting.models import TechnicalPassport, UserOrganization, CounterReading, Counter
 from django.db.models import Q
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -315,10 +315,14 @@ class CounterReadingTab(CreateView):
     model = CounterReading
     form_class = CounterReadingForm
     template_name = 'accounting/counter_reading_tab.html'
+    def get_form(self, form_class):
+        form = super(CounterReadingTab,self).get_form(form_class)
+        form.fields['counter'].queryset = Counter.objects.filter(real_estate__id=624)
+        return form
     def get_success_url(self):
         return reverse('accounting:create_reading')
     def form_valid(self, form):
-        form.instance.real_estate_id = 8#self.kwargs['real_estate_id']
+        form.instance.real_estate_id = 624#self.kwargs['real_estate_id']
         return super(CounterReadingTab, self).form_valid(form)
 
 @login_required(login_url="/login/")
