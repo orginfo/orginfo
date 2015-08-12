@@ -317,13 +317,30 @@ class CounterReadingTab(CreateView):
     template_name = 'accounting/counter_reading_tab.html'
     def get_form(self, form_class):
         form = super(CounterReadingTab,self).get_form(form_class)
-        form.fields['counter'].queryset = Counter.objects.filter(real_estate__id=624)
+        form.fields['counter'].queryset = Counter.objects.filter(real_estate__id=self.real_estate_id)
         return form
     def get_success_url(self):
         return reverse('accounting:create_reading')
     def form_valid(self, form):
-        form.instance.real_estate_id = 624#self.kwargs['real_estate_id']
+        form.instance.real_estate_id = self.real_estate_id
         return super(CounterReadingTab, self).form_valid(form)
+    def dispatch(self, *args, **kwargs):
+        self.real_estate_id = None
+        if 'real_estate' in self.request.GET:
+            self.real_estate_id = self.request.GET['real_estate']
+        return super(CounterReadingTab, self).dispatch(*args, **kwargs)
+    def get_context_data(self, **kwargs):
+        context = super(CounterReadingTab, self).get_context_data(**kwargs)
+
+        if self.real_estate_id == None:
+            return context
+
+        real_estate_str = RealEstate.objects.get(id=self.real_estate_id).__str__()
+        context['real_estate'] = {
+            "id": self.real_estate_id,
+            "real_estate_str": real_estate_str
+        }
+        return context
 
 @login_required(login_url="/login/")
 def readings(request):
