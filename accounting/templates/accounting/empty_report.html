@@ -54,7 +54,7 @@
         <span style="white-space: nowrap;">К/с: {{organization.corresponding_account}}</span><br>
         <span style="white-space: nowrap;">Р/с: {{organization.operating_account}}</span><br>
       </td>
-      <td>{{organization.operating_account}}</td>
+      <td>{{organization.account_number}}</td>
       <td>
       {% for service in organization.services %}
         {{service.get_name_display}}

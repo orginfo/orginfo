@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from accounting.models import SubjectRF
+from accounting.models import SubjectRF, Account
 from accounting.models import Period, CalculationService, AccountOperation
 from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner
 from accounting.models import CommunalService, ClientService, Organization
@@ -198,6 +198,7 @@ def report(request):
             "bank_identifier_code": resourse_supply_organization.bank_identifier_code,
             "corresponding_account": resourse_supply_organization.corresponding_account,
             "operating_account": resourse_supply_organization.operating_account,
+            "account_number": Account.objects.get(real_estate=real_estate).__str__(),
             "services": get_client_services(real_estate, period)
         })
 
