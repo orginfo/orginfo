@@ -267,19 +267,7 @@ def test_owner():
 
 @login_required(login_url="/login/")
 def index(request):
-    #test_db()
-    #test_heating_norm()
-    #test_water_tariff()
-    #test_service()
-    #test_house_address()
-    #test_org()
-    #test_org_srv()
-    #test_real_estate()
-    #test_residents_degree()
-    
-    robot()
-    #test_period()
-    #test_owner()
+    return render(request, 'accounting/index.html')
     
     return HttpResponse("Робот отработал успешно.")
 

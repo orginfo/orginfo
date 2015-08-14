@@ -33,8 +33,6 @@ body {
           <ul class="nav navbar-nav">
             {% url 'accounting:index' as l2home %}
             <li{% if request.get_full_path == l2home %} class="active"{% endif %}><a href="{% url 'accounting:index' %}">Home</a></li>
-            {% url 'accounting:report' as l2report %}
-            <li{% if request.get_full_path == l2report %} class="active"{% endif %}><a href="{% url 'accounting:report' %}" target="_blank">Report</a></li>
             {% url 'accounting:accounts' as l2accounts %}
             {% url 'accounting:readings' as l2readings %}
             <li{% if request.path == l2accounts or request.path == l2readings %} class="active"{% endif %}><a href="{% url 'accounting:accounts' %}">Accounts</a></li>
