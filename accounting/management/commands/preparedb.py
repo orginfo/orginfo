@@ -5,7 +5,7 @@ from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner,
 from accounting.models import WaterNormDescription, WaterNormValidity, WaterNorm, TariffValidity, Tariff
 from accounting.models import HeatingNormValidity, HeatingNorm
 from accounting.models import Organization, CommunalService, ClientService
-from accounting.models import Period, CalculationService, AccountOperation, Counter, CounterReading
+from accounting.models import Period, CalculationService, AccountOperation, Counter, CounterReading, Account
 import os.path
 from orginfo.settings import BASE_DIR
 
@@ -15,12 +15,13 @@ def fill_total_info():
     RealEstateOwner.objects.all().delete()
     TechnicalPassport.objects.all().delete()
     HomeownershipHistory.objects.all().delete()
-
+    
     fill_total_kk()
 
 def fill_total_kk():
     water_norm_validity = WaterNormValidity.objects.get(start ='2013-12-01', end='2015-03-31')
-    start_calc_date = '2014-12-26'
+    start_calc_date = '2015-7-26'
+    account_number = 1
     
     protocol_kk_path = os.path.join(BASE_DIR, "data", "preparedb", "Protocol_KK.txt")
     err_file = open(protocol_kk_path, 'w', encoding='utf-8')
@@ -29,29 +30,32 @@ def fill_total_kk():
     for line in file:
         index = 0
         
-        locality_name = ""      # 0
-        street_name = ""        # 1
-        house_nr = ""           # 2
-        number = ""             # 3
-        owner = ""              # 4
-        space = ""              # 5
-        residents = ""   # 6
-        norm = ""   # 7
-        p15 = ""    # 8
-        p16 = ""    # 9
-        p19 = ""    # 10
-        p20 = ""    # 11
-        p17 = ""    # 12
-        p18 = ""    # 13
-        p23 = ""    # 14
-        p24 = ""    # 15
-        p25 = ""    # 16
-        p26 = ""    # 17
-        p27 = ""    # 18
-        p28 = ""    # 19
-        p29 = ""    # 20
-        #p30 = ""
-        #p31 = ""
+        locality_name = ""  # 0
+        street_name = ""    # 1
+        house_nr = ""       # 2
+        number = ""         # 3
+        owner = ""          # 4
+        space = ""          # 5
+        norm = ""           # 6
+        residents = ""      # 7
+        debts1 = "" # 8
+        debts2 = "" # 9
+        water_srv = ""      # 10
+        p15 = ""    # 11
+        p16 = ""    # 12
+        p19 = ""    # 13
+        p20 = ""    # 14
+        p17 = ""    # 15
+        p18 = ""    # 16
+        p23 = ""    # 17
+        p24 = ""    # 18
+        p25 = ""    # 19
+        p26 = ""    # 20
+        p27 = ""    # 21
+        p28 = ""    # 22
+        p29 = ""    # 23
+        p30 = ""    # 24
+        #p31 = ""    # 25
         for part in line.split("\t"):
             part = part.strip().replace(u'\ufeff', '')
             if part == "\n":
@@ -70,35 +74,43 @@ def fill_total_kk():
             elif index == 5:
                 space = part
             elif index == 6:
-                residents = part
-            elif index == 7:
                 norm = part
+            elif index == 7:
+                residents = part
             elif index == 8:
-                p15 = part
+                debts1 = part
             elif index == 9:
-                p16 = part
+                debts2 = part
             elif index == 10:
-                p19 = part
+                water_srv = part
             elif index == 11:
-                p20 = part
+                p15 = part
             elif index == 12:
-                p17 = part
+                p16 = part
             elif index == 13:
-                p18 = part
+                p19 = part
             elif index == 14:
-                p23 = part
+                p20 = part
             elif index == 15:
-                p24 = part
+                p17 = part
             elif index == 16:
-                p25 = part
+                p18 = part
             elif index == 17:
-                p26 = part
+                p23 = part
             elif index == 18:
-                p27 = part
+                p24 = part
             elif index == 19:
-                p28 = part
+                p25 = part
             elif index == 20:
+                p26 = part
+            elif index == 21:
+                p27 = part
+            elif index == 22:
+                p28 = part
+            elif index == 23:
                 p29 = part
+            elif index == 24:
+                p30 = part
             else:
                 pass
             index = index + 1
@@ -142,6 +154,11 @@ def fill_total_kk():
             
             real_estate = child_real_estate 
             
+        # Account
+        account = Account(real_estate=real_estate, account_number=account_number)
+        account.save()
+        account_number = account_number + 1
+        
         if len(owner) != 0:
             real_estete_owner = RealEstateOwner(real_estate=real_estate, owner=owner, start=start_calc_date)
             real_estete_owner.save()
@@ -152,8 +169,6 @@ def fill_total_kk():
             technical_passport.save()
         
         count = 0
-        if len(residents) != 0:
-            count = int(residents)
         if len(norm) != 0:
             norm_value = float(norm)
             
@@ -165,8 +180,33 @@ def fill_total_kk():
                 water_norm = WaterNorm.objects.get(validity=water_norm_validity, service=service, value=norm_value)
                 water_desc = water_norm.norm_description
                 
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
-            homeownership_history.save()
+            if len(residents) != 0:
+                count = int(residents)
+            
+                homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+                homeownership_history.save()
+        
+        # AccountOperation
+        balance = 0.0
+        if len(debts1) != 0:
+            balance = balance + float(debts1)
+        
+        if len(debts2) != 0:
+            balance = balance + float(debts2)
+        
+        if len(debts1) != 0 or len(debts2) != 0:
+            operation_date = '2014-12-26'
+            operation = AccountOperation(real_estate=real_estate, balance=balance, operation_type=AccountOperation.WRITE_OFF, operation_date=operation_date, amount=0.0)
+            operation.save()
+        else:
+            err_desc = str(real_estate) + ' - not balance\n'
+            err_file.write(str(err_desc))
+        
+        if len(water_srv) != 0:
+            continue
+        service = CommunalService.objects.get(name=CommunalService.COLD_WATER)
+        client_srv = ClientService(real_estate=real_estate, service=service, start='2015-7-26')
+        client_srv.save()
         
         if len(p15) != 0:
             count = int(p15)
@@ -208,20 +248,23 @@ def fill_total_kk():
             water_desc = WaterNormDescription.objects.get(description="Свиньи, молодняк", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
             homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
             homeownership_history.save()
-        if len(p25) != 0:
-            water_desc = WaterNormDescription.objects.get(description="Баня при наличии водопровода")
-            if len(residents) == 0:
-                err_desc = 'p25! Residents == ' + residents + '\n' 
-                err_file.write(err_desc)
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
-            homeownership_history.save()
-        if len(p26) != 0:
-            water_desc = WaterNormDescription.objects.get(description="Баня при водоснабжении из уличной колонки")
-            if len(residents) == 0:
-                err_desc = 'p26! Residents == ' + residents + '\n' 
-                err_file.write(err_desc)
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
-            homeownership_history.save()
+        
+        if len(norm) != 0 and len(residents) != 0:
+            if len(p25) != 0:
+                water_desc = WaterNormDescription.objects.get(description="Баня при наличии водопровода")
+                if len(residents) == 0:
+                    err_desc = 'p25! Residents == ' + residents + '\n' 
+                    err_file.write(err_desc)
+                homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+                homeownership_history.save()
+            if len(p26) != 0:
+                water_desc = WaterNormDescription.objects.get(description="Баня при водоснабжении из уличной колонки")
+                if len(residents) == 0:
+                    err_desc = 'p26! Residents == ' + residents + '\n' 
+                    err_file.write(err_desc)
+                homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+                homeownership_history.save()
+        
         if len(p27) != 0:
             count = int(p27)
             water_desc = WaterNormDescription.objects.get(description="Мойка мотоцикла")
@@ -237,65 +280,14 @@ def fill_total_kk():
             water_desc = WaterNormDescription.objects.get(description="Мойка автомобиля при водоснабжении из уличной колонки")
             homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
             homeownership_history.save()
+            
+        if len(p30) != 0:
+            count = float(p30)
+            water_desc = WaterNormDescription.objects.get(description="Мойка автомобиля при наличии водопровода")
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
     
     file.close()
-
-def fill_service():
-    #Услуги
-    CommunalService.objects.all().delete()
-    
-    srv1 = CommunalService (name=CommunalService.COLD_WATER)
-    srv1.save()
-    srv2 = CommunalService (name=CommunalService.HEATING)
-    srv2.save()
-
-def get_real_estate_with_service_not_active_kk():
-    real_estates = []
-    
-    service_not_active_kk_path = os.path.join(BASE_DIR, "data", "preparedb", "Service_NotActive_KK.txt")
-    file = open(service_not_active_kk_path, 'r', encoding='utf-8')
-    for line in file:
-        index = 0
-        
-        locality_name = ""      # 0
-        street_name = ""        # 1
-        house_nr = ""           # 2
-        number = ""             # 3
-        for part in line.split("\t"):
-            part = part.strip().replace(u'\ufeff', '')
-            if part == "\n":
-                continue
-            if index == 0:
-                locality_name = part
-            elif index == 1:
-                street_name = part
-            elif index == 2:
-                house_nr = part
-            elif index == 3:
-                number = part
-            else:
-                pass
-            index = index + 1
-        
-        loc = Locality.objects.get(name=locality_name)
-        street = Street.objects.get(locality=loc, name=street_name)
-        address = HouseAddress.objects.get(street=street, house_number=house_nr)
-        real_estate = RealEstate.objects.get(address=address, number=number)
-        real_estates.append(real_estate)
-
-    file.close()
-    return real_estates
-
-def fill_cold_water_srv_into_client_service():
-    ClientService.objects.all().delete()
-    
-    real_estates = get_real_estate_with_service_not_active_kk()
-    
-    for real_estate in RealEstate.objects.all():
-        if real_estate not in real_estates:
-            service = CommunalService.objects.get(name=CommunalService.COLD_WATER)
-            client_srv = ClientService(real_estate=real_estate, service=service, start='2014-12-26')
-            client_srv.save()
 
 def add_abonents(organization):
     for real_estate in RealEstate.objects.all():
@@ -319,17 +311,6 @@ def fill_period():
     period7.save()
     period8 = Period(serial_number=1, start='2015-7-26', end='2015-8-25')
     period8.save()
-
-def fill_account():
-    AccountOperation.objects.all().delete()
-    
-    balance = 0.0
-    operation_date = '2014-12-26'
-    amount = 0.0
-    #TODO: реализовать через считывание данных из файла.
-    for real_estate in RealEstate.objects.exclude(type=RealEstate.MULTIPLE_DWELLING):
-        operation = AccountOperation(real_estate=real_estate, balance=balance, operation_type=AccountOperation.WRITE_OFF, operation_date=operation_date, amount=amount)
-        operation.save()
 
 def preapare_cold_water_counter_kk():
     Counter.objects.all().delete()
@@ -598,7 +579,11 @@ def prepare_db_base():
     water_norm_val6 = WaterNormValidity(start='2017-01-01', end='2017-12-31')
     water_norm_val6.save()
 
-    fill_service()
+    CommunalService.objects.all().delete()
+    cold_water_service = CommunalService (name=CommunalService.COLD_WATER)
+    cold_water_service.save()
+    heating_service = CommunalService (name=CommunalService.HEATING)
+    heating_service.save()
     
     cold_water_service = CommunalService.objects.get(name=CommunalService.COLD_WATER)
     # Норматив по ХОЛОДНОЙ воде (TODO: остальные заполнять по мере необходимости)
@@ -832,7 +817,6 @@ def prepare_db_base():
     srv2 = CommunalService.objects.get(name=CommunalService.HEATING)
     
     fill_total_info()
-    fill_cold_water_srv_into_client_service()
     
     street_k = Street.objects.get(locality=loc3, name="Центральная")
     address_k = HouseAddress(street=street_k, house_number="6")
@@ -908,7 +892,6 @@ def prepare_db_base():
     fill_period()
     
     CalculationService.objects.all().delete()
-    fill_account()
     
     preapare_cold_water_counter_kk()
 

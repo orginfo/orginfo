@@ -249,7 +249,7 @@ class HomeownershipHistory(models.Model):
     #TODO: Есть ли смысл хранить в этой таблице зависимость "Количество проживающих/зарегестированных" к "помещению (абоненту)"
     real_estate = models.ForeignKey(RealEstate)
     water_description = models.ForeignKey(WaterNormDescription)
-    count = models.FloatField()
+    count = models.DecimalField(max_digits=5, decimal_places=2)
     start = models.DateField()
 
 class Organization(models.Model):
@@ -395,7 +395,7 @@ class CalculationService(models.Model):
         return "re_id=%d, name='%s', consumption_type='%s', preriod_id=%d" % (self.real_estate.id, self.communal_service.get_name_display(), self.get_consumption_type_display(), self.period.id)
 
 class AccountOperation(models.Model):
-    """ Лицевой счет """
+    """ Операции с лицевым счетом """
     WRITE_OFF = "1"
     TOP_UP = "2"
     OPERATION_TYPES = (
@@ -458,3 +458,11 @@ class CounterReading(models.Model):
     date = models.DateField()
     period = models.ForeignKey(Period)
     value = models.DecimalField(max_digits=9, decimal_places=3)
+
+class Account(models.Model):
+    """ Лицевой счет абонента. """
+    
+    real_estate = models.ForeignKey(RealEstate)
+    account_number = models.IntegerField()
+    def __str__(self):
+        return "%d" % (self.account_number)

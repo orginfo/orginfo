@@ -148,9 +148,9 @@ def robot():
         for municipal_area in MunicipalArea.objects.filter(subject_rf=subject_rf):
             for municipal_union in MunicipalUnion.objects.filter(municipal_area=municipal_area):
                 for locality in Locality.objects.filter(municipal_area=municipal_area, municipal_union=municipal_union):
-                    for period in Period.objects.all().order_by('serial_number'):
-                        for real_estate in RealEstate.objects.filter(address__street__locality=locality):
-                            calculate_services(subject_rf, real_estate, period)
+                    period = Period.objects.all().last()
+                    for real_estate in RealEstate.objects.filter(address__street__locality=locality):
+                        calculate_services(subject_rf, real_estate, period)
 
     pass
                 
