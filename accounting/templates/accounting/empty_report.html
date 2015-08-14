@@ -66,11 +66,11 @@
     <tr>
       <td colspan="5">
           Cправочно:
-          <br /> Задолженность за предыдущие периоды <span style="text-decoration: underline;">{{account_info.debts}}</span>
-          <br /> Аванс на начало расчетного периода <span style="text-decoration: underline;">{{account_info.advance}}</span>
+          <br /> Задолженность за предыдущие периоды <span style="text-decoration: underline;">{{account_info.debts|floatformat:2}}</span>
+          <br /> Аванс на начало расчетного периода <span style="text-decoration: underline;">{{account_info.advance|floatformat:2}}</span>
           <br /> (учтены платежи, поступившие до 25 числа расчетного периода включительно)
           <br /> Дата последней поступившей оплаты <span style="text-decoration: underline;">{{account_info.last_payment_date}}</span>
-          <br /> Итого к оплате <span style="text-decoration: underline;">{{account_info.total_amount}}</span> руб.
+          <br /> Итого к оплате <span style="text-decoration: underline;">{{account_info.total_amount|floatformat:2}}</span> руб.
       </td>
     </tr>
   </tbody>
