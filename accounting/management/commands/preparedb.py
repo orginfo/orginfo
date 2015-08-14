@@ -195,8 +195,7 @@ def fill_total_kk():
             balance = balance + float(debts2)
         
         if len(debts1) != 0 or len(debts2) != 0:
-            operation_date = '2014-12-26'
-            operation = AccountOperation(real_estate=real_estate, balance=balance, operation_type=AccountOperation.WRITE_OFF, operation_date=operation_date, amount=0.0)
+            operation = AccountOperation(real_estate=real_estate, balance=balance, operation_type=AccountOperation.WRITE_OFF, operation_date=start_calc_date, amount=0.0)
             operation.save()
         else:
             err_desc = str(real_estate) + ' - not balance\n'
@@ -205,7 +204,7 @@ def fill_total_kk():
         if len(water_srv) != 0:
             continue
         service = CommunalService.objects.get(name=CommunalService.COLD_WATER)
-        client_srv = ClientService(real_estate=real_estate, service=service, start='2015-7-26')
+        client_srv = ClientService(real_estate=real_estate, service=service, start=start_calc_date)
         client_srv.save()
         
         if len(p15) != 0:
