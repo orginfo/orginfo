@@ -49,7 +49,11 @@
     {% for organization in resourse_supply_organizations %}
     <tr>
       <td>{{organization.organization_name}}</td>
-      <td>{{organization.bank_identifier_code}}</td>
+      <td>
+        <span style="white-space: nowrap;">БИК: {{organization.bank_identifier_code}}</span><br>
+        <span style="white-space: nowrap;">К/с: {{organization.corresponding_account}}</span><br>
+        <span style="white-space: nowrap;">Р/с: {{organization.operating_account}}</span><br>
+      </td>
       <td>{{organization.operating_account}}</td>
       <td>
       {% for service in organization.services %}
