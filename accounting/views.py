@@ -221,6 +221,78 @@ def report(request):
     # Итого к оплате:
     context["account_info"]["total_amount"] = advance + debts - payment_amount
 
+    return render(request, 'accounting/empty_report.html', context)
+
+@login_required(login_url="/login/")
+def reportTODO(request):
+    user_org = get_object_or_404(UserOrganization, user=request.user.id)
+    if not user_org.organization:
+        raise Http404
+    ru_people_count = "140000000"
+    if ('real_estate' not in request.GET or
+            len(request.GET["real_estate"]) > len(ru_people_count) or
+            request.GET["real_estate"].isnumeric() == False):
+        raise Http404
+    real_estates = user_org.organization.abonents.filter(id=request.GET["real_estate"])
+    if len(real_estates) != 1:
+        raise Http404
+    real_estate_id = request.GET["real_estate"]
+    real_estate = real_estates[0]
+    if ('period' not in request.GET or
+            len(request.GET["period"]) > 4 or
+            request.GET["period"].isnumeric() == False):
+        raise Http404
+    period_id = request.GET["period"]
+    period = Period.objects.get(id=period_id)
+    subject_rf = SubjectRF.objects.get(name="Новосибирская область")
+
+    context = {}
+
+    with setlocale('ru_RU.UTF-8'):
+        context["calc_period_name"] = period.end.strftime("%B %Y")
+    context["owner"] = get_owner(real_estate, period)
+    context["client_address"] = str(real_estate)
+    context["space"] = get_real_estate_space(real_estate)
+    context["residents"] = get_residents(real_estate, period)
+    organization = user_org.organization
+    context["organization_name"] = str(organization)
+    context["organization_address"] = str(organization.address)
+    context["phone"] = "/".join(list(map(lambda x: x.strip(), organization.phone.split(","))))
+    context["fax"] = organization.fax
+    context["email"] = organization.email
+    context["website"] = organization.website
+    context["operating_mode"] = organization.operating_mode
+
+    context["resourse_supply_organizations"] = []
+    for resourse_supply_organization in Organization.objects.filter(abonents=real_estate):
+        context["resourse_supply_organizations"].append({
+            "organization_name": str(resourse_supply_organization),
+            "bank_identifier_code": resourse_supply_organization.bank_identifier_code,
+            "corresponding_account": resourse_supply_organization.corresponding_account,
+            "operating_account": resourse_supply_organization.operating_account,
+            "services": get_client_services(real_estate, period),
+            "amount": get_payment_amount(real_estate, period)
+        })
+
+    context["account_info"] = {}
+    # Задолженность за предыдующие периоды
+    operation = AccountOperation.objects.get(real_estate=real_estate, operation_type=AccountOperation.WRITE_OFF, operation_date=period.start)
+    debts = operation.balance if operation.balance < 0.0 else 0.0
+    context["account_info"]["debts"] = debts
+    # Аванс на начало расчетного периода
+    operation = AccountOperation.objects.filter(real_estate=real_estate, operation_date__lte=period.end).order_by('operation_date').last()
+    advance = 0.0 if operation.balance < 0.0 else operation.balance
+    context["account_info"]["advance"] = advance
+    # Дата последней оплаты:
+    context["account_info"]["last_payment_date"] = "--"
+    operation = AccountOperation.objects.filter(real_estate=real_estate, operation_type=AccountOperation.TOP_UP, operation_date__lte=period.end).order_by('operation_date').last()
+    if operation is not None: 
+        context["account_info"]["last_payment_date"] = operation.operation_date
+    # Оплата за все услуги для расчетного периода
+    payment_amount = CalculationService.objects.filter(real_estate=real_estate, period=period).aggregate(Sum('amount'))['amount__sum'] or 0.0
+    # Итого к оплате:
+    context["account_info"]["total_amount"] = advance + debts - payment_amount
+
     context["all_total_amount"] = 0
     context["services"] = [];
     for service in get_client_services(real_estate, period):
