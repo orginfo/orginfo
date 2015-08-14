@@ -198,8 +198,7 @@ def report(request):
             "bank_identifier_code": resourse_supply_organization.bank_identifier_code,
             "corresponding_account": resourse_supply_organization.corresponding_account,
             "operating_account": resourse_supply_organization.operating_account,
-            "services": get_client_services(real_estate, period),
-            "amount": get_payment_amount(real_estate, period)
+            "services": get_client_services(real_estate, period)
         })
 
     context["account_info"] = {}
