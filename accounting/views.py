@@ -49,8 +49,9 @@ def get_owner(real_estate, period):
     return owner
 
 def get_real_estate_space(real_estate):
+    
     technical_pasport = TechnicalPassport.objects.get(real_estate=real_estate)
-    return technical_pasport.space
+    return technical_pasport.space if technical_pasport.space is not None else ""
 
 def get_client_services(real_estate, period):
     services = []
@@ -206,7 +207,7 @@ def report(request):
     context["account_info"] = {}
     # Задолженность за предыдующие периоды
     operation = AccountOperation.objects.get(real_estate=real_estate, operation_type=AccountOperation.WRITE_OFF, operation_date=period.start)
-    debts = operation.balance if operation.balance < 0.0 else decimal.Decimal(0.0)
+    debts = decimal.Decimal(operation.balance) if operation.balance < 0.0 else decimal.Decimal(0.0)
     context["account_info"]["debts"] = debts
     # Аванс на начало расчетного периода
     operation = AccountOperation.objects.filter(real_estate=real_estate, operation_date__lte=period.end).order_by('operation_date').last()
