@@ -122,7 +122,18 @@ class CounterReadingTab(CreateView):
         if self.real_estate_id == None:
             return context
 
-        context['readings'] = CounterReading.objects.filter(counter__real_estate__id=self.real_estate_id)
+        counter_readings = CounterReading.objects.filter(counter__real_estate__id=self.real_estate_id)
+        def format_reading(reading):
+            with setlocale('ru_RU.UTF-8'):
+                period = reading.period.end.strftime("%B %Y")
+            return {
+                "service_name": reading.counter.service.get_name_display(),
+                "date": reading.date,
+                "period": period,
+                "value": reading.value
+            }
+        readings = map(format_reading, counter_readings)
+        context['readings'] = readings
 
         real_estate_str = RealEstate.objects.get(id=self.real_estate_id).__str__()
         context['real_estate'] = {
@@ -178,8 +189,8 @@ def report(request):
 
     context = {}
 
-    #with setlocale('ru_RU.UTF-8'):
-    context["calc_period_name"] = period.end.strftime("%B %Y")
+    with setlocale('ru_RU.UTF-8'):
+        context["calc_period_name"] = period.end.strftime("%B %Y")
     context["owner"] = get_owner(real_estate, period)
     context["client_address"] = RealEstate.get_full_address(real_estate)
     context["space"] = get_real_estate_space(real_estate)

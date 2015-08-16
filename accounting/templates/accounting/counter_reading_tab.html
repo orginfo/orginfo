@@ -48,7 +48,7 @@
         <tbody>
         {% for reading in readings %}
             <tr>
-                <td>{{reading.counter.service.get_name_display}}</td>
+                <td>{{reading.service_name}}</td>
                 <td>{{reading.date}}</td>
                 <td>{{reading.period}}</td>
                 <td>{{reading.value}}</td>
