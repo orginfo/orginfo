@@ -16,17 +16,101 @@ def fill_total_info():
     TechnicalPassport.objects.all().delete()
     HomeownershipHistory.objects.all().delete()
     
-    fill_total_kk()
-
-def fill_total_kk():
+    #Услуги
+    srv1 = CommunalService.objects.get(name=CommunalService.COLD_WATER)
+    srv2 = CommunalService.objects.get(name=CommunalService.HEATING)
+    
+    # Адрес для КК
+    loc_kk = Locality.objects.get(name="Кудельный Ключ") 
+    street_kk = Street.objects.get(locality=loc_kk, name="Центральная")
+    address_kk = HouseAddress(index="633447", street=street_kk, house_number="6")
+    address_kk.save()
+    
+    # Организации
+    # Добавление КК
+    Organization.objects.all().delete()
+    kluchevscoe = Organization(short_name="Ключевское", full_name="Ключевское",
+                               taxpayer_identification_number="5438113504",
+                               tax_registration_reason_code="543801001",
+                               primary_state_registration_number="10454045761",
+                               bank_identifier_code="045004850",
+                               corresponding_account="30101810100000000850",
+                               operating_account="40702810609240000158",
+                               phone="8(38340)31-104, 8(38340)31-238",
+                               email="kluchinat@mail.ru",
+                               operating_mode="Режим работы: Пн.-Пт. 8.00-17.00, Обед: 13.00-14.00",
+                               address=address_kk)
+    kluchevscoe.save()
+    # Добавление услуг в КК
+    kluchevscoe.services.add (srv1)
+    kluchevscoe.services.add (srv2)
+    kluchevscoe.save()
+    
+    # Заполнение данных для Кудельно-Ключевской
+    path = os.path.join(BASE_DIR, "data", "preparedb", "Total_KK.txt")
     water_norm_validity = WaterNormValidity.objects.get(start ='2013-12-01', end='2015-03-31')
+    fill_total_kk(water_norm_validity, path, kluchevscoe)
+    
+    
+    # Заполнение МУП "Нечаевское"
+    # Адрес 
+    loc_n = Locality.objects.get(name="Нечаевский") 
+    street_n = Street.objects.get(locality=loc_n, name="Весенняя")
+    address_n = HouseAddress(index="633422", street=street_n, house_number="11")
+    address_n.save()
+    
+    neсhaevscoe = Organization(short_name="Нечаевское", full_name="Нечаевское",
+                              taxpayer_identification_number="5438315941",
+                              tax_registration_reason_code="543801001",
+                              primary_state_registration_number="1055461017248",
+                              bank_identifier_code="045004784",
+                              corresponding_account="30101810700000000784",
+                              operating_account="40702810525170000045",
+                              phone="8(38340)32-413",
+                              fax="8(38340)32-242",
+                              email="mupnechaevskoe@yandex.ru",
+                              operating_mode="Режим работы: Пн-Чт. 9:00-17:00, Пт. 9:00-16:00, Обед: 13:00-14:00",
+                              address=address_n)
+    
+    neсhaevscoe.save()
+    neсhaevscoe.services.add (srv1)
+    neсhaevscoe.services.add (srv2)
+    neсhaevscoe.save()
+    
+    # Нечаевский
+    path = os.path.join(BASE_DIR, "data", "preparedb", "Total_N.txt")
+    water_norm_validity = WaterNormValidity.objects.get(start ='2015-7-01', end='2015-12-31')
+    fill_total_kk(water_norm_validity, path, neсhaevscoe)
+    
+    # Срок действия тарифа по воде
+    TariffValidity.objects.all().delete()
+    tariff_val1 = TariffValidity(start='2015-01-01', end='2015-06-30')
+    tariff_val1.save()
+    tariff_val2 = TariffValidity(start='2015-07-01', end='2015-12-31')
+    tariff_val2.save()
+
+    # Тарифы организаций
+    # КК
+    Tariff.objects.all().delete()
+    cold_water_tariff = Tariff(service=srv1, organization=kluchevscoe, validity=tariff_val1, value=26.02)
+    cold_water_tariff.save()
+    cold_water_tariff = Tariff(service=srv1, organization=kluchevscoe, validity=tariff_val1, type=Tariff.BUDGETARY_CONSUMERS, value=26.02)
+    cold_water_tariff.save()
+    
+    cold_water_tariff = Tariff(service=srv1, organization=kluchevscoe, validity=tariff_val2, value=27.12)
+    cold_water_tariff.save()
+    cold_water_tariff = Tariff(service=srv1, organization=kluchevscoe, validity=tariff_val2, type=Tariff.BUDGETARY_CONSUMERS, value=27.12)
+    cold_water_tariff.save()
+
+def fill_total_kk(water_norm_validity, path, organization):
+    
     start_calc_date = '2015-7-26'
     account_number = 1
     
     protocol_kk_path = os.path.join(BASE_DIR, "data", "preparedb", "Protocol_KK.txt")
     err_file = open(protocol_kk_path, 'w', encoding='utf-8')
-    total_kk_path = os.path.join(BASE_DIR, "data", "preparedb", "Total_KK.txt")
-    file = open(total_kk_path, 'r', encoding='utf-8')
+    
+    file = open(path, 'r', encoding='utf-8')
     for line in file:
         index = 0
         
@@ -43,19 +127,21 @@ def fill_total_kk():
         water_srv = ""      # 10
         p15 = ""    # 11
         p16 = ""    # 12
-        p19 = ""    # 13
-        p20 = ""    # 14
-        p17 = ""    # 15
-        p18 = ""    # 16
-        p23 = ""    # 17
-        p24 = ""    # 18
-        p25 = ""    # 19
-        p26 = ""    # 20
-        p27 = ""    # 21
-        p28 = ""    # 22
-        p29 = ""    # 23
-        p30 = ""    # 24
-        #p31 = ""    # 25
+        p17 = ""    # 13
+        p18 = ""    # 14
+        p19 = ""    # 15
+        p20 = ""    # 16
+        p21 = ""    # 17
+        p22 = ""    # 18
+        p23 = ""    # 19
+        p24 = ""    # 20
+        p25 = ""    # 21
+        p26 = ""    # 22
+        p27 = ""    # 23
+        p28 = ""    # 24
+        p29 = ""    # 25
+        p30 = ""    # 26
+        p31 = ""    # 27
         for part in line.split("\t"):
             part = part.strip().replace(u'\ufeff', '')
             if part == "\n":
@@ -88,29 +174,35 @@ def fill_total_kk():
             elif index == 12:
                 p16 = part
             elif index == 13:
-                p19 = part
-            elif index == 14:
-                p20 = part
-            elif index == 15:
                 p17 = part
-            elif index == 16:
+            elif index == 14:
                 p18 = part
+            elif index == 15:
+                p19 = part
+            elif index == 16:
+                p20 = part
             elif index == 17:
-                p23 = part
+                p21 = part
             elif index == 18:
-                p24 = part
+                p22 = part
             elif index == 19:
-                p25 = part
+                p23 = part
             elif index == 20:
-                p26 = part
+                p24 = part
             elif index == 21:
-                p27 = part
+                p25 = part
             elif index == 22:
-                p28 = part
+                p26 = part
             elif index == 23:
-                p29 = part
+                p27 = part
             elif index == 24:
+                p28 = part
+            elif index == 25:
+                p29 = part
+            elif index == 26:
                 p30 = part
+            elif index == 27:
+                p31 = part
             else:
                 pass
             index = index + 1
@@ -129,7 +221,21 @@ def fill_total_kk():
         if HouseAddress.objects.filter(street=street, house_number=house_nr).exists():
             address = HouseAddress.objects.get(street=street, house_number=house_nr)
         else:
-            address = HouseAddress(street=street, house_number=house_nr)
+            postal_code = ""
+            if loc.name == "Боровлянка":
+                postal_code = "633446"
+            elif loc.name == "Зверобойка":
+                postal_code = "633447"
+            elif loc.name == "Кудельный Ключ":
+                postal_code = "633447"
+            elif loc.name == "Прямушка":
+                postal_code = "633447"
+            elif loc.name == "Шубкино":
+                postal_code = "633447"
+            elif loc.name == "Нечаевский":
+                postal_code = "633422"
+            
+            address = HouseAddress(index=postal_code, street=street, house_number=house_nr)
             address.save()
         
         real_estate = None
@@ -154,6 +260,8 @@ def fill_total_kk():
             
             real_estate = child_real_estate 
             
+        organization.abonents.add(real_estate)
+        
         # Account
         account = Account(real_estate=real_estate, account_number=account_number)
         account.save()
@@ -173,18 +281,19 @@ def fill_total_kk():
             norm_value = float(norm)
             
             water_desc = None
-            if norm_value == 6.47 or norm_value == 6.0:
+            if norm_value == 6.47 or norm_value == 6.0 or norm_value == 7.764:
                 water_desc = WaterNormDescription.objects.get(description='Жилые помещения (в том числе общежития) с холодным водоснабжением, водонагревателями, канализованием, оборудованные ваннами, душами, раковинами, кухонными мойками и унитазами', direction_type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING)
             else:
                 service = CommunalService.objects.get(name=CommunalService.COLD_WATER)
                 water_norm = WaterNorm.objects.get(validity=water_norm_validity, service=service, value=norm_value)
                 water_desc = water_norm.norm_description
                 
-            if len(residents) != 0:
-                count = int(residents)
-            
-                homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
-                homeownership_history.save()
+        if len(residents) != 0:
+            count = int(residents)
+        
+        if len(norm) != 0 and len(residents) != 0:
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
         
         # AccountOperation
         balance = 0.0
@@ -212,55 +321,71 @@ def fill_total_kk():
             water_desc = WaterNormDescription.objects.get(description="Крупный рогатый скот", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
             homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
             homeownership_history.save()
+        
         if len(p16) != 0:
             count = int(p16)
             water_desc = WaterNormDescription.objects.get(description="Крупный рогатый скот, молодняк", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
             homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
             homeownership_history.save()
-        if len(p19) != 0:
-            count = int(p19)
-            water_desc = WaterNormDescription.objects.get(description="Овцы", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
-            homeownership_history.save()
-        if len(p20) != 0:
-            count = int(p20)
-            water_desc = WaterNormDescription.objects.get(description="Козы", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
-            homeownership_history.save()
+        
         if len(p17) != 0:
             count = int(p17)
             water_desc = WaterNormDescription.objects.get(description="Лошади", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
             homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
             homeownership_history.save()
+        
         if len(p18) != 0:
             count = int(p18)
             water_desc = WaterNormDescription.objects.get(description="Свиньи", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
             homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
             homeownership_history.save()
+        
+        if len(p19) != 0:
+            count = int(p19)
+            water_desc = WaterNormDescription.objects.get(description="Овцы", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        
+        if len(p20) != 0:
+            count = int(p20)
+            water_desc = WaterNormDescription.objects.get(description="Козы", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        
+        if len(p21) != 0:
+            count = int(p21)
+            water_desc = WaterNormDescription.objects.get(description="Куры, индейки", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        
+        if len(p22) != 0:
+            count = int(p22)
+            water_desc = WaterNormDescription.objects.get(description="Утки, гуси", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
+        
         if len(p23) != 0:
             count = int(p23)
             water_desc = WaterNormDescription.objects.get(description="Лошади, молодняк", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
             homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
             homeownership_history.save()
+        
         if len(p24) != 0:
             count = int(p24)
             water_desc = WaterNormDescription.objects.get(description="Свиньи, молодняк", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
             homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
             homeownership_history.save()
         
-        if len(norm) != 0 and len(residents) != 0:
+        if len(residents) != 0:
+            count = int(residents)
+            
             if len(p25) != 0:
                 water_desc = WaterNormDescription.objects.get(description="Баня при наличии водопровода")
-                if len(residents) == 0:
-                    err_desc = 'p25! Residents == ' + residents + '\n' 
-                    err_file.write(err_desc)
                 homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
                 homeownership_history.save()
+            
             if len(p26) != 0:
                 water_desc = WaterNormDescription.objects.get(description="Баня при водоснабжении из уличной колонки")
-                if len(residents) == 0:
-                    err_desc = 'p26! Residents == ' + residents + '\n' 
-                    err_file.write(err_desc)
                 homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
                 homeownership_history.save()
         
@@ -269,11 +394,13 @@ def fill_total_kk():
             water_desc = WaterNormDescription.objects.get(description="Мойка мотоцикла")
             homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
             homeownership_history.save()
+        
         if len(p28) != 0:
             count = int(p28)
             water_desc = WaterNormDescription.objects.get(description="Мойка автомобиля при наличии водопровода")
             homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
             homeownership_history.save()
+        
         if len(p29) != 0:
             count = int(p29)
             water_desc = WaterNormDescription.objects.get(description="Мойка автомобиля при водоснабжении из уличной колонки")
@@ -282,15 +409,16 @@ def fill_total_kk():
             
         if len(p30) != 0:
             count = float(p30)
-            water_desc = WaterNormDescription.objects.get(description="Мойка автомобиля при наличии водопровода")
+            water_desc = WaterNormDescription.objects.get(description="Полив земельного участка при наличии водопровода")
             homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
             homeownership_history.save()
     
+        if len(p31) != 0:
+            count = float(p31)
+            water_desc = WaterNormDescription.objects.get(description="Полив земельного участка при водоснабжении из уличной колонки")
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history.save()
     file.close()
-
-def add_abonents(organization):
-    for real_estate in RealEstate.objects.all():
-        organization.abonents.add(real_estate)
 
 def fill_period():
     Period.objects.all().delete()
@@ -488,6 +616,8 @@ def prepare_db_base():
     street22.save()
     street23 = Street(name="Солнечная", locality=loc6)
     street23.save()
+    street24 = Street(name="Весенний", type=Street.SIDE_STREET, locality=loc6)
+    street24.save()
     
     # ДОКУМЕНТ:
     # ОБ УТВЕРЖДЕНИИ НОРМАТИВОВ ПОТРЕБЛЕНИЯ КОММУНАЛЬНЫХ УСЛУГ ПО ХОЛОДНОМУ ВОДОСНАБЖЕНИЮ, ГОРЯЧЕМУ ВОДОСНАБЖЕНИЮ И ВОДООТВЕДЕНИЮ НА ТЕРРИТОРИИ НОВОСИБИРСКОЙ ОБЛАСТИ
@@ -558,9 +688,9 @@ def prepare_db_base():
     water_desc28.save()
     water_desc29 = WaterNormDescription(description="Мойка автомобиля при водоснабжении из уличной колонки", direction_type=WaterNormDescription.DIRECTION_USING)
     water_desc29.save()
-    water_desc30 = WaterNormDescription(description="Полив земельного участка при наличии водопровода <*>", direction_type=WaterNormDescription.DIRECTION_USING)
+    water_desc30 = WaterNormDescription(description="Полив земельного участка при наличии водопровода", direction_type=WaterNormDescription.DIRECTION_USING)
     water_desc30.save()
-    water_desc31 = WaterNormDescription(description="Полив земельного участка при водоснабжении из уличной колонки <*>", direction_type=WaterNormDescription.DIRECTION_USING)
+    water_desc31 = WaterNormDescription(description="Полив земельного участка при водоснабжении из уличной колонки", direction_type=WaterNormDescription.DIRECTION_USING)
     water_desc31.save()
     
     # Скор действия норматива по воде 
@@ -811,83 +941,8 @@ def prepare_db_base():
     heating_norm10 = HeatingNorm(municipal_area=municipal_area, validity=heating_norm_validity, commissioning_type=HeatingNorm.COMMISIONING_FROM_2000, floor_amount=5, value=0.0156)
     heating_norm10.save()
 
-    #Услуги
-    srv1 = CommunalService.objects.get(name=CommunalService.COLD_WATER)
-    srv2 = CommunalService.objects.get(name=CommunalService.HEATING)
-    
     fill_total_info()
-    
-    street_k = Street.objects.get(locality=loc3, name="Центральная")
-    address_k = HouseAddress(street=street_k, house_number="6")
-    address_k.save()
-    # Организации
-    Organization.objects.all().delete()
-    kluchevscoe = Organization(short_name="Ключевское", full_name="Ключевское",
-                               taxpayer_identification_number="5438113504",
-                               tax_registration_reason_code="543801001",
-                               primary_state_registration_number="10454045761",
-                               bank_identifier_code="045004850",
-                               corresponding_account="30101810100000000850",
-                               operating_account="40702810609240000158",
-                               phone="8(38340)31-104, 8(38340)31-238",
-                               email="kluchinat@mail.ru",
-                               operating_mode="Режим работы: Пн.-Пт. 8.00-17.00, Обед: 13.00-14.00",
-                               address=address_k)
-    
-    kluchevscoe.save()
-    kluchevscoe.services.add (srv1)
-    kluchevscoe.services.add (srv2)
-    kluchevscoe.save()
-    add_abonents(kluchevscoe)
-    kluchevscoe.save()
-    
-    """
-    # Заполнение МУП "Нечаевское"
-    # TODO: Заполнить адрес для нечаевского
-    neсhaevscoe = Organization(short_name="Нечаевское", full_name="Нечаевское",
-                              taxpayer_identification_number="5438315941",
-                              tax_registration_reason_code="543801001",
-                              primary_state_registration_number="1055461017248",
-                              bank_identifier_code="045004784",
-                              corresponding_account="30101810700000000784",
-                              operating_account="40702810525170000045",
-                              phone="8(38340)32-413",
-                              fax="8(38340)32-242",
-                              email="mupnechaevskoe@yandex.ru",
-                              operating_mode="Режим работы: Пн-Чт. 9:00-17:00, Пт. 9:00-16:00, Обед: 13:00-14:00")
-    
-    neсhaevscoe.save()
-    neсhaevscoe.services.add (srv1)
-    neсhaevscoe.services.add (srv2)
-    """
-    
-    """
-    OrganizationAddress.objects.all().delete()
-    street_k = Street.objects.get(locality=loc3, name="Центральная")
-    address_k = HouseAddress.objects.get(street=street_k, house_number="6")
-    org_addr = OrganizationAddress(address=address_k, organization=kluchevscoe)
-    org_addr.save()
-    """
-
-    # Срок действия тарифа по воде
-    TariffValidity.objects.all().delete()
-    tariff_val1 = TariffValidity(start='2015-01-01', end='2015-06-30')
-    tariff_val1.save()
-    tariff_val2 = TariffValidity(start='2015-07-01', end='2015-12-31')
-    tariff_val2.save()
-
-    # Тарифы
-    Tariff.objects.all().delete()
-    cold_water_tariff = Tariff(service=srv1, organization=kluchevscoe, validity=tariff_val1, value=26.02)
-    cold_water_tariff.save()
-    cold_water_tariff = Tariff(service=srv1, organization=kluchevscoe, validity=tariff_val1, type=Tariff.BUDGETARY_CONSUMERS, value=26.02)
-    cold_water_tariff.save()
-    
-    cold_water_tariff = Tariff(service=srv1, organization=kluchevscoe, validity=tariff_val2, value=27.12)
-    cold_water_tariff.save()
-    cold_water_tariff = Tariff(service=srv1, organization=kluchevscoe, validity=tariff_val2, type=Tariff.BUDGETARY_CONSUMERS, value=27.12)
-    cold_water_tariff.save()
-    
+        
     fill_period()
     
     CalculationService.objects.all().delete()
