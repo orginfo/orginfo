@@ -439,14 +439,20 @@ def fill_period():
     period8 = Period(serial_number=1, start='2015-7-26', end='2015-8-25')
     period8.save()
 
-def preapare_cold_water_counter_kk():
+def preapare_water_counter():
     Counter.objects.all().delete()
     CounterReading.objects.all().delete()
     
+    path = os.path.join(BASE_DIR, "data", "preparedb", "Counter_KK.txt")
+    preapare_cold_water_counter(path)
+    
+    path = os.path.join(BASE_DIR, "data", "preparedb", "Counter_N.txt")
+    preapare_cold_water_counter(path)
+
+def preapare_cold_water_counter(path):
     cold_water_service = CommunalService.objects.get(name = CommunalService.COLD_WATER)
     
-    counter_kk_path = os.path.join(BASE_DIR, "data", "preparedb", "Counter_KK.txt")
-    file = open(counter_kk_path, 'r', encoding='utf-8')
+    file = open(path, 'r', encoding='utf-8')
     for line in file:
         index = 0
         
@@ -490,6 +496,9 @@ def preapare_cold_water_counter_kk():
         
         loc = Locality.objects.get(name=locality_name)
         street = Street.objects.get(locality=loc, name=street_name)
+        if HouseAddress.objects.filter(street=street, house_number=house_nr).count() != 1:
+            continue
+        
         address = HouseAddress.objects.get(street=street, house_number=house_nr)
         if RealEstate.objects.filter(address=address, number=number).count() !=1:
             continue
@@ -526,11 +535,6 @@ def preapare_cold_water_counter_kk():
             period = Period.objects.get(start__lte=date_reading, end__gte=date_reading)
             value = float(july)
             reading = CounterReading(counter=water_counter, date=date_reading, period=period, value=value)
-            reading.save()
-            
-        if len(april) == 0 and len(may) == 0 and len(june) == 0 and len(july):
-            period = Period.objects.get(start__lte=date_reading, end__gte=setup_date)
-            reading = CounterReading(counter=water_counter, date=setup_date, period=period, value=0.0)
             reading.save()
 
     file.close()
@@ -947,7 +951,7 @@ def prepare_db_base():
     
     CalculationService.objects.all().delete()
     
-    preapare_cold_water_counter_kk()
+    preapare_water_counter()
 
 class Command(BaseCommand):
     help = 'Runs the evaluation values and prices'
