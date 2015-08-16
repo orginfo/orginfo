@@ -221,7 +221,7 @@ def report(request):
     payment_amount = CalculationService.objects.filter(real_estate=real_estate, period=period).aggregate(Sum('amount'))['amount__sum'] or 0.0
     payment_amount = decimal.Decimal(payment_amount)
     # Итого к оплате:
-    context["account_info"]["total_amount"] = advance + debts - payment_amount
+    context["account_info"]["total_amount"] = -(advance + debts - payment_amount)
 
     return render(request, 'accounting/empty_report.html', context)
 
