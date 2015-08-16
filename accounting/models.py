@@ -12,14 +12,14 @@ class MunicipalArea(models.Model):
     name = models.CharField(max_length=20)
     subject_rf = models.ForeignKey(SubjectRF)
     def __str__(self):
-        return "%s, %s" % (self.subject_rf.name, self.name)
+        return "%s, %s" % (str(self.subject_rf), self.name)
 
 class MunicipalUnion(models.Model):
     """ Муниципальное образование """
     name = models.CharField(max_length=50)
     municipal_area = models.ForeignKey(MunicipalArea)
     def __str__(self):
-        return "%s, %s, %s" % (self.municipal_area.subject_rf.name, self.municipal_area.name, self.name)
+        return "%s, %s" % (str(self.municipal_area), self.name)
 
 class Locality(models.Model):
     """ Населенный пункт """
@@ -50,7 +50,7 @@ class Locality(models.Model):
     municipal_area = models.ForeignKey(MunicipalArea)
     municipal_union = models.ForeignKey(MunicipalUnion)
     def __str__(self):
-        return "%s, %s, %s %s" % (self.municipal_area.subject_rf.name, self.municipal_area.name, self.get_type_display(), self.name)
+        return "%s, %s %s" % (str(self.municipal_area), self.get_type_display(), self.name)
 
 class Street(models.Model):
     """ Улица """
@@ -78,6 +78,8 @@ class HouseAddress(models.Model):
     house_number = models.CharField(max_length=10)
     def __str__(self):
         return "%s, %s" % (self.street.name, self.house_number)
+    def get_full_address(self):
+        return "%s, %s, %s, %s" % (self.index, str(self.street.locality), str(self.street), self.house_number)
 
 class CommunalService(models.Model):
     """ Коммунальные услуги """
@@ -206,7 +208,11 @@ class RealEstate(models.Model):
     residential = models.BooleanField(default=True)
 
     def __str__(self):
-        return "%s, %s, %s, %s %s" % (self.address.street.locality.name, self.address.street.name, self.address.house_number, self.get_type_display(), self.number)
+        number = ", %s %s" % (self.get_type_display(), self.number) if len(self.number) != 0 else ""
+         
+        return "%s, %s%s" % (self.address.street.locality.name, str(self.address), number)
+    def get_full_address(self):
+        return "%s, %s, %s" % (HouseAddress.get_full_address(self.address), self.get_type_display(), self.number)
 
 """
 class OrganizationClient(models.Model):

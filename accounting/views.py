@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from accounting.models import SubjectRF, Account
 from accounting.models import Period, CalculationService, AccountOperation
 from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner
-from accounting.models import CommunalService, ClientService, Organization
+from accounting.models import CommunalService, ClientService, Organization, HouseAddress
 from accounting.models import WaterNormDescription
 from accounting.models import TechnicalPassport, UserOrganization, CounterReading, Counter
 from django.db.models import Q
@@ -177,15 +177,15 @@ def report(request):
 
     context = {}
 
-    with setlocale('ru_RU.UTF-8'):
-        context["calc_period_name"] = period.end.strftime("%B %Y")
+    #with setlocale('ru_RU.UTF-8'):
+    context["calc_period_name"] = period.end.strftime("%B %Y")
     context["owner"] = get_owner(real_estate, period)
-    context["client_address"] = str(real_estate)
+    context["client_address"] = RealEstate.get_full_address(real_estate)
     context["space"] = get_real_estate_space(real_estate)
     context["residents"] = get_residents(real_estate, period)
     organization = user_org.organization
     context["organization_name"] = str(organization)
-    context["organization_address"] = str(organization.address)
+    context["organization_address"] = HouseAddress.get_full_address(organization.address)
     context["phone"] = "/".join(list(map(lambda x: x.strip(), organization.phone.split(","))))
     context["fax"] = organization.fax
     context["email"] = organization.email
@@ -253,12 +253,12 @@ def reportTODO(request):
     with setlocale('ru_RU.UTF-8'):
         context["calc_period_name"] = period.end.strftime("%B %Y")
     context["owner"] = get_owner(real_estate, period)
-    context["client_address"] = str(real_estate)
+    context["client_address"] = RealEstate.get_full_address(real_estate)
     context["space"] = get_real_estate_space(real_estate)
     context["residents"] = get_residents(real_estate, period)
     organization = user_org.organization
     context["organization_name"] = str(organization)
-    context["organization_address"] = str(organization.address)
+    context["organization_address"] = HouseAddress.get_full_address(organization.address)
     context["phone"] = "/".join(list(map(lambda x: x.strip(), organization.phone.split(","))))
     context["fax"] = organization.fax
     context["email"] = organization.email
