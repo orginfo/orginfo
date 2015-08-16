@@ -35,7 +35,7 @@ body {
             <li{% if request.get_full_path == l2home %} class="active"{% endif %}><a href="{% url 'accounting:index' %}">Главная</a></li>
             {% url 'accounting:accounts' as l2accounts %}
             {% url 'accounting:readings' as l2readings %}
-            <li{% if request.path == l2accounts or request.path == l2readings %} class="active"{% endif %}><a href="{% url 'accounting:accounts' %}">Клиенты</a></li>
+            <li{% if request.path == l2accounts or request.path == l2readings %} class="active"{% endif %}><a href="{% url 'accounting:accounts' %}">Абоненты</a></li>
             
           </ul>
           {{ request.get_full_path }}
