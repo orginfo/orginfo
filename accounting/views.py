@@ -38,19 +38,18 @@ def setlocale(name):
 def get_residents(real_estate, period):
     """ Возвращает количество проживающих в 'real_estate' за расчетный период 'period'.
     Полагаем, что количество проживающих за один расчетный период постоянно. Если нужно будет учитывать не по расчетному периоду, а по дате, тогда возвращать кортеж: 'количество дней, количество проживающх'"""
-    homeownership = HomeownershipHistory.objects.filter(Q(real_estate=real_estate) & Q(water_description__direction_type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING) & Q(start__lte=period.end)).order_by('-start')[0]
+    homeownership = HomeownershipHistory.objects.filter(Q(real_estate=real_estate) & Q(water_description__direction_type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING) & Q(start__lte=period.end)).order_by('start').last()
     
     # Поле 'count' в таблице HomeownershipHistory имеет тип float. Преобразуем к целому.
-    residents = int(homeownership.count)
-    return residents
+    return int(homeownership.count) if homeownership is not None and homeownership.count is not None else "--"
 
 def get_owner(real_estate, period):
-    owner = RealEstateOwner.objects.filter(Q(real_estate=real_estate) & Q(start__lte=period.end)).order_by('-start')[0]
-    return owner
+    owner = RealEstateOwner.objects.filter(Q(real_estate=real_estate) & Q(start__lte=period.end)).order_by('start').last()
+    return owner.owner if owner is not None and owner.owner is not None else "--"
 
 def get_real_estate_space(real_estate):
     technical_pasport = TechnicalPassport.objects.filter(real_estate=real_estate).first()
-    return technical_pasport.space if technical_pasport is not None and technical_pasport.space is not None else ""
+    return technical_pasport.space if technical_pasport is not None and technical_pasport.space is not None else "--"
 
 def get_client_services(real_estate, period):
     services = []
