@@ -43,7 +43,7 @@
         <tbody>
         {% for account in accounts %}
             <tr>
-                <td>#{{ account.period.id }} с {{ account.period.start }} по {{ account.period.end }}</td>
+                <td>{{ account.period.name }}</td>
                 <td>{{ account.balance }}</td>
                 <td>
                 {% for operation in account.operations %}
