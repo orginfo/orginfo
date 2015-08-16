@@ -404,10 +404,10 @@ class AccountOperation(models.Model):
     )
     
     real_estate = models.ForeignKey(RealEstate)
-    balance = models.FloatField()
+    balance = models.DecimalField(max_digits=18, decimal_places=10)
     operation_type = models.CharField(max_length=1, choices=OPERATION_TYPES, default=WRITE_OFF)
     operation_date = models.DateField()
-    amount = models.FloatField()
+    amount = models.DecimalField(max_digits=18, decimal_places=10)
     def __str__(self):
         return "%d %f %s %f" % (self.real_estate.id, self.balance, self.operation_type, self.amount)
 

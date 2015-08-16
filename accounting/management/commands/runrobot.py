@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from datetime import timedelta
+import decimal
 from accounting.models import WaterNormValidity, WaterNorm, TariffValidity, Organization, RealEstate, Tariff, HomeownershipHistory, CalculationService, AccountOperation, ClientService, CommunalService, SubjectRF, MunicipalArea, MunicipalUnion, Period, WaterNormDescription, Locality
 
 
@@ -86,7 +87,7 @@ def calculate_individual_water_volume(subject_rf, real_estate, calc_period, wate
     individual_volume = calculate_individual_water_volume_by_norm(subject_rf, real_estate, calc_period, water_service)
     
     tariff = get_tariff(real_estate, calc_period, water_service)
-    amount = individual_volume * tariff
+    amount = decimal.Decimal(individual_volume * tariff)
     
     if amount > 0: 
         calc_service = CalculationService(real_estate=real_estate, communal_service=water_service, consumption_type=CalculationService.INDIVIDUAL, period=calc_period, volume=individual_volume, amount=amount)

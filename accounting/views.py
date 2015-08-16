@@ -18,6 +18,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder, Field
 from django.core.urlresolvers import reverse
 from accounting.management.commands.runrobot import get_tariff, get_water_norm
+import decimal
 
 import locale
 import threading
@@ -205,11 +206,11 @@ def report(request):
     context["account_info"] = {}
     # Задолженность за предыдующие периоды
     operation = AccountOperation.objects.get(real_estate=real_estate, operation_type=AccountOperation.WRITE_OFF, operation_date=period.start)
-    debts = operation.balance if operation.balance < 0.0 else 0.0
+    debts = operation.balance if operation.balance < 0.0 else decimal.Decimal(0.0)
     context["account_info"]["debts"] = debts
     # Аванс на начало расчетного периода
     operation = AccountOperation.objects.filter(real_estate=real_estate, operation_date__lte=period.end).order_by('operation_date').last()
-    advance = 0.0 if operation.balance < 0.0 else operation.balance
+    advance = decimal.Decimal(0.0) if operation.balance < 0.0 else operation.balance
     context["account_info"]["advance"] = advance
     # Дата последней оплаты:
     context["account_info"]["last_payment_date"] = "--"
@@ -218,6 +219,7 @@ def report(request):
         context["account_info"]["last_payment_date"] = operation.operation_date
     # Оплата за все услуги для расчетного периода
     payment_amount = CalculationService.objects.filter(real_estate=real_estate, period=period).aggregate(Sum('amount'))['amount__sum'] or 0.0
+    payment_amount = decimal.Decimal(payment_amount)
     # Итого к оплате:
     context["account_info"]["total_amount"] = advance + debts - payment_amount
 
