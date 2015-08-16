@@ -394,9 +394,9 @@ def real_estates_as_options(request):
     user_org = get_object_or_404(UserOrganization, user=request.user.id)
     #TODO: уточнить как связаны комнаты и квартира, что бы вывести комнаты без квартиры.
     real_estates = user_org.organization.abonents.filter(Q(type=RealEstate.HOUSE) | Q(type=RealEstate.FLAT))
-    words = request.GET['q'].split(" ")
+    words = request.GET['q'].upper().split(" ")
     for word in words:
-        real_estates = list(filter(lambda re: word in re.__str__(), real_estates))
+        real_estates = list(filter(lambda re: word in re.__str__().upper(), real_estates))
 
     items = list(map(lambda re: {"text": re.__str__(), "id": re.id}, real_estates))
 
