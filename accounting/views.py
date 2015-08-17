@@ -6,7 +6,7 @@ from accounting.models import CommunalService, ClientService, Organization, Hous
 from accounting.models import WaterNormDescription
 from accounting.models import TechnicalPassport, UserOrganization, CounterReading, Counter
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 import json
 from django.db.models import Sum
@@ -102,7 +102,7 @@ class CounterReadingTab(CreateView):
     template_name = 'accounting/counter_reading_tab.html'
     def get_form(self, form_class):
         form = super(CounterReadingTab,self).get_form(form_class)
-        form.fields['counter'].queryset = Counter.objects.filter(real_estate__id=self.real_estate_id)
+        form.fields['counter'].queryset = self.counters
         return form
     def get_success_url(self):
         return reverse('accounting:create_reading')
@@ -111,8 +111,13 @@ class CounterReadingTab(CreateView):
         return super(CounterReadingTab, self).form_valid(form)
     def dispatch(self, *args, **kwargs):
         self.real_estate_id = None
+        self.counters = []
         if 'real_estate' in self.request.GET:
             self.real_estate_id = self.request.GET['real_estate']
+            self.counters = Counter.objects.filter(real_estate__id=self.real_estate_id)
+            if (len(self.counters) == 0):
+                url = "%s?real_estate=%s" % (reverse('accounting:accounts'), self.real_estate_id)
+                return redirect(url)
         return super(CounterReadingTab, self).dispatch(*args, **kwargs)
     def get_context_data(self, **kwargs):
         context = super(CounterReadingTab, self).get_context_data(**kwargs)
@@ -385,6 +390,7 @@ class Accounts(ListView):
         self.real_estate_id = None
         if 'real_estate' in self.request.GET:
             self.real_estate_id = self.request.GET['real_estate']
+            self.counters = Counter.objects.filter(real_estate__id=self.real_estate_id)
 
         return super(Accounts, self).dispatch(*args, **kwargs)
     def get_context_data(self, **kwargs):
@@ -392,6 +398,8 @@ class Accounts(ListView):
 
         if self.real_estate_id == None:
             return context
+
+        context["is_there_counter"] = len(self.counters) > 0
 
         real_estate_str = RealEstate.objects.get(id=self.real_estate_id).__str__()
         context['real_estate'] = {
