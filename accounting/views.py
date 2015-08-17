@@ -187,8 +187,8 @@ def report(request):
 
     context = {}
 
-    #with setlocale('ru_RU.UTF-8'):
-    context["calc_period_name"] = period.end.strftime("%B %Y")
+    with setlocale('ru_RU.UTF-8'):
+        context["calc_period_name"] = period.end.strftime("%B %Y")
     context["owner"] = get_owner(real_estate, period)
     context["client_address"] = RealEstate.get_full_address(real_estate)
     context["space"] = get_real_estate_space(real_estate)
