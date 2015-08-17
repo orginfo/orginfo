@@ -379,7 +379,8 @@ class Accounts(ListView):
         result = []
         for id in sorted_period_ids:
             with setlocale('ru_RU.UTF-8'):
-                period = {"id": id, "name": periods_by_id[id].end.strftime("%B %Y")}
+                name = periods_by_id[id].end.strftime("%B %Y")
+            period = {"id": id, "name": name}
             result.append({
                 "period": period,
                 "balance": operations_by_period[id][-1].balance,
