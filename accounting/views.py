@@ -19,6 +19,7 @@ from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder, Field
 from django.core.urlresolvers import reverse
 from accounting.management.commands.runrobot import get_tariff, get_water_norm
 import decimal
+import datetime
 
 import locale
 import threading
@@ -103,6 +104,7 @@ class CounterReadingTab(CreateView):
     def get_form(self, form_class):
         form = super(CounterReadingTab,self).get_form(form_class)
         form.fields['counter'].queryset = self.counters
+        #TODO: Переопределить период в выпадашке.
         return form
     def get_success_url(self):
         return reverse('accounting:create_reading')
@@ -429,3 +431,59 @@ def real_estates_as_options(request):
         json.dumps(response_data),
         content_type="application/json"
     )
+
+class AddPaymentForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(AddPaymentForm, self).__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-sm-2'
+        self.helper.field_class = 'col-sm-6'
+        self.fields['amount'].label = "Сумма"
+        self.helper.layout = Layout(
+            Fieldset(
+                'Внести платеж',
+                'amount'
+            ),
+            ButtonHolder(
+                Submit('submit', 'Сохранить', css_class='btn-default')
+            )
+        )
+    class Meta:
+        model = AccountOperation
+        fields = ['amount']
+
+class AddPayment(CreateView):
+    model = AccountOperation
+    form_class = AddPaymentForm
+    template_name = 'accounting/add_payment.html'
+    def get_success_url(self):
+        url = "%s?real_estate=%s" % (reverse('accounting:accounts'), self.real_estate_id)
+        return url
+    def form_valid(self, form):
+        form.instance.real_estate_id = self.real_estate_id
+        last_operation = AccountOperation.objects.filter(real_estate__id=8).order_by("operation_date").last()
+        form.instance.balance = last_operation.balance + form.instance.amount
+        form.instance.operation_type = AccountOperation.TOP_UP
+        form.instance.operation_date = datetime.date.today()
+        return super(AddPayment, self).form_valid(form)
+    def dispatch(self, *args, **kwargs):
+        self.real_estate_id = None
+        self.counters = []
+        if 'real_estate' in self.request.GET:
+            self.real_estate_id = self.request.GET['real_estate']
+            self.counters = Counter.objects.filter(real_estate__id=self.real_estate_id)
+            return super(AddPayment, self).dispatch(*args, **kwargs)
+        return redirect(reverse('accounting:accounts'))
+    def get_context_data(self, **kwargs):
+        context = super(AddPayment, self).get_context_data(**kwargs)
+
+        context["is_there_counter"] = len(self.counters) > 0
+
+        real_estate_str = RealEstate.objects.get(id=self.real_estate_id).__str__()
+        context['real_estate'] = {
+            "id": self.real_estate_id,
+            "real_estate_str": real_estate_str
+        }
+        return context

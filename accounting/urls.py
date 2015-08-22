@@ -12,4 +12,5 @@ urlpatterns = patterns('',
     #url(r'^readings/$', views.readings, name='readings'),
     url(r'^create_reading/$', views.CounterReadingTab.as_view(), name='create_reading'),
     url(r'^readings/$', login_required(views.CounterReadingTab.as_view(), login_url="/login/"), name='readings'),
+    url(r'^add_payment/$', login_required(views.AddPayment.as_view(), login_url="/login/"), name='add_payment'),
 )
