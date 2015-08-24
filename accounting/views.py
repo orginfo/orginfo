@@ -92,7 +92,8 @@ class CounterReadingTab(CreateView):
         form.fields['counter'].queryset = self.counters
         return form
     def get_success_url(self):
-        return reverse('accounting:create_reading')
+        url = "%s?real_estate=%s" % (reverse('accounting:create_reading'), self.real_estate_id)
+        return url
     def form_valid(self, form):
         form.instance.real_estate_id = self.real_estate_id
         return super(CounterReadingTab, self).form_valid(form)
