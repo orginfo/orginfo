@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+import threading
+import locale
+LOCALE_LOCK = threading.Lock()
 
 class SubjectRF(models.Model):
     """ СУбъект РФ """
@@ -379,6 +382,13 @@ class Period(models.Model):
     start = models.DateField()
     end = models.DateField()
     def __str__(self):
+        with LOCALE_LOCK:
+            saved = locale.setlocale(locale.LC_ALL)
+            try:
+                locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
+                return "%s" % (str(self.end.strftime("%B %Y")))
+            finally:
+                locale.setlocale(locale.LC_ALL, saved)
         return "%s" % (str(self.end.strftime("%B %Y")))
 
 class CalculationService(models.Model):

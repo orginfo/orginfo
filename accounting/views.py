@@ -21,20 +21,6 @@ from accounting.management.commands.runrobot import get_tariff, get_water_norm
 import decimal
 import datetime
 
-import locale
-import threading
-from contextlib import contextmanager
-LOCALE_LOCK = threading.Lock()
-
-@contextmanager
-def setlocale(name):
-    with LOCALE_LOCK:
-        saved = locale.setlocale(locale.LC_ALL)
-        try:
-            yield locale.setlocale(locale.LC_ALL, name)
-        finally:
-            locale.setlocale(locale.LC_ALL, saved)
-
 
 def get_residents(real_estate, period):
     """ Возвращает количество проживающих в 'real_estate' за расчетный период 'period'.
@@ -104,7 +90,6 @@ class CounterReadingTab(CreateView):
     def get_form(self, form_class):
         form = super(CounterReadingTab,self).get_form(form_class)
         form.fields['counter'].queryset = self.counters
-        #TODO: Переопределить период в выпадашке.
         return form
     def get_success_url(self):
         return reverse('accounting:create_reading')
@@ -129,12 +114,10 @@ class CounterReadingTab(CreateView):
 
         counter_readings = CounterReading.objects.filter(counter__real_estate__id=self.real_estate_id)
         def format_reading(reading):
-            with setlocale('ru_RU.UTF-8'):
-                period = reading.period.end.strftime("%B %Y")
             return {
                 "service_name": reading.counter.service.get_name_display(),
                 "date": reading.date,
-                "period": period,
+                "period": reading.period,
                 "value": reading.value
             }
         readings = map(format_reading, counter_readings)
@@ -194,8 +177,7 @@ def report(request):
 
     context = {}
 
-    with setlocale('ru_RU.UTF-8'):
-        context["calc_period_name"] = period.end.strftime("%B %Y")
+    context["calc_period_name"] = period
     context["owner"] = get_owner(real_estate, period)
     context["client_address"] = RealEstate.get_full_address(real_estate)
     context["space"] = get_real_estate_space(real_estate)
@@ -267,8 +249,7 @@ def reportTODO(request):
 
     context = {}
 
-    with setlocale('ru_RU.UTF-8'):
-        context["calc_period_name"] = period.end.strftime("%B %Y")
+    context["calc_period_name"] = period
     context["owner"] = get_owner(real_estate, period)
     context["client_address"] = RealEstate.get_full_address(real_estate)
     context["space"] = get_real_estate_space(real_estate)
@@ -380,8 +361,7 @@ class Accounts(ListView):
         sorted_period_ids = sorted(operations_by_period)
         result = []
         for id in sorted_period_ids:
-            with setlocale('ru_RU.UTF-8'):
-                period = {"id": id, "name": periods_by_id[id].end.strftime("%B %Y")}
+            period = {"id": id, "name": periods_by_id[id]}
             result.append({
                 "period": period,
                 "balance": operations_by_period[id][-1].balance,
