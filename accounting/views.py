@@ -223,6 +223,47 @@ def report(request):
     # Итого к оплате:
     context["account_info"]["total_amount"] = -(advance + debts - payment_amount)
 
+    context["all_total_amount"] = 0
+    context["services"] = [];
+    for service in get_client_services(real_estate, period):
+        calc_individual_service = CalculationService.objects.get(consumption_type=CalculationService.INDIVIDUAL, period__id=period_id, communal_service=service, real_estate__id=real_estate_id)
+        individual_volume = calc_individual_service.volume
+        individual_amount = calc_individual_service.amount
+
+        common_property_value = "--"
+        common_property_amount = "--"
+        total_amount = individual_amount
+        calc_common_service = CalculationService.objects.filter(consumption_type=CalculationService.COMMON_PROPERTY, period__id=period_id, communal_service=service, real_estate__id=real_estate_id)
+        if len(calc_common_service) == 1:
+            common_property_value = calc_common_service.volume
+            common_property_amount = calc_common_service.amount
+            total_amount = individual_amount + common_property_amount
+
+        context["all_total_amount"] = context["all_total_amount"] + total_amount
+
+        real_estate = RealEstate.objects.get(id=real_estate_id)
+        period = Period.objects.get(id=period_id)
+        tariff = get_tariff(real_estate, period, service)
+
+        norm = 0.0
+        service_name = service.name
+        if service_name == CommunalService.HEATING:
+            pass
+        else:
+            homeownership = HomeownershipHistory.objects.filter(real_estate=real_estate, water_description__direction_type=WaterNormDescription.DEGREE_OF_IMPROVEMENT_DWELLING, start__lte=period.end).order_by('-start')[0]
+            water_description = homeownership.water_description
+            norm = get_water_norm(subject_rf, water_description, period, service)
+        
+        context["services"].append({
+            "name": service.get_name_display(),
+            "individual_volume": individual_volume,
+            "common_property_value": common_property_value,
+            "tariff": tariff,
+            "individual_amount": individual_amount,
+            "common_property_amount": common_property_amount,
+            "total_amount": total_amount,
+            "norm" : norm,
+        })
     return render(request, 'accounting/empty_report.html', context)
 
 @login_required(login_url="/login/")
