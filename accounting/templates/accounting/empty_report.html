@@ -60,7 +60,7 @@
         {{service.get_name_display}}
       {% endfor %}
       </td>
-      <td>&nbsp;</td>
+      <td>{{organization.sum_for_period|floatformat:2}}</td>
     </tr>
     {% endfor %}
     <tr>

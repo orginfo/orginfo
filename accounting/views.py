@@ -194,13 +194,18 @@ def report(request):
 
     context["resourse_supply_organizations"] = []
     for resourse_supply_organization in Organization.objects.filter(abonents=real_estate):
+        sum_for_period = 0
+        for calc in CalculationService.objects.filter(real_estate=real_estate, period=period):
+            if calc.communal_service in resourse_supply_organization.services.all():
+                sum_for_period = sum_for_period + calc.amount
         context["resourse_supply_organizations"].append({
             "organization_name": str(resourse_supply_organization),
             "bank_identifier_code": resourse_supply_organization.bank_identifier_code,
             "corresponding_account": resourse_supply_organization.corresponding_account,
             "operating_account": resourse_supply_organization.operating_account,
             "account_number": Account.objects.get(real_estate=real_estate).__str__(),
-            "services": get_client_services(real_estate, period)
+            "services": get_client_services(real_estate, period),
+            "sum_for_period": sum_for_period
         })
 
     context["account_info"] = {}
