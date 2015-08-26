@@ -387,6 +387,8 @@ class Period(models.Model):
             try:
                 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
                 return "%s" % (str(self.end.strftime("%B %Y")))
+            except:
+                pass
             finally:
                 locale.setlocale(locale.LC_ALL, saved)
         return "%s" % (str(self.end.strftime("%B %Y")))
