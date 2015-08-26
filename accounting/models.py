@@ -215,7 +215,9 @@ class RealEstate(models.Model):
          
         return "%s, %s%s" % (self.address.street.locality.name, str(self.address), number)
     def get_full_address(self):
-        return "%s, %s, %s" % (HouseAddress.get_full_address(self.address), self.get_type_display(), self.number)
+        number = ", %s %s" % (self.get_type_display(), self.number) if len(self.number) != 0 else ""
+        
+        return "%s%s" % (HouseAddress.get_full_address(self.address), number)
 
 """
 class OrganizationClient(models.Model):
