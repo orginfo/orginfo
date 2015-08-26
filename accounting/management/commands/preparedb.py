@@ -101,6 +101,17 @@ def fill_total_info():
     cold_water_tariff.save()
     cold_water_tariff = Tariff(service=srv1, organization=kluchevscoe, validity=tariff_val2, type=Tariff.BUDGETARY_CONSUMERS, value=27.12)
     cold_water_tariff.save()
+    
+    # Нечаевский
+    cold_water_tariff = Tariff(service=srv1, organization=neсhaevscoe, validity=tariff_val1, value=14.74)
+    cold_water_tariff.save()
+    cold_water_tariff = Tariff(service=srv1, organization=neсhaevscoe, validity=tariff_val1, type=Tariff.BUDGETARY_CONSUMERS, value=14.74)
+    cold_water_tariff.save()
+    
+    cold_water_tariff = Tariff(service=srv1, organization=neсhaevscoe, validity=tariff_val2, value=15.77)
+    cold_water_tariff.save()
+    cold_water_tariff = Tariff(service=srv1, organization=neсhaevscoe, validity=tariff_val2, type=Tariff.BUDGETARY_CONSUMERS, value=15.77)
+    cold_water_tariff.save()
 
 def fill_total_kk(water_norm_validity, path, organization):
     
