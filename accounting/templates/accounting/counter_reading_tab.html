@@ -2,13 +2,6 @@
 
 {% block subscriber_tab_content %}
   {% if real_estate %}
-    <ul class="nav nav-pills">
-      {% url 'accounting:accounts' as l2accounts %}
-      <li{% if request.path == l2accounts %} role="presentation" class="active"{% endif %}><a href="{% url 'accounting:accounts' %}?real_estate={{real_estate.id}}">Операции со счётом</a></li>
-      {% url 'accounting:readings' as l2readings %}
-      <li{% if request.path == l2readings %} role="presentation" class="active"{% endif %}><a href="{% url 'accounting:readings' %}?real_estate={{real_estate.id}}">Показания счётчиков</a></li>
-    </ul>
-    <br>
     {% if readings %}
       <table class="table table-bordered">
         <thead>
