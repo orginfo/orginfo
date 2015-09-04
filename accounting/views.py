@@ -251,6 +251,10 @@ def report(request):
         })
     return render(request, 'accounting/report.html', context)
 
+#TODO: Если нет периода, то авансы для него не отображаются
+# >>> from accounting.models import Period
+# >>> period9 = Period(serial_number=1, start='2015-8-26', end='2015-9-25')
+# >>> period9.save()
 class Accounts(ListView):
     context_object_name = 'accounts'
     template_name = 'accounting/search_real_estates.html'
