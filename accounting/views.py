@@ -385,3 +385,36 @@ class AddPayment(CreateView):
             "real_estate_str": real_estate_str
         }
         return context
+
+@login_required(login_url="/login/")
+def homeownership_history(request):
+    context = {
+        "table": [
+            [{
+                "name": "Расчётный период"
+            }, {
+                "name": "Август 2015",
+                "length": 2
+            }, {
+                "name": "Сентябрь 2015"
+            }],
+            [{
+                "name": "Изм-но с"
+            }, {
+                "name": ""
+            }, {
+                "name": "←22.08"
+            }, {
+                "name": "←26.08"
+            }],
+            [{
+                "name": "Лошади"
+            }, {
+                "name": ""
+            }, {
+                "name": "4",
+                "length": 2
+            }]
+        ]
+    }
+    return render(request, 'accounting/homeownership_history.html', context)
