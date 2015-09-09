@@ -15,6 +15,10 @@ class FakeDate(date):
 class HomeownershipHistoryTests(TestCase):
     def setUp(self):
         User.objects.create_user('nn', 'lennon@thebeatles.com', 'nn')
+        self.maxDiff = None
+
+    def test_empty_periods(self):
+        self.assertEqual(False, True)
 
     @mock.patch('datetime.date', FakeDate)
     def test_one_change_two_periods(self):

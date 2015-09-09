@@ -386,29 +386,71 @@ class AddPayment(CreateView):
         }
         return context
 
+def get_period(date):
+    if 1 <= date.day and date.day <= 25:
+        end = datetime.date(date.year, date.month, 25)
+        tmp = end - datetime.timedelta(26)
+        start = datetime.date(tmp.year, tmp.month, 26)
+    else:
+        start = datetime.date(date.year, date.month, 26)
+        tmp = start + datetime.timedelta(6)
+        end = datetime.date(tmp.year, tmp.month, 25)
+    return {
+        "end": end,
+        "start": start
+    }
+
+def get_next_period(period):
+    start = datetime.date(period["end"].year, period["end"].month, 26)
+    tmp = start + datetime.timedelta(6)
+    end = datetime.date(tmp.year, tmp.month, 25)
+    return {
+        "start": start,
+        "end": end,
+    }
+
+def get_period_name(period):
+    return period["end"].strftime("%B %Y")
+
 @login_required(login_url="/login/")
 def homeownership_history(request):
     real_estate = RealEstate.objects.get(id=1)
     homeownership = HomeownershipHistory.objects.filter(real_estate=real_estate).order_by('start')
+    first_date = homeownership[0].start
+
+    periods = []
+    today = datetime.date.today()
+    period = get_period(first_date)
+    while True:
+        periods.append(period)
+        period = get_next_period(period)
+        if today < period["start"]:
+            break
+
+    mix = list(map(lambda x: x["start"], periods))
+    mix.append(first_date)
+    mix = sorted(mix)
+
+    first_row = [{"name": "Расчётный период"}]
+    for period in periods:
+        count = 0
+        for date in mix:
+            if period["start"] <= date and date <= period["end"]:
+                count = count + 1
+        cell = {"name": get_period_name(period)}
+        if count > 1:
+            cell["length"] = count
+        first_row.append(cell)
+
+    second_row = [{"name": "Изм-но с"}, {"name": ""}]
+    second_row = second_row + list(map(lambda x: {"name": "%s%s" % ("←", x.strftime('%d.%m'))}, mix[1:]))
+
+    third_row = []
+
     context = {
         "table": [
-            [{
-                "name": "Расчётный период"
-            }, {
-                "name": "Август 2015",
-                "length": 2
-            }, {
-                "name": "Сентябрь 2015"
-            }],
-            [{
-                "name": "Изм-но с"
-            }, {
-                "name": ""
-            }, {
-                "name": "←22.08"
-            }, {
-                "name": "←26.08"
-            }],
+            first_row,
+            second_row,
             [{
                 "name": "Лошади"
             }, {
@@ -420,7 +462,8 @@ def homeownership_history(request):
             [{
                 "count": float(homeownership[0].count),
                 "start": homeownership[0].start.strftime('%d.%m.%Y'),
-                "today": datetime.date.today().strftime('%d.%m.%Y')
+                "today": datetime.date.today().strftime('%d.%m.%Y'),
+                "periods_count": len(periods)
             }]
         ]
     }
