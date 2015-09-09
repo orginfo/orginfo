@@ -3,13 +3,20 @@ from accounting.models import WaterNormDescription, MunicipalUnion, SubjectRF, M
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 import json
+from datetime import date
+import mock
 
 #./manage.py test accounting
+class FakeDate(date):
+    "A manipulable date replacement"
+    def __new__(cls, *args, **kwargs):
+        return date.__new__(date, *args, **kwargs)
 
 class HomeownershipHistoryTests(TestCase):
     def setUp(self):
         User.objects.create_user('nn', 'lennon@thebeatles.com', 'nn')
 
+    @mock.patch('datetime.date', FakeDate)
     def test_one_change_two_periods(self):
         """
         +--------------------------------------------------+
@@ -67,6 +74,7 @@ class HomeownershipHistoryTests(TestCase):
                 "length": 2
             }]
         ]
+        FakeDate.today = classmethod(lambda cls: date(2015, 9, 3))
         self.client.login(username='nn', password='nn')
         response = self.client.get(reverse('accounting:homeownership_history'))
         self.assertJSONEqual(json.dumps(response.context['table']), json.dumps(expected_data), msg=None)

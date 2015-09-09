@@ -388,6 +388,8 @@ class AddPayment(CreateView):
 
 @login_required(login_url="/login/")
 def homeownership_history(request):
+    real_estate = RealEstate.objects.get(id=1)
+    homeownership = HomeownershipHistory.objects.filter(real_estate=real_estate).order_by('start')
     context = {
         "table": [
             [{
@@ -414,6 +416,11 @@ def homeownership_history(request):
             }, {
                 "name": "4",
                 "length": 2
+            }],
+            [{
+                "count": float(homeownership[0].count),
+                "start": homeownership[0].start.strftime('%d.%m.%Y'),
+                "today": datetime.date.today().strftime('%d.%m.%Y')
             }]
         ]
     }
