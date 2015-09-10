@@ -426,6 +426,10 @@ def get_period_name(period):
 def homeownership_history(request):
     real_estate = RealEstate.objects.get(id=1)
     homeownership = HomeownershipHistory.objects.filter(real_estate=real_estate).order_by('start')
+
+    if homeownership.count() == 0:
+        return render(request, 'accounting/homeownership_history.html')
+
     first_date = homeownership[0].start
 
     periods = []

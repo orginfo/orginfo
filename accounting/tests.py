@@ -17,8 +17,27 @@ class HomeownershipHistoryTests(TestCase):
         User.objects.create_user('nn', 'lennon@thebeatles.com', 'nn')
         self.maxDiff = None
 
+    @mock.patch('datetime.date', FakeDate)
     def test_empty_periods(self):
-        self.assertEqual(False, True)
+        subjectRF = SubjectRF(name="Новосибирская область")
+        subjectRF.save()
+        municipal_area = MunicipalArea(name="Тогучинский район", subject_rf=subjectRF)
+        municipal_area.save()
+        union1 = MunicipalUnion(name="Кудельно-Ключевской сельсовет", municipal_area=municipal_area)
+        union1.save()
+        loc3 = Locality(name="Кудельный Ключ", type=Locality.HAMLET, subject_rf=subjectRF, municipal_area=municipal_area, municipal_union=union1)
+        loc3.save()
+        street4 = Street(name="Лесная", locality=loc3)
+        street4.save()
+        address = HouseAddress(index="633447", street=street4, house_number=20)
+        address.save()
+        real_estate = RealEstate(address=address, number="")
+        real_estate.save()
+
+        FakeDate.today = classmethod(lambda cls: date(2015, 9, 3))
+        self.client.login(username='nn', password='nn')
+        response = self.client.get(reverse('accounting:homeownership_history'))
+        self.assertEqual("table" in response.context, False)
 
     @mock.patch('datetime.date', FakeDate)
     def test_one_change_two_periods(self):
