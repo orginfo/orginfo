@@ -459,24 +459,29 @@ def homeownership_history(request):
     second_row = [{"name": "Изм-но с"}, {"name": ""}]
     second_row = second_row + list(map(lambda x: {"name": "%s%s" % ("←", x.strftime('%d.%m'))}, mix[1:]))
 
-    def specify(date, value):
+    def specify(date, homeownership):
         obj = {"date": date}
-        if (date == first_date):
-            obj["value"] = float(value)
+        for item in homeownership:
+            if (date == item.start):
+                obj["value"] = float(item.count)
         return obj
-    specific_mix = [specify(date, homeownership[0].count) for date in mix]
+    specific_mix = [specify(date, homeownership) for date in mix]
 
     third_row = [{"name": "Лошади"}]
     count = 0
     name = ""
     for m in specific_mix:
-        if m["date"] == first_date:
+        found = None
+        for item in homeownership:
+            if (m["date"] == item.start):
+                found = item
+        if found:
             cell = {"name": name}
             if count > 1:
                 cell["length"] = count
             third_row.append(cell)
 
-            name = m["value"]
+            name = float(found.count)
             count = 0
         count = count + 1
     if name is not None:
