@@ -4,7 +4,7 @@ from accounting.models import Period, CalculationService, AccountOperation
 from accounting.models import RealEstate, HomeownershipHistory, RealEstateOwner
 from accounting.models import CommunalService, ClientService, Organization, HouseAddress
 from accounting.models import WaterNormDescription
-from accounting.models import TechnicalPassport, UserOrganization, CounterReading, Counter
+from accounting.models import TechnicalPassport, UserOrganization, CounterReading, Counter, LOCALE_LOCK
 from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -20,6 +20,7 @@ from django.core.urlresolvers import reverse
 from accounting.management.commands.runrobot import get_tariff, get_water_norm
 import decimal
 import datetime
+import locale
 
 
 def get_residents(real_estate, period):
@@ -410,6 +411,15 @@ def get_next_period(period):
     }
 
 def get_period_name(period):
+    with LOCALE_LOCK:
+        saved = locale.setlocale(locale.LC_ALL)
+        try:
+            locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
+            return period["end"].strftime("%B %Y")
+        except:
+            pass
+        finally:
+            locale.setlocale(locale.LC_ALL, saved)
     return period["end"].strftime("%B %Y")
 
 @login_required(login_url="/login/")
@@ -445,26 +455,37 @@ def homeownership_history(request):
     second_row = [{"name": "Изм-но с"}, {"name": ""}]
     second_row = second_row + list(map(lambda x: {"name": "%s%s" % ("←", x.strftime('%d.%m'))}, mix[1:]))
 
-    third_row = []
+    def specify(date, value):
+        obj = {"date": date}
+        if (date == first_date):
+            obj["value"] = float(value)
+        return obj
+    specific_mix = [specify(date, homeownership[0].count) for date in mix]
+
+    third_row = [{"name": "Лошади"}]
+    count = 0
+    name = ""
+    for m in specific_mix:
+        if m["date"] == first_date:
+            cell = {"name": name}
+            if count > 1:
+                cell["length"] = count
+            third_row.append(cell)
+
+            name = m["value"]
+            count = 0
+        count = count + 1
+    if name is not None:
+        cell = {"name": name}
+        if count > 1:
+            cell["length"] = count
+        third_row.append(cell)
 
     context = {
         "table": [
             first_row,
             second_row,
-            [{
-                "name": "Лошади"
-            }, {
-                "name": ""
-            }, {
-                "name": "4",
-                "length": 2
-            }],
-            [{
-                "count": float(homeownership[0].count),
-                "start": homeownership[0].start.strftime('%d.%m.%Y'),
-                "today": datetime.date.today().strftime('%d.%m.%Y'),
-                "periods_count": len(periods)
-            }]
+            third_row
         ]
     }
     return render(request, 'accounting/homeownership_history.html', context)

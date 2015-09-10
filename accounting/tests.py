@@ -74,7 +74,7 @@ class HomeownershipHistoryTests(TestCase):
             }, {
                 "name": ""
             }, {
-                "name": "4",
+                "name": 4.0,
                 "length": 2
             }]
         ]
