@@ -425,7 +425,15 @@ def get_period_name(period):
 
 @login_required(login_url="/login/")
 def homeownership_history(request):
-    real_estate = RealEstate.objects.get(id=1)
+    real_estate_id = None
+    counters = []
+    if 'real_estate' in request.GET:
+            real_estate_id = request.GET['real_estate']
+            counters = Counter.objects.filter(real_estate__id=real_estate_id)
+    else:
+        return redirect(reverse('accounting:homeownership_history'))
+
+    real_estate = RealEstate.objects.get(id=real_estate_id)
     homeownership = HomeownershipHistory.objects.filter(real_estate=real_estate).order_by('start')
 
     if homeownership.count() == 0:
@@ -506,10 +514,18 @@ def homeownership_history(request):
 
         animal_rows.append(row)
 
+    real_estate_str = RealEstate.objects.get(id=real_estate_id).__str__()
+
     context = {
         "table": [
             first_row,
             second_row
-        ] + animal_rows
+        ] + animal_rows,
+        "real_estate": {
+            "id": real_estate_id,
+            "real_estate_str": real_estate_str
+        },
+        "is_there_counter": len(counters) > 0
     }
+
     return render(request, 'accounting/homeownership_history.html', context)

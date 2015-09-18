@@ -1,29 +1,38 @@
-<style>
-#hh td {
-  width: 110px;
-  text-align: center;
-}
+{% extends "subscriber-page.html" %}
 
-#hh tr.date td {
-  text-align: left;
-}
+{% block subscriber_tab_content %}
+  {% if real_estate %}
 
-#hh td:first-of-type {
-  text-align: left;
-  width: 150px;
-}
-</style>
+    <style>
+    #hh td {
+      width: 110px;
+      text-align: center;
+    }
 
-<table border="1" id="hh">
-{% for row in table %}
-  {% if forloop.counter == 2 %}
-  <tr class="date">
-  {% else %}
-  <tr>
+    #hh tr.date td {
+      text-align: left;
+    }
+
+    #hh td:first-of-type {
+      text-align: left;
+      width: 150px;
+    }
+    </style>
+
+    <table border="1" id="hh">
+    {% for row in table %}
+      {% if forloop.counter == 2 %}
+      <tr class="date">
+      {% else %}
+      <tr>
+      {% endif %}
+      {% for cell in row %}
+      <td{% if cell.length %} colspan="{{cell.length}}"{% endif %}>{{cell.name}}</td>
+      {% endfor %}
+      </tr>
+    {% endfor %}
+    </table>
+
   {% endif %}
-  {% for cell in row %}
-  <td{% if cell.length %} colspan="{{cell.length}}"{% endif %}>{{cell.name}}</td>
-  {% endfor %}
-  </tr>
-{% endfor %}
-</table>
+
+{% endblock %}

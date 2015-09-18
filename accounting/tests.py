@@ -36,7 +36,8 @@ class HomeownershipHistoryTests(TestCase):
 
         FakeDate.today = classmethod(lambda cls: date(2015, 9, 3))
         self.client.login(username='nn', password='nn')
-        response = self.client.get(reverse('accounting:homeownership_history'))
+        url = "%s?real_estate=%d" % (reverse('accounting:homeownership_history'), 1)
+        response = self.client.get(url)
         self.assertEqual("table" in response.context, False)
 
     @mock.patch('datetime.date', FakeDate)
@@ -99,7 +100,8 @@ class HomeownershipHistoryTests(TestCase):
         ]
         FakeDate.today = classmethod(lambda cls: date(2015, 9, 3))
         self.client.login(username='nn', password='nn')
-        response = self.client.get(reverse('accounting:homeownership_history'))
+        url = "%s?real_estate=%d" % (reverse('accounting:homeownership_history'), 1)
+        response = self.client.get(url)
         self.assertJSONEqual(json.dumps(response.context['table']), json.dumps(expected_data), msg=None)
 
     @mock.patch('datetime.date', FakeDate)
@@ -164,7 +166,8 @@ class HomeownershipHistoryTests(TestCase):
         ]
         FakeDate.today = classmethod(lambda cls: date(2015, 9, 3))
         self.client.login(username='nn', password='nn')
-        response = self.client.get(reverse('accounting:homeownership_history'))
+        url = "%s?real_estate=%d" % (reverse('accounting:homeownership_history'), 1)
+        response = self.client.get(url)
         self.assertJSONEqual(json.dumps(response.context['table']), json.dumps(expected_data), msg=None)
 
     @mock.patch('datetime.date', FakeDate)
@@ -231,7 +234,8 @@ class HomeownershipHistoryTests(TestCase):
         ]
         FakeDate.today = classmethod(lambda cls: date(2015, 10, 3))
         self.client.login(username='nn', password='nn')
-        response = self.client.get(reverse('accounting:homeownership_history'))
+        url = "%s?real_estate=%d" % (reverse('accounting:homeownership_history'), 1)
+        response = self.client.get(url)
         self.assertJSONEqual(json.dumps(response.context['table']), json.dumps(expected_data), msg=None)
 
     @mock.patch('datetime.date', FakeDate)
@@ -302,7 +306,8 @@ class HomeownershipHistoryTests(TestCase):
 
         FakeDate.today = classmethod(lambda cls: date(2015, 10, 3))
         self.client.login(username='nn', password='nn')
-        response = self.client.get(reverse('accounting:homeownership_history'))
+        url = "%s?real_estate=%d" % (reverse('accounting:homeownership_history'), 1)
+        response = self.client.get(url)
         self.assertJSONEqual(json.dumps(response.context['table']), json.dumps(expected_data), msg=None)
 
     @mock.patch('datetime.date', FakeDate)
@@ -385,7 +390,8 @@ class HomeownershipHistoryTests(TestCase):
         ]
         FakeDate.today = classmethod(lambda cls: date(2015, 9, 3))
         self.client.login(username='nn', password='nn')
-        response = self.client.get(reverse('accounting:homeownership_history'))
+        url = "%s?real_estate=%d" % (reverse('accounting:homeownership_history'), 1)
+        response = self.client.get(url)
         self.assertJSONEqual(json.dumps(response.context['table']), json.dumps(expected_data), msg=None)
 
     @mock.patch('datetime.date', FakeDate)
@@ -461,7 +467,8 @@ class HomeownershipHistoryTests(TestCase):
         ]
         FakeDate.today = classmethod(lambda cls: date(2015, 9, 3))
         self.client.login(username='nn', password='nn')
-        response = self.client.get(reverse('accounting:homeownership_history'))
+        url = "%s?real_estate=%d" % (reverse('accounting:homeownership_history'), 1)
+        response = self.client.get(url)
         self.assertJSONEqual(json.dumps(response.context['table']), json.dumps(expected_data), msg=None)
 
     def test_many_changes_three_periods_and_before(self):
