@@ -453,6 +453,7 @@ def homeownership_history(request):
     mix = list(map(lambda period: period["start"], mix))
     for event in homeownership:
         mix.append(event.start)
+    mix = list(set(mix))
     mix = sorted(mix)
 
     first_row = [{"name": "Расчётный период"}]
@@ -475,36 +476,40 @@ def homeownership_history(request):
             if (date == item.start):
                 obj["value"] = float(item.count)
         return obj
-    specific_mix = [specify(date, homeownership) for date in mix]
 
-    third_row = [{"name": "Лошади"}]
-    count = 0
-    name = ""
-    for m in specific_mix:
-        found = None
-        for item in homeownership:
-            if (m["date"] == item.start):
-                found = item
-        if found:
+    animal_rows = []
+    unique_desc = homeownership.order_by('water_description').values('water_description').distinct()
+    for desc in unique_desc:
+        row = [{"name": WaterNormDescription.objects.get(id=desc['water_description']).description}]
+        specific_mix = [specify(date, homeownership.filter(water_description=desc['water_description'])) for date in mix]
+        count = 0
+        name = ""
+        for m in specific_mix:
+            found = None
+            for item in homeownership.filter(water_description=desc['water_description']):
+                if (m["date"] == item.start):
+                    found = item
+            if found:
+                cell = {"name": name}
+                if count > 1:
+                    cell["length"] = count
+                row.append(cell)
+    
+                name = float(found.count)
+                count = 0
+            count = count + 1
+        if name is not None:
             cell = {"name": name}
             if count > 1:
                 cell["length"] = count
-            third_row.append(cell)
+            row.append(cell)
 
-            name = float(found.count)
-            count = 0
-        count = count + 1
-    if name is not None:
-        cell = {"name": name}
-        if count > 1:
-            cell["length"] = count
-        third_row.append(cell)
+        animal_rows.append(row)
 
     context = {
         "table": [
             first_row,
-            second_row,
-            third_row
-        ]
+            second_row
+        ] + animal_rows
     }
     return render(request, 'accounting/homeownership_history.html', context)
