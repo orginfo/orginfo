@@ -21,6 +21,7 @@ from accounting.management.commands.runrobot import get_tariff, get_water_norm
 import decimal
 import datetime
 import locale
+import copy
 
 
 def get_residents(real_estate, period):
@@ -441,8 +442,17 @@ def homeownership_history(request):
         if today < period["start"]:
             break
 
-    mix = list(map(lambda x: x["start"], periods))
-    mix.append(first_date)
+    used_periods = copy.deepcopy(periods)
+    for event in homeownership:
+        for period in used_periods:
+            if period["start"] <= event.start and event.start <= period["end"]:
+                period["has_events"] = True
+
+    mix = used_periods[:1]
+    mix = mix + list(filter(lambda period: "has_events" not in period, used_periods[1:]))
+    mix = list(map(lambda period: period["start"], mix))
+    for event in homeownership:
+        mix.append(event.start)
     mix = sorted(mix)
 
     first_row = [{"name": "Расчётный период"}]
