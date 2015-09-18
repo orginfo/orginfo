@@ -41,6 +41,71 @@ class HomeownershipHistoryTests(TestCase):
         self.assertEqual("table" in response.context, False)
 
     @mock.patch('datetime.date', FakeDate)
+    def test_first_date_as_start_period(self):
+        """
+        +------------------+-----------+-------------+---------------+
+        | Расчётный период | Июль 2015 | Август 2015 | Сентябрь 2015 |
+        +------------------+-----------+-------------+---------------+
+        | Изм-но с         |←26.06     |←26.07       |←26.08         |
+        +------------------+-----------+-------------+---------------+
+        | Лошади           |           |        4                    |
+        +------------------+-----------+-----------------------------+
+        """
+        water_desc17 = WaterNormDescription(description="Лошади", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
+        water_desc17.save()
+        subjectRF = SubjectRF(name="Новосибирская область")
+        subjectRF.save()
+        municipal_area = MunicipalArea(name="Тогучинский район", subject_rf=subjectRF)
+        municipal_area.save()
+        union1 = MunicipalUnion(name="Кудельно-Ключевской сельсовет", municipal_area=municipal_area)
+        union1.save()
+        loc3 = Locality(name="Кудельный Ключ", type=Locality.HAMLET, subject_rf=subjectRF, municipal_area=municipal_area, municipal_union=union1)
+        loc3.save()
+        street4 = Street(name="Лесная", locality=loc3)
+        street4.save()
+        address = HouseAddress(index="633447", street=street4, house_number=20)
+        address.save()
+        real_estate = RealEstate(address=address, number="")
+        real_estate.save()
+        homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc17, count=4, start='2015-07-26')
+        homeownership_history.save()
+
+        expected_data = [
+            [{
+                "name": "Расчётный период"
+            }, {
+                "name": "Июль 2015",
+            }, {
+                "name": "Август 2015",
+            }, {
+                "name": "Сентябрь 2015"
+            }],
+            [{
+                "name": "Изм-но с"
+            }, {
+                "name": ""
+            }, {
+                "name": "←26.07"
+            }, {
+                "name": "←26.08"
+            }],
+            [{
+                "name": "Лошади"
+            }, {
+                "name": ""
+            }, {
+                "name": 4.0,
+                "length": 2
+            }]
+        ]
+        FakeDate.today = classmethod(lambda cls: date(2015, 9, 18))
+        self.client.login(username='nn', password='nn')
+        url = "%s?real_estate=%d" % (reverse('accounting:homeownership_history'), 1)
+        response = self.client.get(url)
+        self.assertJSONEqual(json.dumps(response.context['table']), json.dumps(expected_data), msg=None)
+
+
+    @mock.patch('datetime.date', FakeDate)
     def test_one_change_two_periods(self):
         """
         +--------------------------------------------------+

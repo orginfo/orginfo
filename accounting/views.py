@@ -440,6 +440,8 @@ def homeownership_history(request):
         return render(request, 'accounting/homeownership_history.html')
 
     first_date = homeownership[0].start
+    if first_date.day == 26:
+        first_date = datetime.date(first_date.year, first_date.month, 25)
 
     periods = []
     today = datetime.date.today()
