@@ -1,5 +1,6 @@
 from django.test import TestCase
 from accounting.models import WaterNormDescription, MunicipalUnion, SubjectRF, MunicipalArea, Locality, Street, HouseAddress, RealEstate, HomeownershipHistory
+from accounting.views import get_period, get_period_name
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 import json
@@ -15,7 +16,12 @@ class FakeDate(date):
 class HomeownershipHistoryTests(TestCase):
     def setUp(self):
         User.objects.create_user('nn', 'lennon@thebeatles.com', 'nn')
-        self.maxDiff = None
+        self.period_names = {
+            "july2015": get_period_name(get_period(date(2015, 7, 1))),
+            "august2015": get_period_name(get_period(date(2015, 8, 1))),
+            "september2015": get_period_name(get_period(date(2015, 9, 1))),
+            "october2015": get_period_name(get_period(date(2015, 10, 1)))
+        }
 
     @mock.patch('datetime.date', FakeDate)
     def test_empty_periods(self):
@@ -74,11 +80,11 @@ class HomeownershipHistoryTests(TestCase):
             [{
                 "name": "Расчётный период"
             }, {
-                "name": "Июль 2015",
+                "name": self.period_names["july2015"],
             }, {
-                "name": "Август 2015",
+                "name": self.period_names["august2015"],
             }, {
-                "name": "Сентябрь 2015"
+                "name": self.period_names["september2015"]
             }],
             [{
                 "name": "Изм-но с"
@@ -140,10 +146,10 @@ class HomeownershipHistoryTests(TestCase):
             [{
                 "name": "Расчётный период"
             }, {
-                "name": "Август 2015",
+                "name": self.period_names["august2015"],
                 "length": 2
             }, {
-                "name": "Сентябрь 2015"
+                "name": self.period_names["september2015"]
             }],
             [{
                 "name": "Изм-но с"
@@ -205,10 +211,10 @@ class HomeownershipHistoryTests(TestCase):
             [{
                 "name": "Расчётный период"
             }, {
-                "name": "Август 2015",
+                "name": self.period_names["august2015"],
                 "length": 2
             }, {
-                "name": "Сентябрь 2015"
+                "name": self.period_names["september2015"]
             }],
             [{
                 "name": "Изм-но с"
@@ -270,12 +276,12 @@ class HomeownershipHistoryTests(TestCase):
             [{
                 "name": "Расчётный период"
             }, {
-                "name": "Август 2015",
+                "name": self.period_names["august2015"],
                 "length": 2
             }, {
-                "name": "Сентябрь 2015"
+                "name": self.period_names["september2015"]
             }, {
-                "name": "Октябрь 2015"
+                "name": self.period_names["october2015"]
             }],
             [{
                 "name": "Изм-но с"
@@ -318,12 +324,12 @@ class HomeownershipHistoryTests(TestCase):
             [{
                 "name": "Расчётный период"
             }, {
-                "name": "Август 2015",
+                "name": self.period_names["august2015"],
                 "length": 2
             }, {
-                "name": "Сентябрь 2015"
+                "name": self.period_names["september2015"]
             }, {
-                "name": "Октябрь 2015"
+                "name": self.period_names["october2015"]
             }],
             [{
                 "name": "Изм-но с"
@@ -417,10 +423,10 @@ class HomeownershipHistoryTests(TestCase):
             [{
                 "name": "Расчётный период"
             }, {
-                "name": "Август 2015",
+                "name": self.period_names["august2015"],
                 "length": 3
             }, {
-                "name": "Сентябрь 2015"
+                "name": self.period_names["september2015"]
             }],
             [{
                 "name": "Изм-но с"
@@ -499,10 +505,10 @@ class HomeownershipHistoryTests(TestCase):
             [{
                 "name": "Расчётный период"
             }, {
-                "name": "Август 2015",
+                "name": self.period_names["august2015"],
                 "length": 2
             }, {
-                "name": "Сентябрь 2015"
+                "name": self.period_names["september2015"]
             }],
             [{
                 "name": "Изм-но с"
