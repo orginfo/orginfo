@@ -8,6 +8,8 @@ from accounting.models import Organization, CommunalService, ClientService
 from accounting.models import Period, CalculationService, AccountOperation, Counter, CounterReading, Account
 import os.path
 from orginfo.settings import BASE_DIR
+from datetime import datetime
+import pytz
 
 def fill_total_info():
     HouseAddress.objects.all().delete()
@@ -116,6 +118,8 @@ def fill_total_info():
 def fill_total_kk(water_norm_validity, path, organization):
     
     start_calc_date = '2015-7-26'
+    novosibirsk_tz = pytz.timezone("Asia/Novosibirsk")
+    history_updated = novosibirsk_tz.localize(datetime(2015, 7, 1, 23, 0, 0))
     account_number = 1
     
     protocol_kk_path = os.path.join(BASE_DIR, "data", "preparedb", "Protocol_KK.txt")
@@ -303,7 +307,7 @@ def fill_total_kk(water_norm_validity, path, organization):
             count = int(residents)
         
         if len(norm) != 0 and len(residents) != 0:
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
         
         # AccountOperation
@@ -330,61 +334,61 @@ def fill_total_kk(water_norm_validity, path, organization):
         if len(p15) != 0:
             count = int(p15)
             water_desc = WaterNormDescription.objects.get(description="Крупный рогатый скот", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
         
         if len(p16) != 0:
             count = int(p16)
             water_desc = WaterNormDescription.objects.get(description="Крупный рогатый скот, молодняк", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
         
         if len(p17) != 0:
             count = int(p17)
             water_desc = WaterNormDescription.objects.get(description="Лошади", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
         
         if len(p18) != 0:
             count = int(p18)
             water_desc = WaterNormDescription.objects.get(description="Свиньи", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
         
         if len(p19) != 0:
             count = int(p19)
             water_desc = WaterNormDescription.objects.get(description="Овцы", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
         
         if len(p20) != 0:
             count = int(p20)
             water_desc = WaterNormDescription.objects.get(description="Козы", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
         
         if len(p21) != 0:
             count = int(p21)
             water_desc = WaterNormDescription.objects.get(description="Куры, индейки", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
         
         if len(p22) != 0:
             count = int(p22)
             water_desc = WaterNormDescription.objects.get(description="Утки, гуси", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
         
         if len(p23) != 0:
             count = int(p23)
             water_desc = WaterNormDescription.objects.get(description="Лошади, молодняк", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
         
         if len(p24) != 0:
             count = int(p24)
             water_desc = WaterNormDescription.objects.get(description="Свиньи, молодняк", direction_type=WaterNormDescription.AGRICULTURAL_ANIMALS)
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
         
         if len(residents) != 0:
@@ -392,42 +396,42 @@ def fill_total_kk(water_norm_validity, path, organization):
             
             if len(p25) != 0:
                 water_desc = WaterNormDescription.objects.get(description="Баня при наличии водопровода")
-                homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+                homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
                 homeownership_history.save()
             
             if len(p26) != 0:
                 water_desc = WaterNormDescription.objects.get(description="Баня при водоснабжении из уличной колонки")
-                homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+                homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
                 homeownership_history.save()
         
         if len(p27) != 0:
             count = int(p27)
             water_desc = WaterNormDescription.objects.get(description="Мойка мотоцикла")
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
         
         if len(p28) != 0:
             count = int(p28)
             water_desc = WaterNormDescription.objects.get(description="Мойка автомобиля при наличии водопровода")
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
         
         if len(p29) != 0:
             count = int(p29)
             water_desc = WaterNormDescription.objects.get(description="Мойка автомобиля при водоснабжении из уличной колонки")
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
             
         if len(p30) != 0:
             count = float(p30)
             water_desc = WaterNormDescription.objects.get(description="Полив земельного участка при наличии водопровода")
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
     
         if len(p31) != 0:
             count = float(p31)
             water_desc = WaterNormDescription.objects.get(description="Полив земельного участка при водоснабжении из уличной колонки")
-            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date)
+            homeownership_history = HomeownershipHistory(real_estate=real_estate, water_description=water_desc, count=count, start=start_calc_date, updated=history_updated)
             homeownership_history.save()
     file.close()
 

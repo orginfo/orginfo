@@ -262,6 +262,8 @@ class HomeownershipHistory(models.Model):
     water_description = models.ForeignKey(WaterNormDescription)
     count = models.DecimalField(max_digits=5, decimal_places=2)
     start = models.DateField()
+    #updated -- время внесения записи, случит индикатором редактирования таблицы.
+    updated = models.DateTimeField()
 
 class Organization(models.Model):
     """Организация.
