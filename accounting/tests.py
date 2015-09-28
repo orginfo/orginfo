@@ -646,8 +646,7 @@ class HomeownershipHistoryTests(TestCase):
             [{
                 "name": "Лошади"
             }, {
-                "name": "",
-                "length": 2
+                "name": ""
             }, {
                 "name": 4.0,
                 "length": 2

@@ -452,17 +452,38 @@ def homeownership_history(request):
         if today < period["start"]:
             break
 
+    events_by_desc = {}
+    unique_desc = homeownership.order_by('water_description').values('water_description').distinct()
+    for distinct in unique_desc:
+        desc = distinct['water_description']
+        all_unsorted_events = []
+        for event in homeownership.filter(water_description=desc):
+            all_unsorted_events.append({"start": event.start, "updated": event.updated, "count": event.count})
+        from operator import itemgetter
+        all_sorted_events = sorted(all_unsorted_events, key=itemgetter('updated', 'start'))
+        previous_event = None
+        events = []
+        for event in reversed(all_sorted_events):
+            if previous_event is None:
+                events.append(event)
+            elif event["start"] < previous_event["start"]:
+                events.append(event)
+            previous_event = event
+        events_by_desc[desc] = list(reversed(events))
+
     used_periods = copy.deepcopy(periods)
-    for event in homeownership:
-        for period in used_periods:
-            if period["start"] <= event.start and event.start <= period["end"]:
-                period["has_events"] = True
+    for desc in events_by_desc:
+        for event in events_by_desc[desc]:
+            for period in used_periods:
+                if period["start"] <= event["start"] and event["start"] <= period["end"]:
+                    period["has_events"] = True
 
     mix = used_periods[:1]
     mix = mix + list(filter(lambda period: "has_events" not in period, used_periods[1:]))
     mix = list(map(lambda period: period["start"], mix))
-    for event in homeownership:
-        mix.append(event.start)
+    for desc in events_by_desc:
+        for event in events_by_desc[desc]:
+            mix.append(event["start"])
     mix = list(set(mix))
     mix = sorted(mix)
 
@@ -480,24 +501,23 @@ def homeownership_history(request):
     second_row = [{"name": "Изм-но с"}, {"name": ""}]
     second_row = second_row + list(map(lambda x: {"name": "%s%s" % ("←", x.strftime('%d.%m'))}, mix[1:]))
 
-    def specify(date, homeownership):
+    def specify(date, events):
         obj = {"date": date}
-        for item in homeownership:
-            if (date == item.start):
-                obj["value"] = float(item.count)
+        for event in events:
+            if (date == event["start"]):
+                obj["value"] = float(event["count"])
         return obj
 
     animal_rows = []
-    unique_desc = homeownership.order_by('water_description').values('water_description').distinct()
-    for desc in unique_desc:
-        row = [{"name": WaterNormDescription.objects.get(id=desc['water_description']).description}]
-        specific_mix = [specify(date, homeownership.filter(water_description=desc['water_description'])) for date in mix]
+    for desc in events_by_desc:
+        row = [{"name": WaterNormDescription.objects.get(id=desc).description}]
+        specific_mix = [specify(date, events_by_desc[desc]) for date in mix]
         count = 0
         name = ""
         for m in specific_mix:
             found = None
-            for item in homeownership.filter(water_description=desc['water_description']):
-                if (m["date"] == item.start):
+            for item in events_by_desc[desc]:
+                if (m["date"] == item["start"]):
                     found = item
             if found:
                 cell = {"name": name}
@@ -505,7 +525,7 @@ def homeownership_history(request):
                     cell["length"] = count
                 row.append(cell)
     
-                name = float(found.count)
+                name = float(found["count"])
                 count = 0
             count = count + 1
         if name is not None:
