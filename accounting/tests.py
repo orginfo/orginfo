@@ -676,3 +676,11 @@ class HomeownershipHistoryTests(TestCase):
         +------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
         """
         self.assertEqual(False, True)
+
+
+class HomeownershipHistoryEditTests(TestCase):
+    def test_the_last_date_of_previous_period(self):
+        self.assertEqual(False, True)
+
+    def test_another_organization_real_estate(self):
+        self.assertEqual(False, True)
