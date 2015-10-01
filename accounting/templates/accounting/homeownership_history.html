@@ -32,6 +32,8 @@
       </tr>
     {% endfor %}
     </table>
+    <br>
+    <a href="{% url 'accounting:create_homeownership_event' %}?real_estate={{ real_estate.id }}" class="btn btn-primary" role="button">Добавить событие</a>
 
   {% endif %}
 

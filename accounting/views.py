@@ -22,6 +22,7 @@ import decimal
 import datetime
 import locale
 import copy
+import pytz
 
 
 def get_residents(real_estate, period):
@@ -551,3 +552,61 @@ def homeownership_history(request):
     }
 
     return render(request, 'accounting/homeownership_history.html', context)
+
+class CreateHomeownershipEventForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(CreateHomeownershipEventForm, self).__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-sm-2'
+        self.helper.field_class = 'col-sm-6'
+        self.fields['water_description'].label = "water_description"
+        self.fields['count'].label = "count"
+        self.fields['start'].label = "start"
+        self.helper.layout = Layout(
+            Fieldset(
+                'Внести событие',
+                'water_description',
+                'count',
+                'start'
+            ),
+            ButtonHolder(
+                Submit('submit', 'Сохранить', css_class='btn-default')
+            )
+        )
+    class Meta:
+        model = HomeownershipHistory
+        fields = ['water_description', "count", "start"]
+
+class CreateHomeownershipEvent(CreateView):
+    model = HomeownershipHistory
+    form_class = CreateHomeownershipEventForm
+    template_name = 'accounting/add_payment.html'
+    def get_success_url(self):
+        url = "%s?real_estate=%s" % (reverse('accounting:homeownership_history'), self.real_estate_id)
+        return url
+    def form_valid(self, form):
+        form.instance.real_estate_id = self.real_estate_id
+        novosibirsk_tz = pytz.timezone("Asia/Novosibirsk")
+        form.instance.updated = novosibirsk_tz.localize(datetime.datetime.now())
+        return super(CreateHomeownershipEvent, self).form_valid(form)
+    def dispatch(self, *args, **kwargs):
+        self.real_estate_id = None
+        self.counters = []
+        if 'real_estate' in self.request.GET:
+            self.real_estate_id = self.request.GET['real_estate']
+            self.counters = Counter.objects.filter(real_estate__id=self.real_estate_id)
+            return super(CreateHomeownershipEvent, self).dispatch(*args, **kwargs)
+        return redirect(reverse('accounting:accounts'))
+    def get_context_data(self, **kwargs):
+        context = super(CreateHomeownershipEvent, self).get_context_data(**kwargs)
+
+        context["is_there_counter"] = len(self.counters) > 0
+
+        real_estate_str = RealEstate.objects.get(id=self.real_estate_id).__str__()
+        context['real_estate'] = {
+            "id": self.real_estate_id,
+            "real_estate_str": real_estate_str
+        }
+        return context

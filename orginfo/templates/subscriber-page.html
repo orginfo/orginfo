@@ -31,7 +31,8 @@
       <li{% if request.path == l2readings %} role="presentation" class="active"{% endif %}><a href="{% url 'accounting:readings' %}?real_estate={{real_estate.id}}">Показания счётчиков</a></li>
       {% endif %}
       {% url 'accounting:homeownership_history' as l2homeownership_history %}
-      <li{% if request.path == l2homeownership_history %} role="presentation" class="active"{% endif %}><a href="{% url 'accounting:homeownership_history' %}?real_estate={{real_estate.id}}">Животные</a></li>
+      {% url 'accounting:create_homeownership_event' as l2create_homeownership_event %}
+      <li{% if request.path == l2homeownership_history or request.path == l2create_homeownership_event %} role="presentation" class="active"{% endif %}><a href="{% url 'accounting:homeownership_history' %}?real_estate={{real_estate.id}}">Животные</a></li>
     </ul>
     <br>
   {% endif %}

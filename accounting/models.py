@@ -117,7 +117,9 @@ class WaterNormDescription(models.Model):
     
     description = models.TextField()
     direction_type = models.CharField(max_length=1, choices=AREA_APPLICATION_TYPES, default=DEGREE_OF_IMPROVEMENT_DWELLING)
-    
+    def __str__(self):
+        return "%s->%s" % (self.description, self.get_direction_type_display())
+
 class WaterNormValidity(models.Model):
     """ Период действия норматива
     start - дата, с которой начинает действовать норматив
