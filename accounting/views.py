@@ -23,6 +23,7 @@ import datetime
 import locale
 import copy
 import pytz
+from django.core.exceptions import ValidationError
 
 
 def get_residents(real_estate, period):
@@ -578,6 +579,14 @@ class CreateHomeownershipEventForm(ModelForm):
     class Meta:
         model = HomeownershipHistory
         fields = ['water_description', "count", "start"]
+    def clean_start(self):
+        clean_start = self.cleaned_data["start"]
+        today = datetime.date.today()
+        period_from_today = get_period_name(get_period(today))
+        period_from_start = get_period_name(get_period(clean_start))
+        if period_from_today != period_from_start:
+            raise ValidationError("Дата должна относится к периоду %s" % (period_from_today))
+        return clean_start
 
 class CreateHomeownershipEvent(CreateView):
     model = HomeownershipHistory

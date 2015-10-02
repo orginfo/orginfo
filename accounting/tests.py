@@ -1,6 +1,6 @@
 from django.test import TestCase
 from accounting.models import WaterNormDescription, MunicipalUnion, SubjectRF, MunicipalArea, Locality, Street, HouseAddress, RealEstate, HomeownershipHistory, Organization, UserOrganization
-from accounting.views import get_period, get_period_name
+from accounting.views import get_period, get_period_name, CreateHomeownershipEventForm
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 import json
@@ -679,8 +679,19 @@ class HomeownershipHistoryTests(TestCase):
 
 
 class HomeownershipHistoryEditTests(TestCase):
+    @mock.patch('datetime.date', FakeDate)
     def test_the_last_date_of_previous_period(self):
-        self.assertEqual(False, True)
+        FakeDate.today = classmethod(lambda cls: date(2015, 10, 2))
+        water_desc1 = WaterNormDescription(description="Жилые помещения (в том числе общежития квартирного типа) с холодным и горячим водоснабжением, канализованием, оборудованные ваннами длиной 1500 - 1700 мм, душами, раковинами, кухонными мойками и унитазами")
+        water_desc1.save()
+        form_data = {
+            'water_description': water_desc1.id,
+            'count': '2',
+            'start': "25.09.2015"
+        }
+        form = CreateHomeownershipEventForm(data=form_data)
+        is_valid = form.is_valid()
+        self.assertEqual(False, is_valid)
 
     def test_another_organization_real_estate(self):
         subjectRF = SubjectRF(name="Какая-то область")
