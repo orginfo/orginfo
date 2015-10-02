@@ -1,5 +1,5 @@
 from django.test import TestCase
-from accounting.models import WaterNormDescription, MunicipalUnion, SubjectRF, MunicipalArea, Locality, Street, HouseAddress, RealEstate, HomeownershipHistory
+from accounting.models import WaterNormDescription, MunicipalUnion, SubjectRF, MunicipalArea, Locality, Street, HouseAddress, RealEstate, HomeownershipHistory, Organization, UserOrganization
 from accounting.views import get_period, get_period_name
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
@@ -683,4 +683,44 @@ class HomeownershipHistoryEditTests(TestCase):
         self.assertEqual(False, True)
 
     def test_another_organization_real_estate(self):
-        self.assertEqual(False, True)
+        subjectRF = SubjectRF(name="Какая-то область")
+        subjectRF.save()
+        municipal_area = MunicipalArea(name="Какой-то район", subject_rf=subjectRF)
+        municipal_area.save()
+        union = MunicipalUnion(name="Какой-то сельсовет", municipal_area=municipal_area)
+        union.save()
+        locality = Locality(name="Какое-то место", type=Locality.HAMLET, subject_rf=subjectRF, municipal_area=municipal_area, municipal_union=union)
+        locality.save()
+        street = Street(name="Случайная улица", locality=locality)
+        street.save()
+
+        abonent_address_of_mup_neсhaevscoe = HouseAddress(index="633447", street=street, house_number=20)
+        abonent_address_of_mup_neсhaevscoe.save()
+        abonent_of_mup_neсhaevscoe = RealEstate(address=abonent_address_of_mup_neсhaevscoe, number="")
+        abonent_of_mup_neсhaevscoe.save()
+
+        mup_kluchevscoe_address = HouseAddress(index="633447", street=street, house_number=20)
+        mup_kluchevscoe_address.save()
+        mup_kluchevscoe = Organization(short_name="Ключевское", full_name="Ключевское",
+            taxpayer_identification_number="5438113504",
+            tax_registration_reason_code="543801001",
+            primary_state_registration_number="10454045761",
+            bank_identifier_code="045004850",
+            corresponding_account="30101810100000000850",
+            operating_account="40702810609240000158",
+            phone="8(38340)31-104, 8(38340)31-238",
+            email="kluchinat@mail.ru",
+            operating_mode="Режим работы: Пн.-Пт. 8.00-17.00, Обед: 13.00-14.00",
+            address=mup_kluchevscoe_address)
+        mup_kluchevscoe.save()
+
+        User.objects.create_user('kk', 'pol@thebeatles.com', 'kk')
+        mup_kluchevscoe_admin = User.objects.get(username="kk")
+        user_organization = UserOrganization(user=mup_kluchevscoe_admin, organization=mup_kluchevscoe)
+        user_organization.save()
+
+        self.client.login(username='kk', password='kk')
+        url = "%s?real_estate=%d" % (reverse('accounting:create_homeownership_event'), abonent_of_mup_neсhaevscoe.id)
+        response = self.client.get(url)
+
+        self.assertEqual(404, response.status_code)

@@ -592,9 +592,16 @@ class CreateHomeownershipEvent(CreateView):
         form.instance.updated = novosibirsk_tz.localize(datetime.datetime.now())
         return super(CreateHomeownershipEvent, self).form_valid(form)
     def dispatch(self, *args, **kwargs):
+        user_org = get_object_or_404(UserOrganization, user=self.request.user.id)
+        if not user_org.organization:
+            raise Http404
+
         self.real_estate_id = None
         self.counters = []
         if 'real_estate' in self.request.GET:
+            real_estates = user_org.organization.abonents.filter(id=self.request.GET["real_estate"])
+            if len(real_estates) != 1:
+                raise Http404
             self.real_estate_id = self.request.GET['real_estate']
             self.counters = Counter.objects.filter(real_estate__id=self.real_estate_id)
             return super(CreateHomeownershipEvent, self).dispatch(*args, **kwargs)
